@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bw3u0mqui5itj"]
+
+[ext_resource type="Script" uid="uid://bpqofatmeai8i" path="res://Scripts/noreward.gd" id="1_shewd"]
+
+[node name="noreward" type="Node2D"]
+script = ExtResource("1_shewd")
