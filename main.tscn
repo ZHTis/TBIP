@@ -15,7 +15,7 @@ offset_top = 64.0
 offset_right = 543.0
 offset_bottom = 369.0
 
-[node name="Text" type="Button" parent="MenuButton"]
+[node name="Text" type="Label" parent="MenuButton"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -26,6 +26,8 @@ offset_right = 75.0
 offset_bottom = 70.0
 grow_horizontal = 2
 text = "￥2"
+label_settings = ExtResource("3_h2yge")
+horizontal_alignment = 1
 
 [node name="HoldButton" type="Button" parent="MenuButton"]
 layout_mode = 1
@@ -44,13 +46,15 @@ icon = ExtResource("1_ul4es")
 icon_alignment = 1
 expand_icon = true
 
-[node name="MenuButton2" type="MenuButton" parent="."]
+[node name="MenuButton2" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
 offset_left = 622.0
 offset_top = 69.0
 offset_right = 960.0
 offset_bottom = 360.0
 
-[node name="Text2" type="Button" parent="MenuButton2"]
+[node name="Text" type="Label" parent="MenuButton2"]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -61,18 +65,20 @@ offset_right = 75.0
 offset_bottom = 70.0
 grow_horizontal = 2
 text = "￥0"
+label_settings = ExtResource("3_h2yge")
+horizontal_alignment = 1
 
-[node name="GiveUpButton" type="Button" parent="MenuButton2"]
+[node name="OptOutButton" type="Button" parent="MenuButton2"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -40.0
-offset_top = -94.0
-offset_right = 23.0
-offset_bottom = -29.0
+offset_left = -29.0
+offset_top = -87.0
+offset_right = 34.0
+offset_bottom = -22.0
 grow_horizontal = 2
 grow_vertical = 0
 icon = ExtResource("1_ul4es")
