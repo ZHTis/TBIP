@@ -109,14 +109,16 @@ func BLK1(t_min,  t_max, _step,
 	var templates = calculate_discrete_normal(time_window[0], time_window[1], 
 	step, mean,  variance, _total_reward_chance)
 	probabilities_reward_hold_template = templates[0]
-	time_window_template= templates[1] # Probabilities of rewards over time
-	var actual_total_reward_chance= templates[2] # Actual total reward chance
+	########### 概率要交叉影响下面这个变量 ##########
 	hold_reward_template = []
 	opt_out_reward_template = []
 	hold_reward_template.resize(number_of_trials)
 	opt_out_reward_template.resize(number_of_trials)
 	hold_reward_template.fill(20)
 	opt_out_reward_template.fill(2)
+	########## 按钮部分逻辑要跟这里关联 ##########
+	time_window_template= templates[1] 
+
 
 
 func init_trial(hold_reward_for_this_trial,opt_out_reward_for_this_trial):
