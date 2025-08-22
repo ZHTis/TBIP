@@ -1,5 +1,5 @@
 extends Node2D
-# 节点引用
+# Node reference
 @onready var label_1 = get_node("/root/Node2D/Label" )
 @onready var label_2 = get_node("/root/Node2D/Label2" )
 @onready var hold_button = $MenuButton/HoldButton
@@ -7,76 +7,78 @@ extends Node2D
 @onready var hold_button_label = $MenuButton/Text
 @onready var opt_out_button_label = $MenuButton2/Text
 
-# 导出变量，可在编辑器中调整
-@export var holding_text : String = "按住中..."
-@export var result_format : String = "你按住了 %.2f 秒"
+# Export variables, which can be adjusted in the editor
+@export var holding_text : String = "Hold..."
+@export var result_format : String = "You held down %.2f seconds"
 
-###############实验变量设置#################################
-# 奖励随按住时间长度分布变量
+############## Variable settings ################
+# Rewards are distributed with the length of time
 var time_window = [0.5,1.5]
 var inter_trial_interval = 0.8
 var step = 0.1
 var mean = 0.9
-var variance = 9 
+var variance = 9
 var total_reward_chance = 0.9
 var number_of_trials = 10
-var min_hold_reward = 1
-var max_hold_reward = 10
+var min_hold_reward = 10
+var max_hold_reward = 20
 var min_opt_out_reward = 1
-var max_opt_out_reward = 10
-###########################################################
-## 函数变量
+var max_opt_out_reward = 2
+#################################################
+## Function variables
 var trial_count
-# 计时器变量    
+# timer variable
 var start_time : float = 0.0
 var is_holding : bool = false
 var has_been_pressed : bool = false
 var duration 
-# 财富变量
+# Wealth Variable
 var hold_reward
 var opt_out_reward 
 var wealth 
 var hold_reward_template
 var opt_out_reward_template 
-# 存储原始状态，用于恢复（处理可能的初始隐藏元素）
+# Store the original state for recovery (processing possible initial hidden elements)
 var original_states = {}
 var exclude_nodes_for_refresh
 
+
+
 func _ready():
-	wealth = 0  # 初始化财富
+	wealth = 0 # Initialize wealth
 	trial_count = 0
-	init_task(min_hold_reward, max_hold_reward, min_opt_out_reward, max_opt_out_reward)  # 初始化任务
-	init_ui()  # 初始化UI
-	# 连接按钮信号
+	init_task(min_hold_reward, max_hold_reward, min_opt_out_reward, max_opt_out_reward) # Initialize the task
+	init_ui() # Initialize the UI
+	# Connect button signal
 	hold_button.button_down.connect(_on_hold_button_down)
 	hold_button.button_up.connect(_on_hold_button_up)
 	hold_button.mouse_exited.connect(_on_hold_button_up)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
 	
-func init_task(a,b,c,d): # 初始化任务, BLK design
+func init_task(a,b,c,d): # Initialize task, BLK design
 	if mean == null:
-		mean = time_window[0] + (time_window[1] - time_window[0]) / 2  # 均值
+		mean = time_window[0] + (time_window[1] -time_window[0]) /2 # mean
 	else:
-		print("奖励随时间分布的参数mean已设置为: ", mean)
+		print("The parameter mean of the reward distribution over time has been set to:", mean)
 	# 生成奖励模板	
 	hold_reward_template = []
 	opt_out_reward_template = []
 	for i in range(number_of_trials):
-		var random_h = generate_ramdom(a,b)  # 按住奖励
-		var random_o = generate_ramdom(c,d)  # 选择退出奖励
-		hold_reward_template.append(random_h)  # 按住奖励
-		opt_out_reward_template.append(random_o)  # 选择退出奖励
+		var random_h = generate_ramdom(a,b)  # Press and hold reward
+		var random_o = generate_ramdom(c,d) # Opt-out reward
+		hold_reward_template.append(random_h) # Hold reward
+		opt_out_reward_template.append(random_o) # Opt-out reward
 	# Start 1st Trial
 	init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count])
 
 	
 func init_trial(hold_reward_for_this_trial,opt_out_reward_for_this_trial):
-	# 初始化试验状态
+	# Initialize the test status
 	has_been_pressed = false
 	is_holding = false
 	start_time = 0.0
 	duration = 0.0
-	# 初始化奖励
+	# Initialization rewards
 	hold_reward = hold_reward_for_this_trial 
 	opt_out_reward = opt_out_reward_for_this_trial 
 
@@ -89,28 +91,28 @@ func init_ui():
 	exclude_nodes_for_refresh = [label_1.name,label_2.name]
 	
 func reset_scene():
-	# 重置场景
+	# Reset the scene
 	hide_all_children()
 	await get_tree().create_timer(inter_trial_interval).timeout
 	trial_count += 1
 	if trial_count < number_of_trials:
 		init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count])
 		restore_all_children()
-		# 重置状态
+		# Reset status
 		init_ui()
 	else:
 		label_1.text = "End of Trials"
-		# 结束实验
-		print("实验结束")
+		# End the experiment
+		print("Experiment ends")
 
-# 生成奖励的方式：常量， 随机（分布）
+# How to generate rewards: constant, random (distribution)
 func generate_hold_reward():
 	return hold_reward_template  # 按住奖励
 
 func generate_opt_out_reward():
 	return opt_out_reward_template
 
-# 计算并显示按住时长
+# Calculate and display the press-hold duration
 func calculate_wealth_for_holding():
 	var end_time = Time.get_ticks_msec() / 1000.0  # 获取结束时间（秒）
 	duration = end_time - start_time  # 计算时长
@@ -120,7 +122,7 @@ func calculate_wealth_for_holding():
 	else:
 		pass  # 不在时间窗口内，不增加奖励
 
-# 按钮按下时
+# When the button is pressed
 func _on_hold_button_down():
 	if not has_been_pressed:
 		is_holding = true
@@ -130,7 +132,7 @@ func _on_hold_button_down():
 	else:
 		reset_scene()
 
-# 按钮松开时
+# When the button is released
 func _on_hold_button_up():
 	if is_holding:
 		is_holding = false
@@ -158,7 +160,7 @@ func calculate_wealth_for_opt_out():
 	wealth += opt_out_reward
 
 
-# 隐藏所有子节点并停用互动元素
+# Hide all child nodes and deactivate interactive elements
 func hide_all_children():
 	# 先保存所有子节点的原始状态
 	original_states.clear()
@@ -178,7 +180,7 @@ func hide_all_children():
 		if "disabled" in child:
 			child.disabled = true
 
-# 恢复所有子节点到原始状态
+# Restore all child nodes to their original state
 func restore_all_children():
 	for child in original_states:
 		# 恢复可见性
@@ -252,7 +254,7 @@ func calculate_discrete_normal(
 	# 返回结果：概率列表、x值列表、实际面积
 	return [probabilities, x_values, actual_area]
 
-func generate_ramdom(start,stop,type = "float"):
+func generate_ramdom(start,stop,type = "int"):
 	var rng = RandomNumberGenerator.new()
 	rng.randomize()
 	if type == "int":
