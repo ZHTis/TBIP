@@ -11,35 +11,46 @@ extends Node2D
 @export var holding_text : String = "按住中..."
 @export var result_format : String = "你按住了 %.2f 秒"
 
-# 奖励
-var hold_reward = 2
-var opt_out_reward= 0.2
-var wealth 
-
-# 时间窗口变量
+###############实验变量设置#################################
+# 奖励随按住时间长度分布变量
 var time_window = [0.5,1.5]
 var inter_trial_interval = 0.8
-
+var step = 0.1
+var mean = 0.9
+var variance = 9 
+var total_reward_chance = 0.9
+###########################################################
+## 函数变量
 # 计时器变量    
 var start_time : float = 0.0
 var is_holding : bool = false
 var has_been_pressed : bool = false
 var duration 
-
+# 财富变量
+var hold_reward
+var opt_out_reward 
+var wealth 
 # 存储原始状态，用于恢复（处理可能的初始隐藏元素）
 var original_states = {}
 var exclude_nodes_for_refresh
 
 func _ready():
 	wealth = 0  # 初始化财富
-	init_ui()  # 初始化UI
 	init_task()  # 初始化任务
+	init_ui()  # 初始化UI
 	# 连接按钮信号
 	hold_button.button_down.connect(_on_hold_button_down)
 	hold_button.button_up.connect(_on_hold_button_up)
 	hold_button.mouse_exited.connect(_on_hold_button_up)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
 	
+func init_task():
+	if mean == null:
+		mean = time_window[0] + (time_window[1] - time_window[0]) / 2  # 均值
+	else:
+		print("奖励随时间分布的参数mean已设置为: ", mean)
+	hold_reward = generate_hold_reward(2)  # 按住奖励
+	opt_out_reward = generate_opt_out_reward(0.2)  # 选择退出奖励
 
 func init_ui():
 	# 初始化UI状态
@@ -52,18 +63,15 @@ func init_ui():
 	start_time = 0.0
 	duration = 0.0
 	exclude_nodes_for_refresh = [label_1.name,label_2.name]
+	
+# 生成奖励的方式：常量， 随机（分布）
+func generate_hold_reward(reward):
+	hold_reward = reward
+	return hold_reward  # 按住奖励
 
-func init_task(): # 初始化任务TaskDesign
-	hold_reward = generate_hold_reward()  # 按住奖励
-	opt_out_reward = 0.2  # 选择退出奖励
-	time_window = [0.5, 1.5]  # 时间窗口
-	inter_trial_interval = 0.8  # 试验间隔时间
-
-func generate_hold_reward():
-	var mean = (time_window[0] + time_window[1]) / 2.0
-	print(calculate_discrete_normal(time_window[0],time_window[1], mean, 9, 0.99))  # 计算离散正态分布
-	return 2  # 按住奖励
-
+func generate_opt_out_reward(reward):
+	opt_out_reward = reward
+	return opt_out_reward 
 
 # 计算并显示按住时长
 func calculate_wealth_for_holding():
@@ -153,7 +161,16 @@ func restore_all_children():
 	original_states.clear()
 
 
-func calculate_discrete_normal(min_value: int, max_value: int, mean: float, variance: float, aoc: float) -> Array:
+func calculate_discrete_normal(
+	min_value: float, 
+	max_value: float, 
+	step:float,
+	mean: float, 
+	variance: float, 
+	aoc: float) -> Array:
+
+	var x_values = []
+
 	# 验证输入参数
 	if min_value <= 0 or max_value <= 0 or min_value > max_value:
 		push_error("区间必须包含正整数且min_value <= max_value")
@@ -164,12 +181,16 @@ func calculate_discrete_normal(min_value: int, max_value: int, mean: float, vari
 	if aoc <= 0 or aoc > 1:
 		push_error("目标面积必须在(0, 1]范围内")
 		return []
+	if step <= 0:
+		push_error("步长必须为正数")
+		return x_values
 	
-	# 生成区间
-	var x_values = []
-	for x in range(min_value, max_value + 1):
-		x_values.append(x)
-	
+	var current = min_value
+	# 使用while循环生成小数区间，考虑浮点数精度问题
+	while current <= max_value + 1e-9:  # 增加微小值处理浮点数精度误差
+		x_values.append(current)
+		current += step
+
 	# 计算未归一化的概率密度
 	var densities = []
 	var sum_original: float = 0.0  # 原始面积（区间内的概率密度总和）
