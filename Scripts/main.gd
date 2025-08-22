@@ -60,9 +60,10 @@ func init_task(a,b,c,d): # Initialize task, BLK design
 		mean = time_window[0] + (time_window[1] -time_window[0]) /2 # mean
 	else:
 		print("The parameter mean of the reward distribution over time has been set to:", mean)
-	# 生成奖励模板	
+	# Generate reward templates
 	hold_reward_template = []
 	opt_out_reward_template = []
+	# Generate rewards' templates for all trials
 	for i in range(number_of_trials):
 		var random_h = generate_ramdom(a,b)  # Press and hold reward
 		var random_o = generate_ramdom(c,d) # Opt-out reward
@@ -83,11 +84,11 @@ func init_trial(hold_reward_for_this_trial,opt_out_reward_for_this_trial):
 	opt_out_reward = opt_out_reward_for_this_trial 
 
 func init_ui():
-	# 初始化UI状态
-	label_1.text = ""
-	label_2.text = " 你的财富: " + str(wealth)
-	hold_button_label.text = str(hold_reward) 
-	opt_out_button_label.text = str(opt_out_reward) 
+	# Initialize UI status
+	label_1.text = "Hold the button to earn rewards"
+	label_2.text = " Your wealth: " + str(wealth)
+	hold_button_label.text = "$" + str(hold_reward) 
+	opt_out_button_label.text = "$" + str(opt_out_reward) 
 	exclude_nodes_for_refresh = [label_1.name,label_2.name]
 	
 func reset_scene():
@@ -112,16 +113,6 @@ func generate_hold_reward():
 func generate_opt_out_reward():
 	return opt_out_reward_template
 
-# Calculate and display the press-hold duration
-func calculate_wealth_for_holding():
-	var end_time = Time.get_ticks_msec() / 1000.0  # 获取结束时间（秒）
-	duration = end_time - start_time  # 计算时长
-	if duration > time_window[0] and duration < time_window[1]:
-		# 在时间窗口内，增加奖励
-		wealth += hold_reward
-	else:
-		pass  # 不在时间窗口内，不增加奖励
-
 # When the button is pressed
 func _on_hold_button_down():
 	if not has_been_pressed:
@@ -142,7 +133,7 @@ func _on_hold_button_up():
 
 func _label_refresh(wealth,duration,opt_out):
 	# 更新UI
-	label_2.text = " 你的财富: " + str(wealth)
+	label_2.text = " Your wealth: " + str(wealth)
 	if opt_out:
 		label_1.text = "Opt Out!"
 	else:
@@ -154,10 +145,24 @@ func _on_opt_out_button_pressed():
 	_label_refresh(wealth, 0.0,true)
 	has_been_pressed = true
 	reset_scene()
-		
+
+# Calculate and return the wealth for opting out	
 func calculate_wealth_for_opt_out():
 	# 计算并返回选择退出的奖励
 	wealth += opt_out_reward
+
+# Calculate and display the press-hold duration
+func calculate_wealth_for_holding():
+	var end_time = Time.get_ticks_msec() / 1000.0  # 获取结束时间（秒）
+	duration = end_time - start_time  # 计算时长
+	if duration > time_window[0] and duration < time_window[1]:
+		# 在时间窗口内，增加奖励
+		wealth += hold_reward
+	else:
+		pass  # 不在时间窗口内，不增加奖励
+
+
+
 
 
 # Hide all child nodes and deactivate interactive elements
