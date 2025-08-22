@@ -15,7 +15,7 @@ extends Node2D
 # Rewards are distributed with the length of time
 var time_window 
 var time_window_template
-var probabilities_reward_hold_template
+var hold_reward_probabilities
 var total_reward_chance
 var inter_trial_interval 
 var step # timewindow step
@@ -66,10 +66,10 @@ func init_task(): # Initialize task, BLK design
 func generate_block(case = null):
 	# Generate a block of trials
 	match case:
-		1:
+		1: # unfinished
 			print("Case 1: Time-dependent reward distribution, not finished")
 			BLK1(0.5, 3.5, 0.5, 0.8, 10, 0.8, 9, null)
-		2:
+		2:# unfinished
 			print("Case 2:  not finished")
 			BLK2(10,20,1,2)
 		_:
@@ -105,22 +105,45 @@ func BLK1(t_min,  t_max, _step,
 	if mean == null:
 		mean = time_window[0] + (time_window[1] -time_window[0]) /2 # mean
 	else: print("The parameter mean of the reward distribution over time has been set to:", mean)
+
 	# Generate reward templates
 	var templates = calculate_discrete_normal(time_window[0], time_window[1], 
 	step, mean,  variance, _total_reward_chance)
-	probabilities_reward_hold_template = templates[0]
-	########### 概率要交叉影响下面这个变量 ##########
-	hold_reward_template = []
+
 	opt_out_reward_template = []
-	hold_reward_template.resize(number_of_trials)
 	opt_out_reward_template.resize(number_of_trials)
-	hold_reward_template.fill(20)
 	opt_out_reward_template.fill(2)
+
+	hold_reward_template = []
+	hold_reward_probabilities = templates[0]
+	###################################################
+	var filters = []
+	for p in hold_reward_probabilities:
+		var filter = []
+		var n=1000
+		filter.resize(n)
+		filter.fill(0)
+		var n_true = int(p * n)
+		for i in range(n_true):
+			filter[i] = 1
+		filter.shuffle()
+		filter = filter.slice(0, number_of_trials)
+		filters.append(filter)
+	filters = _transpose(filters)
+		
+	for i in range(number_of_trials):
+		var filter_of_the_trial = filters[i]
+		var reward_template_of_the_trial = filter_of_the_trial.map(func(x): return x * 20)
+		hold_reward_template.append(reward_template_of_the_trial)
+	###############################################################
+	print("hold_reward_template·0-5: ", hold_reward_template.slice(0, 5))
+	
+
 	########## 按钮部分逻辑要跟这里关联 ##########
 	time_window_template= templates[1] 
 
 
-
+#unfinished
 func init_trial(hold_reward_for_this_trial,opt_out_reward_for_this_trial):
 	# Initialize the test status
 	has_been_pressed = false
@@ -207,8 +230,6 @@ func calculate_wealth_for_holding():
 		wealth += hold_reward
 	else:
 		pass 
-		
-
 
 
 # Hide all child nodes and deactivate interactive elements
@@ -319,3 +340,29 @@ func generate_ramdom(start,stop,type = "int"):
 	else:
 		var random_float = rng.randf_range(start, stop)
 		return random_float
+
+# 转置二维数组的函数
+func _transpose(matrix: Array) -> Array:
+	# 处理空数组情况
+	if matrix.size() == 0:
+		return []
+	
+	# 获取原数组的行数和列数
+	var rows = matrix.size()
+	var cols = matrix[0].size()
+	
+	# 检查是否为不规则数组（每行长度不同）
+	for row in matrix:
+		if row.size() != cols:
+			print("Warning: The input 2D array has inconsistent row lengths, transpose may be inaccurate")
+			break
+	
+	# 创建转置后的数组
+	var transposed = []
+	for j in range(cols):
+		var new_row = []
+		for i in range(rows):
+			new_row.append(matrix[i][j])
+		transposed.append(new_row)
+	
+	return transposed
