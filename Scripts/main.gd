@@ -13,17 +13,20 @@ extends Node2D
 
 ############## Variable settings ################
 # Rewards are distributed with the length of time
-var time_window = [0.5,1.5]
-var inter_trial_interval = 0.8
-var step = 0.1
-var mean = 0.9
-var variance = 9
-var total_reward_chance = 0.9
-var number_of_trials = 10
-var min_hold_reward = 10
-var max_hold_reward = 20
-var min_opt_out_reward = 1
-var max_opt_out_reward = 2
+var time_window 
+var time_window_template
+var probabilities_reward_hold_template
+var total_reward_chance
+var inter_trial_interval 
+var step # timewindow step
+var mean 
+var variance
+var number_of_trials
+var min_hold_reward 
+var max_hold_reward 
+var min_opt_out_reward
+var max_opt_out_reward
+var case
 #################################################
 ## Function variables
 var trial_count
@@ -47,7 +50,7 @@ var exclude_nodes_for_refresh
 func _ready():
 	wealth = 0 # Initialize wealth
 	trial_count = 0
-	init_task(min_hold_reward, max_hold_reward, min_opt_out_reward, max_opt_out_reward) # Initialize the task
+	init_task() # Initialize the task
 	init_ui() # Initialize the UI
 	# Connect button signal
 	hold_button.button_down.connect(_on_hold_button_down)
@@ -55,24 +58,67 @@ func _ready():
 	hold_button.mouse_exited.connect(_on_hold_button_up)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
 	
-func init_task(a,b,c,d): # Initialize task, BLK design
-	if mean == null:
-		mean = time_window[0] + (time_window[1] -time_window[0]) /2 # mean
-	else:
-		print("The parameter mean of the reward distribution over time has been set to:", mean)
-	# Generate reward templates
-	hold_reward_template = []
-	opt_out_reward_template = []
-	# Generate rewards' templates for all trials
-	for i in range(number_of_trials):
-		var random_h = generate_ramdom(a,b)  # Press and hold reward
-		var random_o = generate_ramdom(c,d) # Opt-out reward
-		hold_reward_template.append(random_h) # Hold reward
-		opt_out_reward_template.append(random_o) # Opt-out reward
+func init_task(): # Initialize task, BLK design
+	generate_block(1) # Generate a block of trials
 	# Start 1st Trial
 	init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count])
 
+func generate_block(case = null):
+	# Generate a block of trials
+	match case:
+		1:
+			print("Case 1: Time-dependent reward distribution, not finished")
+			BLK1(0.5, 3.5, 0.5, 0.8, 10, 0.8, 9, null)
+		2:
+			print("Case 2:  not finished")
+			BLK2(10,20,1,2)
+		_:
+			print("Case _: Easy mode")
+			number_of_trials = 10 # Default number of trials
+			inter_trial_interval = 0.8
+			hold_reward_template= []
+			hold_reward_template.resize(number_of_trials)
+			hold_reward_template.fill(20)
+			opt_out_reward_template =[]
+			opt_out_reward_template.resize(number_of_trials)
+			opt_out_reward_template.fill(2)
+			time_window = [1, 1.5] # Default time window
+
+func BLK2(a,b,c,d):
+	# Generate rewards' templates for all trials
+			for i in range(number_of_trials):
+				var random_h = generate_ramdom(a,b)  # Press and hold reward
+				var random_o = generate_ramdom(c,d) # Opt-out reward
+				hold_reward_template.append(random_h) # Hold reward
+				opt_out_reward_template.append(random_o) # Opt-out reward
+
+func BLK1(t_min,  t_max, _step,
+	_total_reward_chance,
+	_number_of_trials,
+	_inter_trial_interval,
+	variance,  mean=null):
 	
+	step =_step
+	number_of_trials = _number_of_trials
+	inter_trial_interval = _inter_trial_interval
+	time_window = [t_min, t_max] # Default time window
+	if mean == null:
+		mean = time_window[0] + (time_window[1] -time_window[0]) /2 # mean
+	else: print("The parameter mean of the reward distribution over time has been set to:", mean)
+	# Generate reward templates
+	var templates = calculate_discrete_normal(time_window[0], time_window[1], 
+	step, mean,  variance, _total_reward_chance)
+	probabilities_reward_hold_template = templates[0]
+	time_window_template= templates[1] # Probabilities of rewards over time
+	var actual_total_reward_chance= templates[2] # Actual total reward chance
+	hold_reward_template = []
+	opt_out_reward_template = []
+	hold_reward_template.resize(number_of_trials)
+	opt_out_reward_template.resize(number_of_trials)
+	hold_reward_template.fill(20)
+	opt_out_reward_template.fill(2)
+
+
 func init_trial(hold_reward_for_this_trial,opt_out_reward_for_this_trial):
 	# Initialize the test status
 	has_been_pressed = false
@@ -156,12 +202,10 @@ func calculate_wealth_for_holding():
 	var end_time = Time.get_ticks_msec() / 1000.0  # 获取结束时间（秒）
 	duration = end_time - start_time  # 计算时长
 	if duration > time_window[0] and duration < time_window[1]:
-		# 在时间窗口内，增加奖励
 		wealth += hold_reward
 	else:
-		pass  # 不在时间窗口内，不增加奖励
-
-
+		pass 
+		
 
 
 
@@ -250,14 +294,19 @@ func calculate_discrete_normal(
 	var probabilities = []
 	for density in densities:
 		probabilities.append(density * scale_factor)
-	
-	# 计算实际得到的面积
-	var actual_area: float = 0.0
-	for p in probabilities:
-		actual_area += p
-	
+	var rounded_probs = []
+	var current_sum 
+	for prob in probabilities:
+		# 四舍五入到两位小数
+		var rounded = round(prob * 100) / 100
+		rounded_probs.append(rounded)
+		current_sum = 0.0
+	for p in rounded_probs:
+		current_sum += p
+
 	# 返回结果：概率列表、x值列表、实际面积
-	return [probabilities, x_values, actual_area]
+	print(rounded_probs, x_values, current_sum )
+	return [rounded_probs, x_values, current_sum ]
 
 func generate_ramdom(start,stop,type = "int"):
 	var rng = RandomNumberGenerator.new()
