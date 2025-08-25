@@ -7,8 +7,7 @@ extends Node2D
 @onready var hold_button_label = $MenuButton/Text
 @onready var opt_out_button_label = $MenuButton2/Text
 
-# Export variables, which can be adjusted in the editor
-@export var pressing_text : String = "Pressed... %.2f "
+
 
 ############## Variable set in func BLKs ################
 var press_num_slot 
@@ -30,12 +29,12 @@ var trial_count
 # time variable
 var start_time : float = 0.0
 var num_of_press : int = 0
-var has_been_pressed : bool = false
+var reward_given_flag : bool = false
 var ui_auto_refresh: bool = false
 # Wealth Variable
+var reward_given_timepoint:int = 0
 var reward
-var hold_reward
-var opt_out_reward 
+var opt_out_reward
 var wealth 
 var hold_reward_template
 var opt_out_reward_template 
@@ -48,18 +47,17 @@ var exclude_nodes_for_refresh
 func _ready():
 	wealth = 0 # Initialize wealth
 	trial_count = 0
+	exclude_nodes_for_refresh = [label_1.name, label_2.name]
 	init_task() # Initialize the task
-	init_ui() # Initialize the UI
+	_label_refresh(wealth, num_of_press, "init")
 	# Connect button signal
-	hold_button.button_down.connect(_on_hold_button_down)
-	hold_button.button_up.connect(_on_hold_button_up)
-	hold_button.mouse_exited.connect(_on_hold_button_up)
+	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
 
 func _process(delta):
 	# Update the num_of_press if the button is being held
-	if ui_auto_refresh:
-		_label_refresh(wealth,num_of_press,"pressing...")#
+	if ui_auto_refresh == true:
+		_label_refresh(wealth,num_of_press,"pressing...")
 
 func init_task(): # Initialize task, BLK design
 	generate_block() # Generate a block of trials
@@ -69,23 +67,23 @@ func init_task(): # Initialize task, BLK design
 func generate_block(case = null):
 	# Generate a block of trials
 	match case:
-		1: # finished
+		1: # finished, generate reward_given_timepoint and reward given tremplate here
 			print("=======Case 1: Time-dependent reward distribution=======")
 			BLK1(1, 35, 0.8, 20, 10, 0.8, 9)
-
+		2: # unfinished
+			print("=======Case 2: Random reward distribution=======")
+			BLK2(5, 35, 1, 5) # generate reward_given_timepoint and reward given tremplate here
 		_: # Case _: Easy mode
 			print("Case _: Easy mode")
 			number_of_trials = 10 # Default number of trials
 			inter_trial_interval = 0.8
-			hold_reward = 20
-			opt_out_reward = 2
+			reward_given_timepoint = 3 # Default time point to give reward
 			hold_reward_template= []
 			hold_reward_template.resize(number_of_trials)
 			hold_reward_template.fill(20)
 			opt_out_reward_template =[]
 			opt_out_reward_template.resize(number_of_trials)
-			opt_out_reward_template.fill(opt_out_reward)
-			press_num_slot  = [0, 1.5] # Default time window
+			opt_out_reward_template.fill(2)
 
 func BLK2(a,b,c,d):
 	# Generate rewards' templates for all trials
@@ -96,7 +94,8 @@ func BLK2(a,b,c,d):
 				opt_out_reward_template.append(random_o) # Opt-out reward
 
 func BLK1(press_num_min, press_num_max,
-	_total_reward_chance, _hold_reward,
+	_total_reward_chance, 
+	_hold_reward,_opt_out_reward
 	_number_of_trials,
 	_inter_trial_interval,
 	variance,  mean=null, _step=1):
@@ -104,11 +103,10 @@ func BLK1(press_num_min, press_num_max,
 	step =_step
 	number_of_trials = _number_of_trials
 	inter_trial_interval = _inter_trial_interval
-	hold_reward = _hold_reward
 	if mean == null:
 		mean = (press_num_min + press_num_max )/2 # mean
 	else: print("The parameter mean of the reward distribution over time has been set to:", mean)
-#
+
 	########## Pre-generated reward  ##############
 	var templates = calculate_discrete_normal(press_num_min,press_num_max, 
 	step, mean,  variance, _total_reward_chance)
@@ -148,22 +146,13 @@ func BLK1(press_num_min, press_num_max,
 #unfinished
 func init_trial(_hold_reward_for_this_trial,opt_out_reward_for_this_trial):
 	# Initialize the test status
-	has_been_pressed = false
-	is_holding = false
+	reward_given_flag = false
 	start_time = 0.0
 	num_of_press = 0.0
 	# Initialization rewards
 	reward = _hold_reward_for_this_trial 
 	opt_out_reward = opt_out_reward_for_this_trial 
 	print("trial", trial_count, "\nreward: ", reward)
-
-func init_ui():
-	# Initialize UI status
-	label_1.text = "Hold the button to earn rewards"
-	label_2.text = " Your wealth: " + str(wealth)
-	hold_button_label.text = "$" + str(hold_reward) 
-	opt_out_button_label.text = "$" + str(opt_out_reward) 
-	exclude_nodes_for_refresh = [label_1.name, label_2.name]
 	
 func reset_scene():
 	# Reset the scene
@@ -174,67 +163,56 @@ func reset_scene():
 		init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count])
 		restore_all_children()
 		# Reset status
-		init_ui()
+		_label_refresh(wealth,num_of_press,"init")
 	else:
 		label_1.text = "End of Trials"
 		# End the experiment
 		print("Experiment ends")
 
-
-# When the button is pressed
-func _on_hold_button_down():
-	if not has_been_pressed:
-		is_holding = true
-		start_time = Time.get_ticks_msec() / 1000.0  # 记录开始时间（秒）
-		label_1.text = holding_text
-		has_been_pressed = true
+# When the button is released
+func _on_hold_button_pressed():
+	if reward_given_flag == false:
+		num_of_press += 1
+		_label_refresh(wealth,num_of_press,"pressing...")
+		ui_auto_refresh = true
+		if num_of_press == reward_given_timepoint:
+			wealth+= reward
+			reward_given_flag = true
+			ui_auto_refresh = false
+			_label_refresh(wealth,num_of_press,"reward_given")
+			reset_scene()
 	else:
 		reset_scene()
 
-# When the button is released
-func _on_hold_button_up():
-	if is_holding:
-		is_holding = false
-		calculate_wealth_for_holding()
-		_label_refresh(wealth,num_of_press,false)
-		reset_scene()
 
-func _label_refresh(wealth,num_of_press,opt_out):
+func _on_opt_out_button_pressed():
+	wealth += opt_out_reward
+	_label_refresh(wealth, 0.0, "opt_out")
+	reward_given_flag = true
+	reset_scene()
+
+
+func _label_refresh(wealth,num_of_press,case):
 	# 更新UI
+	var hold_reward = reward
+	var opt_out_reward = opt_out_reward
+	hold_button_label.text = "$" + str(hold_reward) 
+	opt_out_button_label.text = "$" + str(opt_out_reward) 
 	label_2.text = " Your wealth: " + str(wealth)
 	match case:
 		"opt_out":
 			label_1.text = "Opt Out!"
 		"pressing...":
-			label_1.text = pressing_text % num_of_press
+			label_1.text = str(num_of_press)
 		"reward_given":
 			label_1.text = "Reward given!"
-			reward_given_signal = false
+			reward_given_flag = false
+		"init":
+			label_1.text = "Press the button to earn rewards"
 		_:
 			label_1.text = ""
 
-func _on_opt_out_button_pressed():
-	calculate_wealth_for_opt_out()
-	_label_refresh(wealth, 0.0,true)
-	has_been_pressed = true
-	reset_scene()
 
-# Calculate and return the wealth for opting out	
-func calculate_wealth_for_opt_out():
-	# 计算并返回选择退出的奖励
-	wealth += opt_out_reward
-
-# Calculate and display the press-hold num_of_press
-func calculate_wealth_for_holding():
-	var end_time = Time.get_ticks_msec() / 1000.0  # 获取结束时间（秒）
-	num_of_press = end_time - start_time  # 计算时长
-	var fell_in_window = find_between_elements(press_num_slot , num_of_press)
-	var idx = fell_in_window["previous_index"]
-	if num_of_press >= press_num_slot [0] and num_of_press <= press_num_slot [press_num_slot .size() - 1]:
-		wealth += reward[idx]
-	print(idx)
-
-	
 # Hide all child nodes and deactivate interactive elements
 func hide_all_children():
 	# 先保存所有子节点的原始状态
@@ -266,7 +244,6 @@ func restore_all_children():
 			child.disabled = original_states[child]["disabled"]
 	
 	original_states.clear()
-
 
 func calculate_discrete_normal(
 	min_value: int, 
