@@ -95,7 +95,7 @@ func BLK2(a,b,c,d):
 
 func BLK1(press_num_min, press_num_max,
 	_total_reward_chance, 
-	_hold_reward,_opt_out_reward
+	_hold_reward,_opt_out_reward,
 	_number_of_trials,
 	_inter_trial_interval,
 	variance,  mean=null, _step=1):
