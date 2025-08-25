@@ -11,9 +11,7 @@ extends Node2D
 @export var holding_text : String = "Hold..."
 @export var result_format : String = "You held down %.2f seconds"
 
-############## Variable settings ################
-# Rewards are distributed with the length of time
-var time_window 
+############## Variable set in func BLKs ################
 var time_window_template
 var hold_reward_probabilities
 var total_reward_chance
@@ -36,6 +34,7 @@ var is_holding : bool = false
 var has_been_pressed : bool = false
 var duration 
 # Wealth Variable
+var reward
 var hold_reward
 var opt_out_reward 
 var wealth 
@@ -66,23 +65,24 @@ func init_task(): # Initialize task, BLK design
 func generate_block(case = null):
 	# Generate a block of trials
 	match case:
-		1: # unfinished
-			print("Case 1: Time-dependent reward distribution, not finished")
-			BLK1(0.5, 3.5, 0.5, 0.8, 10, 0.8, 9, null)
+		1: # finished
+			print("=======Case 1: Time-dependent reward distribution=======")
+			BLK1(0.5, 3.5, 0.5, 0.8, 20, 10, 0.8, 9, null)
 		2:# unfinished
 			print("Case 2:  not finished")
 			BLK2(10,20,1,2)
-		_:
+		_: # Case _: Easy mode
 			print("Case _: Easy mode")
 			number_of_trials = 10 # Default number of trials
 			inter_trial_interval = 0.8
+			hold_reward = 20
 			hold_reward_template= []
 			hold_reward_template.resize(number_of_trials)
-			hold_reward_template.fill(20)
+			hold_reward_template.fill([20])
 			opt_out_reward_template =[]
 			opt_out_reward_template.resize(number_of_trials)
 			opt_out_reward_template.fill(2)
-			time_window = [1, 1.5] # Default time window
+			time_window_template = [0, 1.5] # Default time window
 
 func BLK2(a,b,c,d):
 	# Generate rewards' templates for all trials
@@ -93,7 +93,7 @@ func BLK2(a,b,c,d):
 				opt_out_reward_template.append(random_o) # Opt-out reward
 
 func BLK1(t_min,  t_max, _step,
-	_total_reward_chance,
+	_total_reward_chance, _hold_reward,
 	_number_of_trials,
 	_inter_trial_interval,
 	variance,  mean=null):
@@ -101,22 +101,22 @@ func BLK1(t_min,  t_max, _step,
 	step =_step
 	number_of_trials = _number_of_trials
 	inter_trial_interval = _inter_trial_interval
-	time_window = [t_min, t_max] # Default time window
+	hold_reward = _hold_reward
 	if mean == null:
-		mean = time_window[0] + (time_window[1] -time_window[0]) /2 # mean
+		mean = (t_min + t_max )/2 # mean
 	else: print("The parameter mean of the reward distribution over time has been set to:", mean)
 
-	# Generate reward templates
-	var templates = calculate_discrete_normal(time_window[0], time_window[1], 
+	########## Pre-generated reward  ##############
+	var templates = calculate_discrete_normal(t_min,t_max, 
 	step, mean,  variance, _total_reward_chance)
 
 	opt_out_reward_template = []
 	opt_out_reward_template.resize(number_of_trials)
-	opt_out_reward_template.fill(2)
+	opt_out_reward_template.fill(2) # Opt-out reward is always 2,customize this to make it flexible
 
 	hold_reward_template = []
 	hold_reward_probabilities = templates[0]
-	###################################################
+	### events based on probability
 	var filters = []
 	for p in hold_reward_probabilities:
 		var filter = []
@@ -133,26 +133,26 @@ func BLK1(t_min,  t_max, _step,
 		
 	for i in range(number_of_trials):
 		var filter_of_the_trial = filters[i]
-		var reward_template_of_the_trial = filter_of_the_trial.map(func(x): return x * 20)
+		var reward_template_of_the_trial = filter_of_the_trial.map(func(x): return x * hold_reward)
 		hold_reward_template.append(reward_template_of_the_trial)
 	###############################################################
-	print("hold_reward_template·0-5: ", hold_reward_template.slice(0, 5))
-	
 
-	########## 按钮部分逻辑要跟这里关联 ##########
+	########## The button part logic should be associated with this ##########
 	time_window_template= templates[1] 
+	print("time_window_template: ", time_window_template)
 
 
 #unfinished
-func init_trial(hold_reward_for_this_trial,opt_out_reward_for_this_trial):
+func init_trial(_hold_reward_for_this_trial,opt_out_reward_for_this_trial):
 	# Initialize the test status
 	has_been_pressed = false
 	is_holding = false
 	start_time = 0.0
 	duration = 0.0
 	# Initialization rewards
-	hold_reward = hold_reward_for_this_trial 
+	reward = _hold_reward_for_this_trial 
 	opt_out_reward = opt_out_reward_for_this_trial 
+	print("trial", trial_count, "\nreward: ", reward)
 
 func init_ui():
 	# Initialize UI status
@@ -177,12 +177,6 @@ func reset_scene():
 		# End the experiment
 		print("Experiment ends")
 
-# How to generate rewards: constant, random (distribution)
-func generate_hold_reward():
-	return hold_reward_template  # 按住奖励
-
-func generate_opt_out_reward():
-	return opt_out_reward_template
 
 # When the button is pressed
 func _on_hold_button_down():
@@ -226,11 +220,14 @@ func calculate_wealth_for_opt_out():
 func calculate_wealth_for_holding():
 	var end_time = Time.get_ticks_msec() / 1000.0  # 获取结束时间（秒）
 	duration = end_time - start_time  # 计算时长
-	if duration > time_window[0] and duration < time_window[1]:
-		wealth += hold_reward
-	else:
-		pass 
+	var fell_in_window = find_between_elements(time_window_template, duration)
+	var idx = fell_in_window["previous_index"]
+	if duration >= time_window_template[0] and duration <= time_window_template[time_window_template.size() - 1]:
+		wealth += reward[idx]
+	print(idx)
 
+	
+	
 
 # Hide all child nodes and deactivate interactive elements
 func hide_all_children():
@@ -273,7 +270,8 @@ func calculate_discrete_normal(
 	variance: float, 
 	aoc: float) -> Array:
 
-	var x_values = []
+	var x_range = []
+	var x_values=[]
 
 	# 验证输入参数
 	if min_value <= 0 or max_value <= 0 or min_value > max_value:
@@ -291,9 +289,13 @@ func calculate_discrete_normal(
 	
 	var current = min_value
 	# 使用while循环生成小数区间，考虑浮点数精度问题
-	while current <= max_value + 1e-9:  # 增加微小值处理浮点数精度误差
-		x_values.append(current)
-		current += step
+	while current < max_value + 1e-9:  # 增加微小值处理浮点数精度误差
+		x_range.append(current)
+		current += step * 0.5
+		if current < max_value + 1e-9: 
+			x_values.append(current)
+			current += step * 0.5
+	
 
 	# 计算未归一化的概率密度
 	var densities = []
@@ -328,8 +330,8 @@ func calculate_discrete_normal(
 		current_sum += p
 
 	# 返回结果：概率列表、x值列表、实际面积
-	print(rounded_probs, x_values, current_sum )
-	return [rounded_probs, x_values, current_sum ]
+	print(" rounded_probs, x_range, current_sum , x_values: " , rounded_probs, x_range, current_sum, x_values )
+	return [rounded_probs, x_range, current_sum ]
 
 func generate_ramdom(start,stop,type = "int"):
 	var rng = RandomNumberGenerator.new()
@@ -366,3 +368,54 @@ func _transpose(matrix: Array) -> Array:
 		transposed.append(new_row)
 	
 	return transposed
+
+# 查找数字在数组中位于哪两个元素之间（优化版）
+static func find_between_elements(arr: Array, num: float) -> Dictionary:
+	if arr == []:
+		return {
+			"position": "empty array",
+			"previous": null,
+			"previous_index": -1,
+			"next": null,
+			"next_index": -1
+		}
+	
+	# 创建排序后的数组副本并直接排序
+	var sorted_arr = arr.duplicate()
+	sorted_arr.sort()
+	
+	# 处理边界情况：数字小于等于最小元素
+	if num <= sorted_arr[0]:
+		return {
+			"previous": null,
+			"previous_index": -1,
+			"next": sorted_arr[0],
+			"next_index": arr.find(sorted_arr[0])
+		}
+	
+	# 处理边界情况：数字大于等于最大元素
+	if num >= sorted_arr[-1]:
+		return {
+			"previous": sorted_arr[-1],
+			"previous_index": arr.find(sorted_arr[-1]),
+			"next": null,
+			"next_index": -1
+		}
+	
+	# 查找数字所在的区间
+	for i in range(sorted_arr.size() - 1):
+		if num >= sorted_arr[i] && num <= sorted_arr[i + 1]:
+			return {
+				"previous": sorted_arr[i],
+				"previous_index": arr.find(sorted_arr[i]),
+				"next": sorted_arr[i + 1],
+				"next_index": arr.find(sorted_arr[i + 1])
+			}
+	
+	# 默认返回
+	return {
+		"previous": null,
+		"previous_index": -1,
+		"next": null,
+		"next_index": -1
+	}
