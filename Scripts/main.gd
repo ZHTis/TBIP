@@ -6,15 +6,13 @@ extends Node2D
 @onready var opt_out_button = $MenuButton2/OptOutButton
 @onready var hold_button_label = $MenuButton/Text
 @onready var opt_out_button_label = $MenuButton2/Text
-@onready var timer= $Timer
-# Export variables, which can be adjusted in the editor
-@export var holding_text : String = "Holding... %.2f s"
 
+# Export variables, which can be adjusted in the editor
+@export var pressing_text : String = "Pressed... %.2f "
 
 ############## Variable set in func BLKs ################
-var time_window_template
-var reward_given_timepoint
-var reward_given_signal
+var press_num_slot 
+var hold_reward_probabilities
 var total_reward_chance
 var inter_trial_interval 
 var step # timewindow step
@@ -31,10 +29,9 @@ var case
 var trial_count
 # time variable
 var start_time : float = 0.0
-var is_holding : bool = false
+var num_of_press : int = 0
 var has_been_pressed : bool = false
 var ui_auto_refresh: bool = false
-var duration 
 # Wealth Variable
 var reward
 var hold_reward
@@ -60,52 +57,105 @@ func _ready():
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
 
 func _process(delta):
-	# Update the duration if the button is being held
+	# Update the num_of_press if the button is being held
 	if ui_auto_refresh:
-		duration = Time.get_ticks_msec() / 1000.0 - start_time
-		_label_refresh(wealth,duration,"is_holding")
-
-
+		_label_refresh(wealth,num_of_press,"pressing...")#
 
 func init_task(): # Initialize task, BLK design
 	generate_block() # Generate a block of trials
 	# Start 1st Trial
-	init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count], reward_given_timepoint)
+	init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count])
 
 func generate_block(case = null):
 	# Generate a block of trials
 	match case:
+		1: # finished
+			print("=======Case 1: Time-dependent reward distribution=======")
+			BLK1(1, 35, 0.8, 20, 10, 0.8, 9)
 
-		2:# unfinished
-			pass
-		_: 
-			print("Case _:  Reward at some certain timepoint")
-			BLK2(20,2)
+		_: # Case _: Easy mode
+			print("Case _: Easy mode")
+			number_of_trials = 10 # Default number of trials
+			inter_trial_interval = 0.8
+			hold_reward = 20
+			opt_out_reward = 2
+			hold_reward_template= []
+			hold_reward_template.resize(number_of_trials)
+			hold_reward_template.fill(20)
+			opt_out_reward_template =[]
+			opt_out_reward_template.resize(number_of_trials)
+			opt_out_reward_template.fill(opt_out_reward)
+			press_num_slot  = [0, 1.5] # Default time window
 
-func BLK2(_hold_reward, _opt_out_reward):
-	number_of_trials = 10 # Default number of trials
-	inter_trial_interval = 0.8
-	hold_reward_template= []
-	hold_reward_template.resize(number_of_trials)
-	hold_reward_template.fill(_hold_reward)
-	opt_out_reward_template =[]
-	opt_out_reward_template.resize(number_of_trials)
-	opt_out_reward_template.fill(_opt_out_reward)
-	reward_given_timepoint = 1
+func BLK2(a,b,c,d):
+	# Generate rewards' templates for all trials
+			for i in range(number_of_trials):
+				var random_h = generate_ramdom(a,b)  # Press and hold reward
+				var random_o = generate_ramdom(c,d) # Opt-out reward
+				hold_reward_template.append(random_h) # Hold reward
+				opt_out_reward_template.append(random_o) # Opt-out reward
+
+func BLK1(press_num_min, press_num_max,
+	_total_reward_chance, _hold_reward,
+	_number_of_trials,
+	_inter_trial_interval,
+	variance,  mean=null, _step=1):
 	
-			
+	step =_step
+	number_of_trials = _number_of_trials
+	inter_trial_interval = _inter_trial_interval
+	hold_reward = _hold_reward
+	if mean == null:
+		mean = (press_num_min + press_num_max )/2 # mean
+	else: print("The parameter mean of the reward distribution over time has been set to:", mean)
+#
+	########## Pre-generated reward  ##############
+	var templates = calculate_discrete_normal(press_num_min,press_num_max, 
+	step, mean,  variance, _total_reward_chance)
+	#
+	opt_out_reward_template = []
+	opt_out_reward_template.resize(number_of_trials)
+	opt_out_reward_template.fill(2) # Opt-out reward is always 2,customize this to make it flexible
+
+	hold_reward_template = []
+	hold_reward_probabilities = templates[0]
+	### events based on probability
+	var filters = []
+	#for p in hold_reward_probabilities:
+		#var filter = []
+		#var n=1000
+		#filter.resize(n)
+		#filter.fill(0)
+		#var n_true = int(p * n)
+		#for i in range(n_true):
+			#filter[i] = 1
+		#filter.shuffle()
+		#filter = filter.slice(0, number_of_trials)
+		#filters.append(filter)
+	#filters = _transpose(filters)
+		
+	for i in range(number_of_trials):
+		var filter_of_the_trial = filters[i]
+		var reward_template_of_the_trial = filter_of_the_trial.map(func(x): return x * hold_reward)
+		hold_reward_template.append(reward_template_of_the_trial)
+	###############################################################
+
+	########## The button part logic should be associated with this ##########
+	press_num_slot = templates[1] 
+	print("press_num_slot : ", press_num_slot )
+
 
 #unfinished
-func init_trial(_hold_reward_for_this_trial,opt_out_reward_for_this_trial, _reward_given_timepoint):
+func init_trial(_hold_reward_for_this_trial,opt_out_reward_for_this_trial):
 	# Initialize the test status
 	has_been_pressed = false
 	is_holding = false
 	start_time = 0.0
-	duration = 0.0
-	reward_given_signal = false
+	num_of_press = 0.0
 	# Initialization rewards
-	hold_reward = _hold_reward_for_this_trial 
-	opt_out_reward = opt_out_reward_for_this_trial
+	reward = _hold_reward_for_this_trial 
+	opt_out_reward = opt_out_reward_for_this_trial 
+	print("trial", trial_count, "\nreward: ", reward)
 
 func init_ui():
 	# Initialize UI status
@@ -113,16 +163,15 @@ func init_ui():
 	label_2.text = " Your wealth: " + str(wealth)
 	hold_button_label.text = "$" + str(hold_reward) 
 	opt_out_button_label.text = "$" + str(opt_out_reward) 
-	exclude_nodes_for_refresh = [label_1.name,label_2.name,timer.name]
+	exclude_nodes_for_refresh = [label_1.name, label_2.name]
 	
 func reset_scene():
-	timer.stop()
 	# Reset the scene
 	hide_all_children()
 	await get_tree().create_timer(inter_trial_interval).timeout
 	trial_count += 1
 	if trial_count < number_of_trials:
-		init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count], reward_given_timepoint)
+		init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count])
 		restore_all_children()
 		# Reset status
 		init_ui()
@@ -134,45 +183,39 @@ func reset_scene():
 
 # When the button is pressed
 func _on_hold_button_down():
-	is_holding = true
-	start_time = Time.get_ticks_msec() / 1000.0  # Always reset start_time on press
 	if not has_been_pressed:
+		is_holding = true
+		start_time = Time.get_ticks_msec() / 1000.0  # 记录开始时间（秒）
+		label_1.text = holding_text
 		has_been_pressed = true
-		timer.start(reward_given_timepoint)
-		print("Timer started")
-		ui_auto_refresh = true
-		timer.timeout.connect(_on_timer_timeout)
 	else:
 		reset_scene()
 
 # When the button is released
 func _on_hold_button_up():
-	ui_auto_refresh = false
 	if is_holding:
 		is_holding = false
-		duration = Time.get_ticks_msec() / 1000.0 - start_time  # 计算按住时长（秒）
-
+		calculate_wealth_for_holding()
+		_label_refresh(wealth,num_of_press,false)
 		reset_scene()
 
-func _label_refresh(wealth,duration,case):
+func _label_refresh(wealth,num_of_press,opt_out):
 	# 更新UI
 	label_2.text = " Your wealth: " + str(wealth)
 	match case:
 		"opt_out":
 			label_1.text = "Opt Out!"
-		"is_holding":
-		# 显示按住时长
-			label_1.text = holding_text % duration
+		"pressing...":
+			label_1.text = pressing_text % num_of_press
 		"reward_given":
 			label_1.text = "Reward given!"
 			reward_given_signal = false
 		_:
 			label_1.text = ""
 
-
 func _on_opt_out_button_pressed():
 	calculate_wealth_for_opt_out()
-	_label_refresh(wealth, 0.0, "opt_out")
+	_label_refresh(wealth, 0.0,true)
 	has_been_pressed = true
 	reset_scene()
 
@@ -181,19 +224,17 @@ func calculate_wealth_for_opt_out():
 	# 计算并返回选择退出的奖励
 	wealth += opt_out_reward
 
+# Calculate and display the press-hold num_of_press
+func calculate_wealth_for_holding():
+	var end_time = Time.get_ticks_msec() / 1000.0  # 获取结束时间（秒）
+	num_of_press = end_time - start_time  # 计算时长
+	var fell_in_window = find_between_elements(press_num_slot , num_of_press)
+	var idx = fell_in_window["previous_index"]
+	if num_of_press >= press_num_slot [0] and num_of_press <= press_num_slot [press_num_slot .size() - 1]:
+		wealth += reward[idx]
+	print(idx)
 
-
-func _on_timer_timeout():
-	reward_given_signal = true
-	timer.stop()
-	print("Timer timeout")
-	ui_auto_refresh = false
-	if is_holding and reward_given_signal:
-		wealth += hold_reward
-		reward_given_signal = false
-		_label_refresh(wealth,duration,"reward_given")
 	
-
 # Hide all child nodes and deactivate interactive elements
 func hide_all_children():
 	# 先保存所有子节点的原始状态
@@ -203,12 +244,13 @@ func hide_all_children():
 			continue  # 跳过不需要隐藏的节点
 	
 		original_states[child] = {
-			"visible": child.visible ,
+			"visible": child.visible,
 			"disabled": child.disabled if "disabled" in child else null
 		}
-
-		# 隐藏节点
+		
+		# 隐藏子节点
 		child.visible = false
+		
 		# 停用互动元素
 		if "disabled" in child:
 			child.disabled = true
@@ -227,10 +269,10 @@ func restore_all_children():
 
 
 func calculate_discrete_normal(
-	min_value: float, 
-	max_value: float, 
-	step:float,
-	mean: float, 
+	min_value: int, 
+	max_value: int, 
+	step:int,
+	mean, 
 	variance: float, 
 	aoc: float) -> Array:
 
@@ -383,3 +425,74 @@ static func find_between_elements(arr: Array, num: float) -> Dictionary:
 		"next": null,
 		"next_index": -1
 	}
+
+# 计算两个数的最大公约数
+func gcd(a: int, b: int) -> int:
+	while b != 0:
+		var temp = b
+		b = a % b
+		a = temp
+	return a
+
+# 计算两个数的最小公倍数
+func lcm(a: int, b: int) -> int:
+	if a == 0 or b == 0:
+		return 0
+	return abs(a * b) / gcd(a, b)
+
+# 计算数组中所有数的最小公倍数
+func array_lcm(numbers: Array) -> int:
+	var result = 1
+	for num in numbers:
+		result = lcm(result, num)
+	return result
+
+# 将浮点数转换为最简分数的分母
+func float_to_denominator(value: float) -> int:
+	# 处理特殊情况
+	if value == 0:
+		return 1
+		
+	# 将浮点数转换为字符串以处理小数部分
+	var str = str(value)
+	var parts = str.split(".")
+	
+	# 如果是整数，分母为1
+	if parts.size() == 1:
+		return 1
+		
+	# 处理小数部分，获取分母
+	var fractional_part = parts[1]
+	# 移除可能的科学计数法部分
+	fractional_part = fractional_part.split("e")[0]
+	# 计算10的幂作为临时分母
+	var temp_denominator = pow(10, fractional_part.length())
+	
+	# 计算分子
+	var numerator = int(round(value * temp_denominator))
+	
+	# 简化分数，返回最简分母
+	return temp_denominator / gcd(numerator, temp_denominator)
+
+# 寻找数组中所有浮点数的最小整数公倍数
+func find_min_integer_lcm(float_array: Array) -> int:
+	# 验证输入
+	for value in float_array:
+		if not value is float and not value is int:
+			push_error("数组必须只包含浮点数或整数")
+			return 0
+	
+	# 获取所有浮点数对应的最简分数的分母
+	var denominators = []
+	for value in float_array:
+		# 处理0的特殊情况（0可以被任何数整除）
+		if value == 0:
+			continue
+		denominators.append(float_to_denominator(value))
+	
+	# 如果数组全是0，返回1（0的任何倍数都是0）
+	if denominators.empty():
+		return 1
+	
+	# 计算所有分母的最小公倍数
+	return array_lcm(denominators)

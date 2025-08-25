@@ -6,6 +6,7 @@
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_h2yge")
+holding_text = null
 
 [node name="MenuButton" type="Control" parent="."]
 layout_mode = 3
