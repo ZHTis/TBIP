@@ -36,6 +36,7 @@ var reward_given_timepoint:int = 0
 var reward
 var opt_out_reward
 var wealth 
+var reward_given_timepoint_template 
 var hold_reward_template
 var opt_out_reward_template 
 # Store the original state for recovery (processing possible initial hidden elements)
