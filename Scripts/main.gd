@@ -69,7 +69,7 @@ func init_task(): # Initialize task, BLK design
 
 func init_ui():
 	DisplayServer.window_set_min_size(Vector2(400, 300))
-	DisplayServer.window_set_size(Vector2(1920, 1080))
+
 
 
 func generate_block(case = null):
