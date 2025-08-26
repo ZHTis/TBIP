@@ -77,7 +77,7 @@ func generate_block(case = null):
 	match case:
 		1: # unfinished
 			print("=======Case 1: reward fixed, ~N( p_reward, num_of_press)=======")
-			BLK1(1, 15, 0.8, 20, 2, 10, 0.8)
+			BLK1(3, 11, 1.0, 20, -2, 100, 0.8, 9, 7)
 		2: # unfinished
 			print("=======Case 2: Random reward distribution=======")
 			BLK2(5, 35, 1, 5) # generate reward_given_timepoint and reward given tremplate here
