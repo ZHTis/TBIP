@@ -46,6 +46,7 @@ var exclude_nodes_for_refresh
 
 
 func _ready():
+	init_ui() # Initialize UI
 	wealth = 0 # Initialize wealth
 	trial_count = 0
 	exclude_nodes_for_refresh = [label_1.name, label_2.name]
@@ -64,6 +65,12 @@ func init_task(): # Initialize task, BLK design
 	generate_block(1) # Generate a block of trials
 	# Start 1st Trial
 	init_trial()
+
+
+func init_ui():
+	DisplayServer.window_set_min_size(Vector2(400, 300))
+	DisplayServer.window_set_size(Vector2(1920, 1080))
+
 
 func generate_block(case = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
