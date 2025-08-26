@@ -61,16 +61,16 @@ func _process(delta):
 		_label_refresh(wealth,num_of_press,"pressing...")
 
 func init_task(): # Initialize task, BLK design
-	generate_block() # Generate a block of trials
+	generate_block(1) # Generate a block of trials
 	# Start 1st Trial
-	init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count])
+	init_trial()
 
 func generate_block(case = null):
-	# Generate a block of trials
+	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
 	match case:
-		1: # finished, generate reward_given_timepoint and reward given tremplate here
-			print("=======Case 1: Time-dependent reward distribution=======")
-			BLK1(1, 35, 0.8, 20, 10, 0.8, 9)
+		1: # unfinished
+			print("=======Case 1: reward fixed, ~N( p_reward, num_of_press)=======")
+			BLK1(1, 15, 0.8, 20, 2, 10, 0.8)
 		2: # unfinished
 			print("=======Case 2: Random reward distribution=======")
 			BLK2(5, 35, 1, 5) # generate reward_given_timepoint and reward given tremplate here
@@ -99,7 +99,7 @@ func BLK1(press_num_min, press_num_max,
 	_hold_reward,_opt_out_reward,
 	_number_of_trials,
 	_inter_trial_interval,
-	variance,  mean=null, _step=1):
+	variance=null,  mean=null, _step=1):
 	
 	step =_step
 	number_of_trials = _number_of_trials
@@ -107,61 +107,53 @@ func BLK1(press_num_min, press_num_max,
 	if mean == null:
 		mean = (press_num_min + press_num_max )/2 # mean
 	else: print("The parameter mean of the reward distribution over time has been set to:", mean)
+	
+	########## The button part logic should be associated with this ##########
+	press_num_slot = generate_x_range(press_num_min, press_num_max, step)
+	print("press_num_slot : ", press_num_slot )
+
+	var x_values = press_num_slot
+	if variance == null:
+		variance = calculate_variance(x_values) # variance
+	else: print("The parameter variance of the reward distribution over time has been set to:", variance)
+	var prob_templates = calculate_discrete_normal(x_values, mean,  variance, _total_reward_chance)[0] 
+	var reward_candidate_ref = prob_templates.map(func(x):return x*100)
+	reward_candidate_ref = process_array_to_int(reward_candidate_ref)
+	var reward_candidate = expand_array(x_values, reward_candidate_ref)
+	reward_candidate.shuffle()
+	reward_given_timepoint_template = reward_candidate.slice(0, number_of_trials-1)
+	print("reward_given_timepoint_template : ", reward_given_timepoint_template )
+
 
 	########## Pre-generated reward  ##############
-	var templates = calculate_discrete_normal(press_num_min,press_num_max, 
-	step, mean,  variance, _total_reward_chance)
-	#
 	opt_out_reward_template = []
 	opt_out_reward_template.resize(number_of_trials)
-	opt_out_reward_template.fill(2) # Opt-out reward is always 2,customize this to make it flexible
+	opt_out_reward_template.fill(_opt_out_reward) # Opt-out reward is always 2,customize this to make it flexible
 
 	hold_reward_template = []
-	hold_reward_probabilities = templates[0]
-	### events based on probability
-	var filters = []
-	#for p in hold_reward_probabilities:
-		#var filter = []
-		#var n=1000
-		#filter.resize(n)
-		#filter.fill(0)
-		#var n_true = int(p * n)
-		#for i in range(n_true):
-			#filter[i] = 1
-		#filter.shuffle()
-		#filter = filter.slice(0, number_of_trials)
-		#filters.append(filter)
-	#filters = _transpose(filters)
-		
-	for i in range(number_of_trials):
-		var filter_of_the_trial = filters[i]
-		var reward_template_of_the_trial = filter_of_the_trial.map(func(x): return x * hold_reward)
-		hold_reward_template.append(reward_template_of_the_trial)
-	###############################################################
-
-	########## The button part logic should be associated with this ##########
-	press_num_slot = templates[1] 
-	print("press_num_slot : ", press_num_slot )
+	hold_reward_template.resize(number_of_trials)
+	hold_reward_template.fill(_hold_reward) # Hold reward is always 1,customize this to make it flexible
 
 
 #unfinished
-func init_trial(_hold_reward_for_this_trial,opt_out_reward_for_this_trial):
+func init_trial():
+	trial_count += 1
 	# Initialize the test status
 	reward_given_flag = false
 	start_time = 0.0
 	num_of_press = 0.0
 	# Initialization rewards
-	reward = _hold_reward_for_this_trial 
-	opt_out_reward = opt_out_reward_for_this_trial 
-	print("trial", trial_count, "\nreward: ", reward)
+	reward = hold_reward_template[trial_count-1]
+	opt_out_reward = opt_out_reward_template[trial_count-1]
+	reward_given_timepoint = reward_given_timepoint_template[trial_count-1]
+	print("trial", trial_count, "\nreward: ", reward,"\t" ,opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
 	
 func reset_scene():
 	# Reset the scene
 	hide_all_children()
 	await get_tree().create_timer(inter_trial_interval).timeout
-	trial_count += 1
-	if trial_count < number_of_trials:
-		init_trial(hold_reward_template[trial_count], opt_out_reward_template[trial_count])
+	if trial_count <= number_of_trials:
+		init_trial()
 		restore_all_children()
 		# Reset status
 		_label_refresh(wealth,num_of_press,"init")
@@ -246,41 +238,36 @@ func restore_all_children():
 	
 	original_states.clear()
 
-func calculate_discrete_normal(
-	min_value: int, 
-	max_value: int, 
-	step:int,
+func generate_x_range(min_value: int, max_value: int, step: int) -> Array:
+	var x_values = []
+	if min_value <= 0 or max_value <= 0 or min_value > max_value:
+		push_error("区间必须包含正整数且min_value <= max_value")
+		return x_values
+	if step <= 0:
+		push_error("步长必须为正数")
+		return x_values
+
+	var current = min_value
+	# 使用while循环生成小数区间，考虑浮点数精度问题
+	while current <= max_value + 1e-9:  # 增加微小值处理浮点数精度误差
+		x_values.append(current)
+		current += step 
+
+	return x_values
+
+func calculate_discrete_normal(x_values,
 	mean, 
 	variance: float, 
 	aoc: float) -> Array:
 
-	var x_range = []
-	var x_values=[]
-
 	# 验证输入参数
-	if min_value <= 0 or max_value <= 0 or min_value > max_value:
-		push_error("区间必须包含正整数且min_value <= max_value")
-		return []
 	if variance <= 0:
 		push_error("方差必须为正数")
 		return []
 	if aoc <= 0 or aoc > 1:
 		push_error("目标面积必须在(0, 1]范围内")
 		return []
-	if step <= 0:
-		push_error("步长必须为正数")
-		return x_values
 	
-	var current = min_value
-	# 使用while循环生成小数区间，考虑浮点数精度问题
-	while current < max_value + 1e-9:  # 增加微小值处理浮点数精度误差
-		x_range.append(current)
-		current += step * 0.5
-		if current < max_value + 1e-9: 
-			x_values.append(current)
-			current += step * 0.5
-	
-
 	# 计算未归一化的概率密度
 	var densities = []
 	var sum_original: float = 0.0  # 原始面积（区间内的概率密度总和）
@@ -314,8 +301,8 @@ func calculate_discrete_normal(
 		current_sum += p
 
 	# 返回结果：概率列表、x值列表、实际面积
-	print(" rounded_probs, x_range, current_sum , x_values: " , rounded_probs, x_range, current_sum, x_values )
-	return [rounded_probs, x_range, current_sum ]
+	print("rounded_probs, current_sum , x_values: " , rounded_probs, current_sum, x_values )
+	return [rounded_probs, current_sum ]
 
 func generate_ramdom(start,stop,type = "int"):
 	var rng = RandomNumberGenerator.new()
@@ -474,3 +461,69 @@ func find_min_integer_lcm(float_array: Array) -> int:
 	
 	# 计算所有分母的最小公倍数
 	return array_lcm(denominators)
+
+# 计算一组数的方差
+func calculate_variance(numbers: Array) -> float:
+	# 检查数组是否为空
+	if numbers==[]:
+		push_error("数组不能为空")
+		return 0.0
+	
+	# 计算平均值
+	var sum = 0.0
+	for num in numbers:
+		sum += num
+	var mean = sum / numbers.size()
+	
+	# 计算每个数与平均值的差的平方的总和
+	var squared_diff_sum = 0.0
+	for num in numbers:
+		var diff = num - mean
+		squared_diff_sum += diff * diff
+	
+	# 计算方差（总体方差）
+	return squared_diff_sum / numbers.size()
+
+func expand_array(elements_array: Array, counts_array: Array) -> Array:
+	# 检查两个数组长度是否相同
+	if elements_array.size() != counts_array.size():
+		print("错误: 两个数组长度必须相同")
+		return []
+	
+	var result = []
+	
+	# 遍历数组生成新数组
+	for i in range(elements_array.size()):
+		var element = elements_array[i]
+		var count = counts_array[i]
+		
+		# 检查计数是否为非负整数
+		if count is not int or count < 0:
+			print("错误: 计数必须是非负整数，索引: ", i)
+			continue
+		
+		# 将元素按照指定次数添加到结果数组
+		for j in range(count):
+			result.append(element)
+	
+	return result
+
+func convert_float_to_int(value: float) -> Variant:
+  # Check whether there are decimal parts of floating point numbers
+	if value == floor(value):
+		return int(value)
+	elif abs(value - floor(value)) <= 0.000001:
+		return int(value)
+	else:
+		return value
+
+# batch processing of floating point numbers in arrays
+func process_array_to_int(arr: Array) -> Array:
+	var result = []
+	for element in arr:
+		if element is float:
+			result.append(convert_float_to_int(element))
+		else:
+			result.append(element)
+	print("array to int result: ",result)
+	return result
