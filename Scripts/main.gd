@@ -118,15 +118,19 @@ func BLK1(press_num_min, press_num_max,
 	########## The button part logic should be associated with this ##########
 	press_num_slot = generate_x_range(press_num_min, press_num_max, step)
 	print("press_num_slot : ", press_num_slot )
-
+	var _round = 100
 	var x_values = press_num_slot
 	if variance == null:
 		variance = calculate_variance(x_values) # variance
 	else: print("The parameter variance of the reward distribution over time has been set to:", variance)
 	var prob_templates = calculate_discrete_normal(x_values, mean,  variance, _total_reward_chance)[0] 
-	var reward_candidate_ref = prob_templates.map(func(x):return x*100)
+	var reward_candidate_ref = prob_templates.map(func(x):return x* _round)
 	reward_candidate_ref = process_array_to_int(reward_candidate_ref)
 	var reward_candidate = expand_array(x_values, reward_candidate_ref)
+	if reward_candidate.size() < _round:
+		var length = reward_candidate.size()
+		for i in range(_round-length):
+			reward_candidate.append(1000)
 	reward_candidate.shuffle()
 	reward_given_timepoint_template = reward_candidate.slice(0, number_of_trials-1)
 	print("reward_given_timepoint_template : ", reward_given_timepoint_template )
