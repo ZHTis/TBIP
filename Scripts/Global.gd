@@ -47,7 +47,7 @@ func write_subject_data_to_file() -> void:
 	# 第一部分：文件头部说明（用#开头标记为注释，不影响CSV解析）
 	file.write_line("# === 被试者数据记录 ===")
 	file.write_line("# 被试者名称: %s" % subject_name)
-	file.write_line("# 记录时间: %s" % Time.get_datetime_string_from_unix_time(Time.get_unix_time()))
+	file.write_line("# 记录时间: %s" % Time.get_datetime_string_from_unix_time())
 	file.write_line("# 总记录数: %d" % press_history.size())
 	file.write_line("# ------------------------")
 	file.write_line("# 以下为CSV格式数据, 可直接导入Excel或数据分析工具")
