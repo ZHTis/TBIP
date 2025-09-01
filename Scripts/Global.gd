@@ -1,0 +1,84 @@
+extends Node
+
+# 跨场景共享变量
+var subject_name: String = ""  # 被试者名称
+var press_history: Array[PressData] = []  # 按键历史记录
+
+
+# 获取基于被试者名称的CSV文件路径
+func get_subject_file_path() -> String:
+	var base_dir = "user://save_data"
+	
+	# 处理被试者名称（过滤特殊字符）
+	var safe_subject_name = subject_name.strip_edges()
+	if safe_subject_name.empty():
+		safe_subject_name = "unknown_subject"
+	
+	# 移除文件名中不允许的特殊字符
+	var invalid_chars = ["/", "\\", ":", "*", "?", "\"", "<", ">", "|"]
+	for char in invalid_chars:
+		safe_subject_name = safe_subject_name.replace(char, "_")
+	
+	# 生成带时间戳的文件名（CSV格式）
+	var timestamp = Time.get_datetime_string_from_unix_time(Time.get_unix_time()).replace(":", "-")
+	return "%s/%s_%s.csv" % [base_dir, safe_subject_name, timestamp]
+
+
+# 初始化存储目录
+func init_write() -> void:
+	var base_dir = "user://save_data"
+	var dir = Directory.new()
+	
+	if dir.make_dir_recursive(base_dir) != OK:
+		print("无法创建目录: ", base_dir)
+		return
+	print("存储目录已准备: ", base_dir)
+
+
+# 将数据写入文件（头部说明 + CSV格式数据）
+func write_subject_data_to_file() -> void:
+	var file_path = get_subject_file_path()
+	var file = FileAccess.new()
+	
+	if file.open(file_path, FileAccess.WRITE) != OK:
+		print("无法打开文件: ", file_path)
+		return
+	
+	# 第一部分：文件头部说明（用#开头标记为注释，不影响CSV解析）
+	file.write_line("# === 被试者数据记录 ===")
+	file.write_line("# 被试者名称: %s" % subject_name)
+	file.write_line("# 记录时间: %s" % Time.get_datetime_string_from_unix_time(Time.get_unix_time()))
+	file.write_line("# 总记录数: %d" % press_history.size())
+	file.write_line("# ------------------------")
+	file.write_line("# 以下为CSV格式数据, 可直接导入Excel或数据分析工具")
+	file.write_line("# 格式说明: 序号,时间戳(秒),奖励标记,按键类型")
+	
+	# 第二部分：CSV数据（首行为列标题，后续为数据）
+	file.write_line("index,timestamp_seconds,reward_flag,button_type")  # CSV列标题
+	
+	# 写入每条按键数据（CSV格式）
+	for i in range(press_history.size()):
+		var press = press_history[i]
+		# CSV格式：用逗号分隔字段，字符串包含逗号时需用引号包裹
+		var csv_line = "%d,%.2f,%s,%s" % [
+			i + 1,  # 序号
+			press.timestamp,  # 时间戳
+			str(press.rwd_marker).to_lower(),  # 奖励标记（转为小写，如true/false）
+			press.btn_type_marker  # 按键类型
+		]
+		file.write_line(csv_line)
+	
+	file.close()
+	print("数据已保存至: ", file_path)
+
+
+# 清空历史记录
+func clear_press_history() -> void:
+	press_history.clear()
+	print("已清空当前被试者的按键记录")
+
+
+# 获取绝对存储路径
+func get_absolute_save_path() -> String:
+	var dir = Directory.new()
+	return dir.get_absolute_path("user://save_data")

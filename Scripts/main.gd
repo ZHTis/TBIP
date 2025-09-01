@@ -62,6 +62,7 @@ func _process(delta):
 		_label_refresh(wealth,num_of_press,"pressing...")
 
 func init_task(): # Initialize task, BLK design
+	Global.press_history = [] # Clear press history
 	generate_block(1) # Generate a block of trials
 	# Start 1st Trial
 	init_trial()
@@ -75,7 +76,7 @@ func init_ui():
 func generate_block(case = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
 	match case:
-		1: # unfinished
+		1: # finished
 			print("=======Case 1: reward fixed, ~N( p_reward, num_of_press)=======")
 			BLK1(3, 11, 1.0, 20, -2, 100, 0.8, 9, 7)
 		2: # unfinished
@@ -183,18 +184,30 @@ func _on_hold_button_pressed():
 			wealth+= reward
 			reward_given_flag = true
 			ui_auto_refresh = false
+			record_press_data(reward_given_flag, PressData.BtnType.HOLD)
 			_label_refresh(wealth,num_of_press,"reward_given")
 			reset_scene()
 	else:
+		record_press_data(reward_given_flag, PressData.BtnType.HOLD)
 		reset_scene()
 
 
 func _on_opt_out_button_pressed():
 	wealth += opt_out_reward
-	_label_refresh(wealth, 0.0, "opt_out")
 	reward_given_flag = true
+	record_press_data(reward_given_flag, PressData.BtnType.OPT_OUT)
+	_label_refresh(wealth, 0.0, "opt_out")
 	reset_scene()
 
+# 封装记录按键数据的函数
+func record_press_data(reward_given_flag: Variant, btn_type: PressData.BtnType) -> void:
+	# 获取当前时间戳（秒）
+	var current_time = Time.get_ticks_msec() / 1000.0
+	# 创建PressData实例
+	var new_press = PressData.new(current_time, reward_given_flag, btn_type)
+	# 添加到全局历史记录
+	Global.press_history.append(new_press)
+	print("Recorded PressData: ", new_press)
 
 func _label_refresh(wealth,num_of_press,case):
 	# 更新UI
