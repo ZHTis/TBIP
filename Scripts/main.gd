@@ -115,16 +115,21 @@ func BLK1(press_num_min, press_num_max,
 	inter_trial_interval = _inter_trial_interval
 	if mean == null:
 		mean = (press_num_min + press_num_max )/2 # mean
-	else: print("The parameter mean of the reward distribution over time has been set to:", mean)
+	else: 
+		Global.text6 = "The parameter mean of the reward distribution over time has been set to:"+str(mean)
+		print("The parameter mean of the reward distribution over time has been set to:", mean)
 	
 	########## The button part logic should be associated with this ##########
 	press_num_slot = generate_x_range(press_num_min, press_num_max, step)
-	print("press_num_slot : ", press_num_slot )
+	Global.text2 = "press_num_slot : " +str(press_num_slot)
+	print(Global.text2)
 	var _round = 100
 	var x_values = press_num_slot
 	if variance == null:
 		variance = calculate_variance(x_values) # variance
-	else: print("The parameter variance of the reward distribution over time has been set to:", variance)
+	else: 
+		Global.text3 = "The parameter variance of the reward distribution over time has been set to:" + str(variance)
+		print(Global.text3)
 	var prob_templates = calculate_discrete_normal(x_values, mean,  variance, _total_reward_chance)[0] 
 	var reward_candidate_ref = prob_templates.map(func(x):return x* _round)
 	reward_candidate_ref = process_array_to_int(reward_candidate_ref)
@@ -135,7 +140,8 @@ func BLK1(press_num_min, press_num_max,
 			reward_candidate.append(1000)
 	reward_candidate.shuffle()
 	reward_given_timepoint_template = reward_candidate.slice(0, number_of_trials)
-	print("reward_given_timepoint_template : ", reward_given_timepoint_template )
+	Global.text1 = "reward_given_timepoint_template : %s" % str(reward_given_timepoint_template)
+	print(Global.text1)
 
 
 	########## Pre-generated reward  ##############
@@ -150,9 +156,10 @@ func BLK1(press_num_min, press_num_max,
 
 #  unfinished
 func init_trial():
-	if trial_count >= number_of_trials:
+	if trial_count >=number_of_trials:
 		hide_all_children()
-		return
+		trial_count += 1
+		return 
 	trial_count += 1
 	# Initialize the test status
 	reward_given_flag = false
@@ -168,16 +175,19 @@ func reset_scene():
 	# Reset the scene
 	hide_all_children()
 	await get_tree().create_timer(inter_trial_interval).timeout
-	if trial_count < number_of_trials:
+	if trial_count <= number_of_trials:
 		init_trial()
 		restore_all_children()
 		# Reset status
 		_label_refresh(wealth,num_of_press,"init")
-	if trial_count == number_of_trials:
-		_on_exit_tree()
+	if trial_count > number_of_trials:
+		_label_refresh(wealth,num_of_press,"finish")
+		end()
 
 # When the button is released
 func _on_hold_button_pressed():
+	# 获取当前时间戳（秒）
+	var current_time = Time.get_ticks_msec() 
 	if reward_given_flag == false:
 		num_of_press += 1
 		_label_refresh(wealth,num_of_press,"pressing...")
@@ -186,25 +196,25 @@ func _on_hold_button_pressed():
 			wealth+= reward
 			reward_given_flag = true
 			ui_auto_refresh = false
-			record_press_data(reward_given_flag, PressData.BtnType.HOLD)
 			_label_refresh(wealth,num_of_press,"reward_given")
 			reset_scene()
 	else:
-		record_press_data(reward_given_flag, PressData.BtnType.HOLD)
 		reset_scene()
+	record_press_data(current_time, reward_given_flag, PressData.BtnType.HOLD)
+	
 
 
 func _on_opt_out_button_pressed():
+	# 获取当前时间戳（秒）
+	var current_time = Time.get_ticks_msec() 
 	wealth += opt_out_reward
 	reward_given_flag = true
-	record_press_data(reward_given_flag, PressData.BtnType.OPT_OUT)
+	record_press_data(current_time, reward_given_flag, PressData.BtnType.OPT_OUT)
 	_label_refresh(wealth, 0.0, "opt_out")
 	reset_scene()
 
 # 封装记录按键数据的函数
-func record_press_data(reward_given_flag: Variant, btn_type: PressData.BtnType) -> void:
-	# 获取当前时间戳（秒）
-	var current_time = Time.get_ticks_msec() / 1000.0
+func record_press_data(current_time, reward_given_flag: Variant, btn_type: PressData.BtnType) -> void:
 	# 创建PressData实例
 	var new_press = PressData.new(current_time, reward_given_flag, btn_type)
 	# 添加到全局历史记录
@@ -330,6 +340,7 @@ func calculate_discrete_normal(x_values,
 
 	# 返回结果：概率列表、x值列表、实际面积
 	print("rounded_probs, current_sum , x_values: " , rounded_probs, current_sum, x_values )
+	Global.text4 = "rounded_probs, current_sum , x_values: " + str(rounded_probs) + " " + str(current_sum) + " " + str(x_values)
 	return [rounded_probs, current_sum ]
 
 func generate_ramdom(start,stop,type = "int"):
@@ -554,10 +565,10 @@ func process_array_to_int(arr: Array) -> Array:
 		else:
 			result.append(element)
 	print("array to int result: ",result)
+	Global.text5 = "array to int result: "+str(result)
 	return result
 
-func _on_exit_tree():
-	_label_refresh(wealth,num_of_press,"finish")
+func end():
 	print("Exiting the experiment, saving data...")
 	Global.write_subject_data_to_file() # Save data before exiting
 	print("Data saved. Goodbye!") 
