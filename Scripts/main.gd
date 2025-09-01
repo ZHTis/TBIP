@@ -168,16 +168,13 @@ func reset_scene():
 	# Reset the scene
 	hide_all_children()
 	await get_tree().create_timer(inter_trial_interval).timeout
-	if trial_count <= number_of_trials:
+	if trial_count < number_of_trials:
 		init_trial()
 		restore_all_children()
 		# Reset status
 		_label_refresh(wealth,num_of_press,"init")
-	else:
-		Global.write_subject_data_to_file() # Save data
-		_label_refresh(wealth,num_of_press,"finish")
-		# End the experiment
-		print("Experiment ends")
+	if trial_count == number_of_trials:
+		_on_exit_tree()
 
 # When the button is released
 func _on_hold_button_pressed():
@@ -560,6 +557,9 @@ func process_array_to_int(arr: Array) -> Array:
 	return result
 
 func _on_exit_tree():
+	_label_refresh(wealth,num_of_press,"finish")
 	print("Exiting the experiment, saving data...")
 	Global.write_subject_data_to_file() # Save data before exiting
-	print("Data saved. Goodbye!")
+	print("Data saved. Goodbye!") 
+	
+	
