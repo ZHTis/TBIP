@@ -22,3 +22,8 @@ Global="*res://Scripts/Global.gd"
 [dotnet]
 
 project/assembly_name="naughtyPress"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

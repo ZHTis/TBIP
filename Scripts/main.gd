@@ -46,6 +46,7 @@ var exclude_nodes_for_refresh
 
 
 func _ready():
+	Global.init_write() # Initialize storage directory
 	init_ui() # Initialize UI
 	wealth = 0 # Initialize wealth
 	trial_count = 0
@@ -78,7 +79,7 @@ func generate_block(case = null):
 	match case:
 		1: # finished
 			print("=======Case 1: reward fixed, ~N( p_reward, num_of_press)=======")
-			BLK1(3, 11, 1.0, 20, -2, 100, 0.8, 9, 7)
+			BLK1(3, 11, 1.0, 20, -2, 3, 0.8, 9, 7)
 		2: # unfinished
 			print("=======Case 2: Random reward distribution=======")
 			BLK2(5, 35, 1, 5) # generate reward_given_timepoint and reward given tremplate here
@@ -133,7 +134,7 @@ func BLK1(press_num_min, press_num_max,
 		for i in range(_round-length):
 			reward_candidate.append(1000)
 	reward_candidate.shuffle()
-	reward_given_timepoint_template = reward_candidate.slice(0, number_of_trials-1)
+	reward_given_timepoint_template = reward_candidate.slice(0, number_of_trials)
 	print("reward_given_timepoint_template : ", reward_given_timepoint_template )
 
 
@@ -147,8 +148,11 @@ func BLK1(press_num_min, press_num_max,
 	hold_reward_template.fill(_hold_reward) # Hold reward is always 1,customize this to make it flexible
 
 
-#unfinished
+#  unfinished
 func init_trial():
+	if trial_count >= number_of_trials:
+		hide_all_children()
+		return
 	trial_count += 1
 	# Initialize the test status
 	reward_given_flag = false
@@ -170,7 +174,8 @@ func reset_scene():
 		# Reset status
 		_label_refresh(wealth,num_of_press,"init")
 	else:
-		label_1.text = "End of Trials"
+		Global.write_subject_data_to_file() # Save data
+		_label_refresh(wealth,num_of_press,"finish")
 		# End the experiment
 		print("Experiment ends")
 
@@ -226,6 +231,8 @@ func _label_refresh(wealth,num_of_press,case):
 			reward_given_flag = false
 		"init":
 			label_1.text = "Press the button to earn rewards"
+		"finish":
+			label_1.text = "Finished!"	
 		_:
 			label_1.text = ""
 
@@ -551,3 +558,8 @@ func process_array_to_int(arr: Array) -> Array:
 			result.append(element)
 	print("array to int result: ",result)
 	return result
+
+func _on_exit_tree():
+	print("Exiting the experiment, saving data...")
+	Global.write_subject_data_to_file() # Save data before exiting
+	print("Data saved. Goodbye!")
