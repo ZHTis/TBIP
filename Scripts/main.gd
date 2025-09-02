@@ -109,7 +109,7 @@ func generate_block(case = null):
 	match case:
 		1: # finished
 			print("=======Case 1: reward fixed, ~N( p_reward, num_of_press)=======")
-			BLK1(3, 20, 1.0, 20, 2, 30, 0.8)
+			BLK1(3, 20, 1.0, 20, 2, 300, 0.8)
 		2: # unfinished
 			print("=======Case 2: Random reward distribution=======")
 			BLK2(5, 35, 1, 5) # generate reward_given_timepoint and reward given tremplate here
@@ -225,14 +225,14 @@ func _on_hold_button_pressed():
 		_label_refresh(Global.wealth,num_of_press,"pressing...")
 		ui_auto_refresh = true
 		if num_of_press < reward_given_timepoint:
-			record_press_data(current_time, reward_given_flag, PressData.BtnType.HOLD)
+			record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD)
 		if num_of_press == reward_given_timepoint:
 			Global.wealth+= reward
 			reward_given_flag = true
 			ui_auto_refresh = false
 			print("winwin",reward_given_flag)
 			_label_refresh(Global.wealth,num_of_press,"reward_given")
-			record_press_data(current_time, true, PressData.BtnType.HOLD)
+			record_press_data(current_time, trial_count, true, PressData.BtnType.HOLD)
 			reset_scene()
 	else:
 		reset_scene()
@@ -245,14 +245,14 @@ func _on_opt_out_button_pressed():
 	var current_time = Time.get_ticks_msec() 
 	Global.wealth += opt_out_reward
 	reward_given_flag = true
-	record_press_data(current_time, reward_given_flag, PressData.BtnType.OPT_OUT)
+	record_press_data(current_time,trial_count, reward_given_flag, PressData.BtnType.OPT_OUT)
 	_label_refresh(Global.wealth, 0.0, "opt_out")
 	reset_scene()
 
 # 封装记录按键数据的函数
-func record_press_data(current_time, _reward_given_flag, btn_type: PressData.BtnType) -> void:
+func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: PressData.BtnType) -> void:
 	# 创建PressData实例
-	var new_press = PressData.new(current_time, _reward_given_flag, btn_type)
+	var new_press = PressData.new(current_time, _tr_count, _reward_given_flag, btn_type)
 	# 添加到全局历史记录
 	Global.press_history.append(new_press)
 	#print("Recorded PressData: ", new_press)

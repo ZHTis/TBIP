@@ -14,6 +14,7 @@ var iftextEditHasAppear: bool = false
 var wealth: int = 0
 var saved_flag: bool = false
 
+
 # 获取基于被试者名称的CSV文件路径
 func gen_file_name() -> String:
 	var base_dir = "user://save_data"
@@ -90,14 +91,15 @@ func write_subject_data_to_file() -> void:
 	file.store_line("# Case type: 0:hold; 1:opt-out")
 	
 	# 第二部分：CSV数据（首行为列标题，后续为数据）
-	file.store_line("index,timestamp_ms,reward_flag,button_type")  # CSV列标题
+	file.store_line("index,trail_idx,timestamp_ms,reward_flag,button_type")  # CSV列标题
 	
 	# 写入每条按键数据（CSV格式）
 	for i in range(press_history.size()):
 		var press = press_history[i]
 		# CSV格式：用逗号分隔字段，字符串包含逗号时需用引号包裹
-		var csv_line = "%d,%d,%s,%s" % [
+		var csv_line = "%d,%d ,%d,,%s,%s" % [
 			i + 1,  # 序号
+			press.trial_count,
 			press.timestamp,  # 时间戳
 			str(press.rwd_marker).to_lower(),  # 奖励标记（转为小写，如true/false）
 			press.btn_type_marker  # 按键类型
@@ -106,6 +108,3 @@ func write_subject_data_to_file() -> void:
 	
 	file.close()
 	saved_flag = true
-
-
-
