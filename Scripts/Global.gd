@@ -9,6 +9,7 @@ var text3: String = ""  # 文本3
 var text4: String = ""  # 文本4
 var text5: String = ""  # 文本5
 var text6: String = ""  # 文本6
+var iftextEditHasAppear: bool = false
 
 # 获取基于被试者名称的CSV文件路径
 func gen_file_name() -> String:

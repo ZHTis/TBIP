@@ -46,6 +46,7 @@ var exclude_nodes_for_refresh
 
 
 func _ready():
+	ifrelease()
 	Global.init_write() # Initialize storage directory
 	init_ui() # Initialize UI
 	wealth = 0 # Initialize wealth
@@ -56,6 +57,20 @@ func _ready():
 	# Connect button signal
 	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
+
+func ifrelease():
+	# 判断是否从上一个特定场景跳转过来
+	if Global.iftextEditHasAppear:
+		return  # 退出函数，不执行剩余部分
+	
+	# 如果不是从特定场景过来，执行后续逻辑
+	if OS.has_feature("release"):
+	# 加载发布场景
+		Global.iftextEditHasAppear = true
+		get_tree().change_scene_to_file("res://textEdit.tscn")
+	else:print("debug skip textEdit.tscn")
+	# 加载调试场景
+
 
 func _process(delta):
 	# Update the num_of_press if the button is being held
@@ -102,7 +117,7 @@ func BLK2(a,b,c,d):
 				var random_o = generate_ramdom(c,d) # Opt-out reward
 				hold_reward_template.append(random_h) # Hold reward
 				opt_out_reward_template.append(random_o) # Opt-out reward
-
+# MARK: BLK1
 func BLK1(press_num_min, press_num_max,
 	_total_reward_chance, 
 	_hold_reward,_opt_out_reward,
@@ -183,7 +198,7 @@ func reset_scene():
 	if trial_count > number_of_trials:
 		_label_refresh(wealth,num_of_press,"finish")
 		end()
-
+# MARK: Buttons Response
 # When the button is released
 func _on_hold_button_pressed():
 	# 获取当前时间戳（秒）
@@ -275,6 +290,8 @@ func restore_all_children():
 			child.disabled = original_states[child]["disabled"]
 	
 	original_states.clear()
+
+# MARK: Ignore Math Parts
 
 func generate_x_range(min_value: int, max_value: int, step: int) -> Array:
 	var x_values = []
@@ -567,6 +584,8 @@ func process_array_to_int(arr: Array) -> Array:
 	print("array to int result: ",result)
 	Global.text5 = "array to int result: "+str(result)
 	return result
+
+# MARK: End Math Parts
 
 func end():
 	print("Exiting the experiment, saving data...")

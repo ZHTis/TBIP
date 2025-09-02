@@ -6,6 +6,7 @@ extends Control
 var subject_name
 
 func _ready():
+	Global.iftextEditHasAppear = true	
 	save_btn.pressed.connect(_save_text)
 
 func _save_text():
