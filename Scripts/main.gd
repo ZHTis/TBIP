@@ -1,11 +1,12 @@
-extends Node2D
+extends Control
 # Node reference
-@onready var label_1 = get_node("/root/Node2D/Label" )
-@onready var label_2 = get_node("/root/Node2D/Label2" )
+@onready var label_1 = get_node("/root/Node2D/VBox/Label" )
+@onready var label_2 = get_node("/root/Node2D/VBox/Label2" )
 @onready var hold_button = $MenuButton/HoldButton
 @onready var opt_out_button = $MenuButton2/OptOutButton
 @onready var hold_button_label = $MenuButton/Text
 @onready var opt_out_button_label = $MenuButton2/Text
+@onready var vbox = $VBox
 
 
 
@@ -51,7 +52,7 @@ func _ready():
 	init_ui() # Initialize UI
 	wealth = 0 # Initialize wealth
 	trial_count = 0
-	exclude_nodes_for_refresh = [label_1.name, label_2.name]
+	exclude_nodes_for_refresh = [vbox.name]
 	init_task() # Initialize the task
 	_label_refresh(wealth, num_of_press, "init")
 	# Connect button signal
@@ -67,7 +68,7 @@ func ifrelease():
 	if OS.has_feature("release"):
 	# 加载发布场景
 		Global.iftextEditHasAppear = true
-		get_tree().change_scene_to_file("res://textEdit.tscn")
+		get_tree().change_scene_to_file("res://textEdit.tsc")
 	else:print("debug skip textEdit.tscn")
 	# 加载调试场景
 
@@ -83,11 +84,16 @@ func init_task(): # Initialize task, BLK design
 	# Start 1st Trial
 	init_trial()
 
+# MARK: UI
 
 func init_ui():
-	DisplayServer.window_set_min_size(Vector2(400, 300))
-
-
+	# 获取窗口尺寸
+	var window_size = get_viewport_rect().size
+	var root = get_node("/root/Node2D" )
+	root.set_anchors_and_offsets_preset( PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE)# this is important!
+	LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.85, window_size)
+	LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
+	LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
 
 func generate_block(case = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here

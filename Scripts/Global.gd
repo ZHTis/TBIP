@@ -11,6 +11,7 @@ var text5: String = ""  # 文本5
 var text6: String = ""  # 文本6
 var iftextEditHasAppear: bool = false
 
+
 # 获取基于被试者名称的CSV文件路径
 func gen_file_name() -> String:
 	var base_dir = "user://save_data"

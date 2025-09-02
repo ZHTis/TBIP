@@ -4,16 +4,18 @@
 [ext_resource type="Texture2D" uid="uid://yc810m0t01te" path="res://icon.svg" id="1_ul4es"]
 [ext_resource type="LabelSettings" uid="uid://ci500ljqmykcn" path="res://label_setting_1.tres" id="3_h2yge"]
 
-[node name="Node2D" type="Node2D"]
+[node name="Node2D" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("1_h2yge")
 
 [node name="MenuButton" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 205.0
-offset_top = 64.0
-offset_right = 543.0
-offset_bottom = 369.0
+offset_left = 203.0
+offset_top = 58.0
+offset_right = 541.0
+offset_bottom = 363.0
 
 [node name="Text" type="Label" parent="MenuButton"]
 layout_mode = 1
@@ -85,22 +87,30 @@ icon = ExtResource("1_ul4es")
 icon_alignment = 1
 expand_icon = true
 
-[node name="Label" type="Label" parent="."]
-offset_left = 354.0
-offset_top = 462.0
-offset_right = 810.0
-offset_bottom = 532.0
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -15.0
+offset_top = -51.0
+offset_right = 15.0
+offset_bottom = 51.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label2" type="Label" parent="VBox"]
+layout_mode = 2
 text = "test
 "
 label_settings = ExtResource("3_h2yge")
 horizontal_alignment = 1
 vertical_alignment = 2
 
-[node name="Label2" type="Label" parent="."]
-offset_left = 353.0
-offset_top = 510.0
-offset_right = 809.0
-offset_bottom = 580.0
+[node name="Label" type="Label" parent="VBox"]
+layout_mode = 2
 text = "test
 "
 label_settings = ExtResource("3_h2yge")
