@@ -36,7 +36,6 @@ var ui_auto_refresh: bool = false
 var reward_given_timepoint:int = 0
 var reward
 var opt_out_reward
-var wealth 
 var reward_given_timepoint_template 
 var hold_reward_template
 var opt_out_reward_template 
@@ -48,13 +47,14 @@ var exclude_nodes_for_refresh
 
 func _ready():
 	ifrelease()
+	get_tree().auto_accept_quit = false
 	Global.init_write() # Initialize storage directory
 	init_ui() # Initialize UI
-	wealth = 0 # Initialize wealth
+	Global.wealth = 0 # Initialize Global.wealth
 	trial_count = 0
 	exclude_nodes_for_refresh = [vbox.name]
 	init_task() # Initialize the task
-	_label_refresh(wealth, num_of_press, "init")
+	_label_refresh(Global.wealth, num_of_press, "init")
 	# Connect button signal
 	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
@@ -76,7 +76,7 @@ func ifrelease():
 func _process(delta):
 	# Update the num_of_press if the button is being held
 	if ui_auto_refresh == true:
-		_label_refresh(wealth,num_of_press,"pressing...")
+		_label_refresh(Global.wealth,num_of_press,"pressing...")
 
 func init_task(): # Initialize task, BLK design
 	Global.press_history = [] # Clear press history
@@ -100,13 +100,14 @@ func generate_block(case = null):
 	match case:
 		1: # finished
 			print("=======Case 1: reward fixed, ~N( p_reward, num_of_press)=======")
-			BLK1(3, 20, 1.0, 20, 2, 30, 0.8, 9, 7)
+			BLK1(3, 20, 1.0, 20, 2, 30, 0.8)
 		2: # unfinished
 			print("=======Case 2: Random reward distribution=======")
 			BLK2(5, 35, 1, 5) # generate reward_given_timepoint and reward given tremplate here
 		_: # Case _: Easy mode
 			print("Case _: Easy mode")
 			number_of_trials = 10 # Default number of trials
+			Global.num_of_trials = number_of_trials
 			inter_trial_interval = 0.8
 			reward_given_timepoint = 3 # Default time point to give reward
 			hold_reward_template= []
@@ -133,6 +134,7 @@ func BLK1(press_num_min, press_num_max,
 	
 	step =_step
 	number_of_trials = _number_of_trials
+	Global.num_of_trials = number_of_trials
 	inter_trial_interval = _inter_trial_interval
 	if mean == null:
 		mean = (press_num_min + press_num_max )/2 # mean
@@ -200,9 +202,9 @@ func reset_scene():
 		init_trial()
 		restore_all_children()
 		# Reset status
-		_label_refresh(wealth,num_of_press,"init")
+		_label_refresh(Global.wealth,num_of_press,"init")
 	if trial_count > number_of_trials:
-		_label_refresh(wealth,num_of_press,"finish")
+		_label_refresh(Global.wealth,num_of_press,"finish")
 		end()
 # MARK: Buttons Response
 # When the button is released
@@ -211,37 +213,42 @@ func _on_hold_button_pressed():
 	var current_time = Time.get_ticks_msec() 
 	if reward_given_flag == false:
 		num_of_press += 1
-		_label_refresh(wealth,num_of_press,"pressing...")
+		_label_refresh(Global.wealth,num_of_press,"pressing...")
 		ui_auto_refresh = true
+		if num_of_press < reward_given_timepoint:
+			record_press_data(current_time, reward_given_flag, PressData.BtnType.HOLD)
 		if num_of_press == reward_given_timepoint:
-			wealth+= reward
+			Global.wealth+= reward
 			reward_given_flag = true
 			ui_auto_refresh = false
-			_label_refresh(wealth,num_of_press,"reward_given")
+			print("winwin",reward_given_flag)
+			_label_refresh(Global.wealth,num_of_press,"reward_given")
+			record_press_data(current_time, true, PressData.BtnType.HOLD)
 			reset_scene()
 	else:
 		reset_scene()
-	record_press_data(current_time, reward_given_flag, PressData.BtnType.HOLD)
+	
 	
 
 
 func _on_opt_out_button_pressed():
 	# 获取当前时间戳（秒）
 	var current_time = Time.get_ticks_msec() 
-	wealth += opt_out_reward
+	Global.wealth += opt_out_reward
 	reward_given_flag = true
 	record_press_data(current_time, reward_given_flag, PressData.BtnType.OPT_OUT)
-	_label_refresh(wealth, 0.0, "opt_out")
+	_label_refresh(Global.wealth, 0.0, "opt_out")
 	reset_scene()
 
 # 封装记录按键数据的函数
-func record_press_data(current_time, reward_given_flag: Variant, btn_type: PressData.BtnType) -> void:
+func record_press_data(current_time, _reward_given_flag, btn_type: PressData.BtnType) -> void:
 	# 创建PressData实例
-	var new_press = PressData.new(current_time, reward_given_flag, btn_type)
+	var new_press = PressData.new(current_time, _reward_given_flag, btn_type)
 	# 添加到全局历史记录
 	Global.press_history.append(new_press)
-	print("Recorded PressData: ", new_press)
+	#print("Recorded PressData: ", new_press)
 
+# MARK: Label Refresh
 func _label_refresh(wealth,num_of_press,case):
 	# 更新UI
 	var hold_reward = reward
@@ -260,7 +267,7 @@ func _label_refresh(wealth,num_of_press,case):
 		"init":
 			label_1.text = "Press the button to earn rewards"
 		"finish":
-			label_1.text = "Finished!"	
+			label_1.text = "Finished!\n Close the window to exit"	
 		_:
 			label_1.text = ""
 
@@ -598,4 +605,9 @@ func end():
 	Global.write_subject_data_to_file() # Save data before exiting
 	print("Data saved. Goodbye!") 
 	
-	
+
+func _notification(what:int)->void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if Global.saved_flag == false:
+			end() 
+		get_tree().quit()
