@@ -8,8 +8,10 @@ extends Control
 @onready var opt_out_button_label = $MenuButton2/Text
 @onready var vbox = $VBox
 
+@onready var label_t = $VBox/TimerLabel  # 用于显示倒计时的标签
 
-
+var time_left : int = 180
+var countdownTimer
 ############## Variable set in func BLKs ################
 var press_num_slot 
 var hold_reward_probabilities
@@ -47,7 +49,8 @@ var exclude_nodes_for_refresh
 
 func _ready():
 	ifrelease()
-	get_tree().auto_accept_quit = false
+	get_tree().auto_accept_quit = false	
+	set_countdownTimer()
 	Global.init_write() # Initialize storage directory
 	init_ui() # Initialize UI
 	Global.wealth = 0 # Initialize Global.wealth
@@ -58,6 +61,7 @@ func _ready():
 	# Connect button signal
 	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
+
 
 func ifrelease():
 	# 判断是否从上一个特定场景跳转过来
@@ -94,6 +98,11 @@ func init_ui():
 	LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.85, window_size)
 	LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
 	LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
+	label_t.text = "Time Left: " + str(time_left) + " s"
+
+
+func update_timer_display(remaining):
+	label_t.text = str(remaining)   
 
 func generate_block(case = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
@@ -599,12 +608,28 @@ func process_array_to_int(arr: Array) -> Array:
 	return result
 
 # MARK: End Math Parts
+func set_countdownTimer():
+	countdownTimer = Timer.new()
+	countdownTimer.autostart = false
+	countdownTimer.one_shot = false
+	vbox.add_child(countdownTimer) 
+	countdownTimer.start(1)
+	countdownTimer.timeout.connect(_on_timer_timeout)
+
+func _on_timer_timeout():
+	time_left -= 1
+	
+	if time_left >= 0:
+		label_t.text = "Time Left: " + str(time_left) +" s"
+	else:
+		label_t.text = "Time's Up!"
+		countdownTimer.stop()  
+		get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 
 func end():
 	print("Exiting the experiment, saving data...")
 	Global.write_subject_data_to_file() # Save data before exiting
 	print("Data saved. Goodbye!") 
-	
 
 func _notification(what:int)->void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
