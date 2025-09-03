@@ -144,6 +144,7 @@ func BLK1(press_num_min, press_num_max,
 	step =_step
 	number_of_trials = _number_of_trials
 	Global.num_of_trials = number_of_trials
+	print("trial number: "+str(number_of_trials))
 	inter_trial_interval = _inter_trial_interval
 	if mean == null:
 		mean = (press_num_min + press_num_max )/2 # mean
