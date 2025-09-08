@@ -13,7 +13,7 @@ var text6: String = ""  # 文本6
 var iftextEditHasAppear: bool = false
 var wealth: int = 0
 var saved_flag: bool = false
-
+var filename
 
 # 获取基于被试者名称的CSV文件路径
 func gen_file_name() -> String:
@@ -32,9 +32,9 @@ func gen_file_name() -> String:
 	# 生成带时间戳的文件名（CSV格式）
 	var timestamp = Time.get_datetime_string_from_system()
 	timestamp = timestamp.replace(":", "_")
-	var file_path = "%s/%s_%s.txt" % [base_dir, safe_subject_name, timestamp]
+	var _filename = "%s/%s_%s.txt" % [base_dir, safe_subject_name, timestamp]
 	
-	return file_path
+	return _filename
 
 
 # 初始化存储目录
@@ -51,39 +51,34 @@ func init_write() -> void:
 	var result = dir.make_dir_recursive(base_dir)
 	if result == OK:
 		print("存储目录已准备: ", base_dir)
+		filename = gen_file_name()
+		# 尝试打开文件以确认路径有效，但立即关闭
+		var file = FileAccess.open(filename, FileAccess.WRITE_READ)
+		if file:
+			file.close()  # 确保关闭文件句柄
+			print("文件已创建: ", filename)
+		else:
+			print("错误: ", FileAccess.get_open_error())
 	else:
 		print("无法创建目录: ", base_dir)
 		print("错误代码: ", result)
-	
 
 
 # 将数据写入文件（头部说明 + CSV格式数据）
-func write_subject_data_to_file() -> void:
-	var file_path = gen_file_name()
+func write_subject_data_to_file(filename) -> void:
 	var user_path = ProjectSettings.globalize_path("user://")
-	# 尝试打开文件以确认路径有效，但立即关闭
-	var file = FileAccess.open(file_path, FileAccess.WRITE_READ)
-	if file:
-		file.close()  # 确保关闭文件句柄
-	else:
+	print("文件路径: ", user_path,"\t",filename)
+
+	var file = FileAccess.open(filename, FileAccess.WRITE)
+	if not file:
+		print("无法打开文件: ", filename)
 		print("错误: ", FileAccess.get_open_error())
 		return
-
-	print("文件路径: ", user_path,"\t",file_path)
-	file = FileAccess.open(file_path, FileAccess.WRITE)
-	# 第一部分：文件头部说明（用#开头标记为注释，不影响CSV解析）
-	file.store_line("# === Subject data records ===")
-	file.store_line("# Subject name: %s" % subject_name)
-	file.store_line("# Record datetime: %s" % Time.get_datetime_string_from_system())
-	file.store_line("# Total records: %d" % press_history.size())
-	file.store_line("# wealth: %d" % wealth)
-	file.store_line("# number of trials: %d" % num_of_trials)
-	file.store_line(text1)
-	file.store_line(text2)
-	file.store_line(text3)
-	file.store_line(text6)
-	file.store_line(text4)
-	file.store_line(text5)
+	file.store_line("被试者名称: %s" % subject_name)
+	file.store_line("试验次数: %d" % num_of_trials)
+	file.store_line("按键历史记录: %d" % press_history.size())
+	file.store_line("blk1: %s" % text1)
+	file.store_line("blk2: %s" % text2)
 	
 	file.store_line("# ------------------------")
 	file.store_line("# The following is CSV format data, one record per line")
