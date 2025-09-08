@@ -10,7 +10,7 @@ extends Control
 
 @onready var label_t = $VBox/TimerLabel  # 用于显示倒计时的标签
 
-var time_left : int = 180
+var time_left : int = 900
 var countdownTimer
 ############## Variable set in func BLKs ################
 var press_num_slot 
@@ -49,7 +49,7 @@ var exclude_nodes_for_refresh
 func _ready():
 	ifrelease()
 	get_tree().auto_accept_quit = false	
-	set_countdownTimer(false)
+	set_countdownTimer(true)
 	Global.init_write() # Initialize storage directory
 	init_ui() # Initialize UI
 	init_task() # Initialize the task
@@ -96,8 +96,8 @@ func generate_all_trials(case = null):
 			reward_given_timepoint_template = []
 			hold_reward_template=[]
 			opt_out_reward_template =[]
-			blk_("full", "norm", 1, 2,20,-2,5, 120,120, _min=8, _max=20) 
-			blk_("random", "flat", 2,  2,20,-2,5, 100,200, _min=3, _max=100,)
+			blk_("full", "norm", 1, 2,20,-2,5, 120,120,  8, 20) 
+			blk_("random", "flat", 2,  2,20,-2,5, 100,200,  3,100)
 	
 			# set blk switch
 		_: # Case _: Easy mode
@@ -114,13 +114,13 @@ func generate_all_trials(case = null):
 			opt_out_reward_template.fill(2)
 
 
-func blk_(_reward_chance_mode,distribution_type,save_loc,
+func blk_(_reward_chance_mode, distribution_type, save_loc,
 		# rwd value: a,b,hold; c,d,opt-out
 		a,b,c,d,
 		# tr_num range:
 		tr_num1, tr_num2,
 		 #	reward_given_timepoint press:
-		e_min=0,e_max=0, _min=0,_max=0):
+		_min=0,_max=0):
 			
 	var dice
 	var timepoint
@@ -133,9 +133,10 @@ func blk_(_reward_chance_mode,distribution_type,save_loc,
 
 	match _reward_chance_mode:
 		"full":
-			Global.total_reward_chance = 1
+			total_reward_chance = 1
 		"random":
 			total_reward_chance = MathUtils.generate_random(0.5,1,"float") # set total reward chance
+
 
 	# data generated, depend on distribution type
 	for i in range(number_of_trials):
@@ -143,8 +144,8 @@ func blk_(_reward_chance_mode,distribution_type,save_loc,
 		if dice <= total_reward_chance:
 			match distribution_type:
 				"norm": # Normal distribution
-					mu=MathUtils.generate_random(_min, _max,"int")
-					variance=1
+					var mu=MathUtils.generate_random(_min, _max,"int")
+					var variance=MathUtils.generate_random(0, 0.5* mu,"float")
 					while true: # Avoid generating negative numbers
 						timepoint = MathUtils.normrnd(mu, variance)
 						if timepoint > 0:
@@ -214,6 +215,15 @@ func reset_scene():
 
 
 # MARK: Buttons Response
+
+func _input(event):
+	if event.is_action_released("press_optout_button"):
+		if not opt_out_button.disabled:
+			opt_out_button.emit_signal("pressed")
+	if event.is_action_released("press_hold_button"):
+		if not hold_button.disabled:
+			hold_button.emit_signal("pressed")
+
 # When the button is released
 func _on_hold_button_pressed():
 	# Get the current timestamp (seconds)
@@ -312,6 +322,8 @@ func hide_all_children():
 		# 停用互动元素
 		if "disabled" in child:
 			child.disabled = true
+	hold_button.disabled = true
+	opt_out_button.disabled = true
 
 # Restore all child nodes to their original state
 func restore_all_children():
@@ -322,10 +334,12 @@ func restore_all_children():
 		# 恢复互动状态
 		if original_states[child]["disabled"] != null:
 			child.disabled = original_states[child]["disabled"]
+	hold_button.disabled = false
+	opt_out_button.disabled = false
 	
 	original_states.clear()
 
-
+# MARK: Timer
 func set_countdownTimer(ifset:bool):
 	if ifset == true:
 		countdownTimer = Timer.new()

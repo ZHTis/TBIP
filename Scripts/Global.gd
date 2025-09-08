@@ -77,8 +77,15 @@ func write_subject_data_to_file(filename) -> void:
 	file.store_line("被试者名称: %s" % subject_name)
 	file.store_line("试验次数: %d" % num_of_trials)
 	file.store_line("按键历史记录: %d" % press_history.size())
+	file.store_line("wealth: %d" % wealth)
 	file.store_line("blk1: %s" % text1)
 	file.store_line("blk2: %s" % text2)
+	file.store_line("blk3: %s" % text3)
+	file.store_line("blk4: %s" % text4)
+	file.store_line("blk5: %s" % text5)
+	file.store_line("blk6: %s" % text6)
+	
+
 	
 	file.store_line("# ------------------------")
 	file.store_line("# The following is CSV format data, one record per line")
