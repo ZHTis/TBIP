@@ -84,7 +84,7 @@ func _process(delta):
 
 func init_task(): # Initialize task, BLK design
 	Global.press_history = [] # Clear press history
-	generate_block(1) # Generate a block of trials
+	generate_all_trials(1) # Generate a block of trials
 	# Start 1st Trial
 	init_trial()
 
@@ -104,7 +104,7 @@ func init_ui():
 func update_timer_display(remaining):
 	label_t.text = str(remaining)   
 
-func generate_block(case = null):
+func generate_all_trials(case = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
 	match case:
 		1: # finished
