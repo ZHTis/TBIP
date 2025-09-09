@@ -7,7 +7,8 @@ extends Control
 @onready var hold_button_label = $MenuButton/Text
 @onready var opt_out_button_label = $MenuButton2/Text
 @onready var vbox = $VBox
-
+@onready var vboxtop = $VBoxTop
+@onready var quitButton = $VBoxTop/QuitButton
 @onready var label_t = $VBox/TimerLabel  # 用于显示倒计时的标签
 
 var time_left : int = 900
@@ -51,7 +52,6 @@ func _ready():
 	get_tree().auto_accept_quit = false	
 	set_countdownTimer(true)
 	Global.init_write() # Initialize storage directory
-	init_ui() # Initialize UI
 	init_task() # Initialize the task
 	
 
@@ -72,6 +72,7 @@ func ifrelease():
 
 # MARK: TASK
 func init_task(): # Initialize task, BLK design
+	init_ui()
 	Global.press_history = [] # Clear press history
 	Global.wealth = 0 # Initialize Global.wealth
 	trial_count = 0
@@ -183,7 +184,7 @@ func blk_(_reward_chance_mode, distribution_type, save_loc,
 			Global.text1 = text
 	
 
-#  unfinished
+#  MARK: Reset
 func init_trial():
 	if trial_count >=number_of_trials:
 		hide_all_children()
@@ -199,7 +200,9 @@ func init_trial():
 	opt_out_reward = opt_out_reward_template[trial_count-1]
 	reward_given_timepoint = reward_given_timepoint_template[trial_count-1]
 	print("trial", trial_count, "\nreward: ", reward,"\t" ,opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
-	
+	init_ui()
+
+
 func reset_scene():
 	# Reset the scene
 	hide_all_children()
@@ -267,17 +270,29 @@ func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: Pr
 
 
 # MARK: UI
-func init_ui():
+func place_button(if_opt_left):
 	# 获取窗口尺寸
 	var window_size = get_viewport_rect().size
 	var root = get_node("/root/Node2D" )
 	root.set_anchors_and_offsets_preset( PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE)# this is important!
-	LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.85, window_size)
-	LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
-	LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
+	LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.95, window_size)
+	LayoutManager.setup(vboxtop, PRESET_CENTER, 0.5, 0.05, window_size)
+	match if_opt_left:
+		"left":
+			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
+			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
+		"right":
+			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.35, 0.4, window_size)
+			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.65, 0.4, window_size)
 	exclude_nodes_for_refresh = [vbox.name]
 	
-
+func init_ui():
+	var if_opt_left = MathUtils.generate_random(0,1,"float")
+	if if_opt_left >=0.5:
+		place_button("left") # Initialize UI
+	else:
+		place_button("right") # Initialize UI with optout on the right
+	
 
 # MARK: Label Refresh
 func _label_refresh(wealth,num_of_press,case):
@@ -289,11 +304,14 @@ func _label_refresh(wealth,num_of_press,case):
 	label_2.text = " Your wealth: " + str(wealth)
 	match case:
 		"opt_out":
-			label_1.text = "Opt Out!"
+			if opt_out_reward >= 0:
+				label_1.text = "Opt Out! +" +str(opt_out_reward)
+			else:	
+				label_1.text = "Opt Out! "+str(opt_out_reward)
 		"pressing...":
 			label_1.text = str(num_of_press)
 		"reward_given":
-			label_1.text = "Reward given!"
+			label_1.text = "Tokens added! +" +str(reward)
 			reward_given_flag = false
 		"init":
 			label_1.text = "Press the button to earn rewards"

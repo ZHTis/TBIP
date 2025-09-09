@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://dnbd1ds28c1bg"]
+[gd_scene load_steps=5 format=3 uid="uid://dnbd1ds28c1bg"]
 
 [ext_resource type="Script" uid="uid://4yswnbgludcw" path="res://Scripts/main.gd" id="1_h2yge"]
 [ext_resource type="Texture2D" uid="uid://yc810m0t01te" path="res://icon.svg" id="1_ul4es"]
 [ext_resource type="LabelSettings" uid="uid://ci500ljqmykcn" path="res://label_setting_1.tres" id="3_h2yge"]
+[ext_resource type="LabelSettings" uid="uid://d4hcbsid2yp8" path="res://label_setting_wealth.tres" id="4_1bvp3"]
 
 [node name="Node2D" type="Control"]
 layout_mode = 3
@@ -11,13 +12,52 @@ offset_top = -4.0
 offset_bottom = -4.0
 script = ExtResource("1_h2yge")
 
-[node name="MenuButton" type="Control" parent="."]
+[node name="MenuButton2" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 203.0
 offset_top = 58.0
 offset_right = 541.0
 offset_bottom = 363.0
+
+[node name="Text" type="Label" parent="MenuButton2"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -74.0
+offset_top = 12.0
+offset_right = 75.0
+offset_bottom = 70.0
+grow_horizontal = 2
+text = "￥2"
+label_settings = ExtResource("3_h2yge")
+horizontal_alignment = 1
+
+[node name="OptOutButton" type="Button" parent="MenuButton2"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -148.0
+offset_top = -231.0
+offset_right = 148.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 0
+icon = ExtResource("1_ul4es")
+icon_alignment = 1
+expand_icon = true
+
+[node name="MenuButton" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 711.0
+offset_top = 157.0
+offset_right = 1049.0
+offset_bottom = 462.0
 
 [node name="Text" type="Label" parent="MenuButton"]
 layout_mode = 1
@@ -50,45 +90,6 @@ icon = ExtResource("1_ul4es")
 icon_alignment = 1
 expand_icon = true
 
-[node name="MenuButton2" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 617.0
-offset_top = 64.0
-offset_right = 955.0
-offset_bottom = 355.0
-
-[node name="Text" type="Label" parent="MenuButton2"]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -74.0
-offset_top = 12.0
-offset_right = 75.0
-offset_bottom = 70.0
-grow_horizontal = 2
-text = "￥0"
-label_settings = ExtResource("3_h2yge")
-horizontal_alignment = 1
-
-[node name="OptOutButton" type="Button" parent="MenuButton2"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -29.0
-offset_top = -87.0
-offset_right = 34.0
-offset_bottom = -22.0
-grow_horizontal = 2
-grow_vertical = 0
-icon = ExtResource("1_ul4es")
-icon_alignment = 1
-expand_icon = true
-
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -107,7 +108,7 @@ grow_vertical = 2
 layout_mode = 2
 text = "test
 "
-label_settings = ExtResource("3_h2yge")
+label_settings = ExtResource("4_1bvp3")
 horizontal_alignment = 1
 vertical_alignment = 2
 
@@ -125,3 +126,21 @@ text = "text
 "
 label_settings = ExtResource("3_h2yge")
 horizontal_alignment = 1
+
+[node name="VBoxTop" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = 541.0
+offset_top = 12.0
+offset_right = 669.0
+offset_bottom = 419.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="QuitButton" type="Button" parent="VBoxTop"]
+layout_mode = 2
+text = "QUIT"
