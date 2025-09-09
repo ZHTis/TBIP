@@ -108,9 +108,15 @@ func generate_all_trials(case_ = null):
 			reward_given_timepoint_template = []
 			hold_reward_template=[]
 			opt_out_reward_template =[]
-			blk_("full", "norm", 1, 2,20,-2,5, 120,120,  8, 20) 
-			blk_("random", "flat", 2,  2,20,-2,5, 100,200,  3,100)
-	
+			blk_("random", "norm", 1, 2,20,-2,5, 60,150,  8,40) 
+			blk_("random", "norm", 2,  2,20,-2,5, 60,150,  8,40)
+			blk_("random", "norm", 3,  2,20,-2,5, 60,150,  8,40)
+			blk_("random", "norm", 4,  2,20,-2,5, 60,150,  8,40)
+			blk_("random", "norm", 5,  2,20,-2,5, 60,150,  8,40)
+			blk_("random", "norm", 6,  2,20,-2,5, 60,150,  8,40)
+			blk_("random", "norm", 7,  2,20,-2,5, 60,150,  8,40)
+			blk_("random", "norm", 8,  2,20,-2,5, 60,150,  8,40)
+
 			# set blk switch
 		_: # Case _: Easy mode
 			print("Case _: Easy mode")
@@ -125,7 +131,7 @@ func generate_all_trials(case_ = null):
 			opt_out_reward_template.resize(number_of_trials)
 			opt_out_reward_template.fill(2)
 
-
+# MARK: BLK
 func blk_(_reward_chance_mode, distribution_type, save_loc,
 		# rwd value: a,b,hold; c,d,opt-out
 		a,b,c,d,
@@ -137,8 +143,11 @@ func blk_(_reward_chance_mode, distribution_type, save_loc,
 	var dice
 	var timepoint
 	var reward_given_timepoint_template_this_blk = []
+	var hold_reward_template_this_blk = []
+	var opt_out_reward_template_this_blk = []
 	# rnd tr_num
-	number_of_trials += MathUtils.generate_random(tr_num1, tr_num2,"int")
+	var number_of_trials_this_blk = MathUtils.generate_random(tr_num1, tr_num2,"int")
+	number_of_trials += number_of_trials_this_blk
 
 	print("number_of_trials: ", number_of_trials)
 	Global.num_of_trials = number_of_trials
@@ -147,17 +156,21 @@ func blk_(_reward_chance_mode, distribution_type, save_loc,
 		"full":
 			total_reward_chance = 1
 		"random":
-			total_reward_chance = MathUtils.generate_random(0.5,1,"float") # set total reward chance
-
-
+			var total_reward_chance_structure = [0.5,0.6,0.7,0.8,0.9,1]
+			var _dice = MathUtils.generate_random(0,5,"int")
+			total_reward_chance = total_reward_chance_structure[_dice] # set total reward chance
+	var mu
+	var variance
 	# data generated, depend on distribution type
-	for i in range(number_of_trials):
+	for i in range(number_of_trials_this_blk):
 		dice = MathUtils.generate_random(0,1,"float") # set total reward chance 
 		if dice <= total_reward_chance:
 			match distribution_type:
 				"norm": # Normal distribution
-					var mu=MathUtils.generate_random(_min, _max,"int")
-					var variance=MathUtils.generate_random(0, 0.5* mu,"float")
+					mu  =MathUtils.generate_random(_min, _max,"int")
+					variance = MathUtils.generate_random(0, 0.5* mu,"float")
+					variance = roundf(variance *1000) /100
+					variance = variance /10
 					while true: # Avoid generating negative numbers
 						timepoint = MathUtils.normrnd(mu, variance)
 						if timepoint > 0:
@@ -174,28 +187,37 @@ func blk_(_reward_chance_mode, distribution_type, save_loc,
 			reward_given_timepoint_template_this_blk.append(null)
 	# rnd rwd value for each trial
 	
-	for i in range(number_of_trials):
+	for i in range(number_of_trials_this_blk):
 		var random_h = MathUtils.generate_random(a,b)  # Press and hold reward
 		var random_o = MathUtils.generate_random(c,d) # Opt-out reward
 		hold_reward_template.append(random_h) # Hold reward
 		opt_out_reward_template.append(random_o) # Opt-out reward
+		hold_reward_template_this_blk.append(random_h) # Hold reward
+		opt_out_reward_template_this_blk.append(random_o) # Opt-out reward
 	
 
 	var text1 = "reward_given_timepoint_template_this_blk : %s" % str(reward_given_timepoint_template_this_blk)
-	var text2 = "hold_reward_template : %s" % str(hold_reward_template)
-	var text3 = "opt_out_reward_template : %s" % str(opt_out_reward_template)
+	var text2 = "hold_reward_template_this_blk : %s" % str(hold_reward_template_this_blk)
+	var text3 = "opt_out_reward_template_this_blk : %s" % str(opt_out_reward_template_this_blk)
 	var text4 = "total_reward_chance: %s" % str(total_reward_chance)
-	var text5 = "number_of_trials: %s" % str(number_of_trials)
-	var text = text1 + "\n" + text2 + "\n" + text3 + "\n" + text4 + "\n" + text5
-	print(text)
+	var text5 = "number_of_trials_accumulated: %s" % str(number_of_trials)
+	var text8 = "number_of_trials_this_blk: %s" % str(number_of_trials_this_blk)
+	var text6 = "distribution_type: %s" % str(distribution_type)
+	var text7 = "mu, variance: %s, %s" % [str(mu) , str(variance)]
+	var text = text1 + "\n" + text2 + "\n" + text3 + "\n" + text4 + "\n" + text5 + "\n" + text8 + "\n" + text6 + "\n" + text7 + "\n"
+	
 	match save_loc:
-		2: # Save to file			
-			Global.text2 = text
-		1: # Print to console
-			Global.text1 = text
+		2: Global.text2 = text
+		1: Global.text1 = text
+		3: Global.text3 = text
+		4: Global.text4 = text
+		5: Global.text5 = text
+		6: Global.text6 = text
+		7: Global.text7 = text
+		8: Global.text8 = text
 
 
-#  MARK: Reset
+#MARK: Reset
 func init_trial():
 	if trial_count >=number_of_trials:
 		hide_nodes(exclude_nodes_for_hide_cards,original_states)
