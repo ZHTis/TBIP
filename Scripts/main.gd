@@ -1,14 +1,17 @@
 extends Control
 # Node reference
-@onready var label_1 = get_node("/root/Node2D/VBox/Label" )
+@onready var label_1 = $VBox/Label
 @onready var label_2 = get_node("/root/Node2D/VBox/Label2" )
 @onready var hold_button = $MenuButton/HoldButton
 @onready var opt_out_button = $MenuButton2/OptOutButton
 @onready var hold_button_label = $MenuButton/Text
 @onready var opt_out_button_label = $MenuButton2/Text
 @onready var vbox = $VBox
-@onready var vboxtop = $VBoxTop
-@onready var quitButton = $VBoxTop/QuitButton
+@onready var vboxstart = $VBoxSTART
+@onready var vboxbottom = $VBoxBottom
+@onready var quitButton = $VBoxBottom/QuitButton
+@onready var startButton = $VBoxSTART/StartButton
+@onready var label_startbtn = $VBoxBottom/Label
 @onready var label_t = $VBox/TimerLabel  # 用于显示倒计时的标签
 
 var time_left : int = 900
@@ -17,7 +20,7 @@ var countdownTimer
 var press_num_slot 
 var hold_reward_probabilities
 var total_reward_chance
-var inter_trial_interval 
+var _interval 
 var step # timewindow step
 var mean 
 var variance
@@ -26,10 +29,11 @@ var min_hold_reward
 var max_hold_reward 
 var min_opt_out_reward
 var max_opt_out_reward
-var case
+var if_opt_left
 #################################################
 ## Function variables
 var trial_count
+var initialized_flag : bool = false
 # time variable
 var start_time : float = 0.0
 var num_of_press : int = 0
@@ -43,15 +47,19 @@ var hold_reward_template
 var opt_out_reward_template 
 # Store the original state for recovery (processing possible initial hidden elements)
 var original_states = {}
-var exclude_nodes_for_refresh
+var original_states_2 = {}
+var exclude_nodes_for_hide_cards
+var exclude_nodes_for_srart_menu
 
 
 
 func _ready():
 	ifrelease()
 	get_tree().auto_accept_quit = false	
-	set_countdownTimer(true)
+	set_countdownTimer(false)
 	Global.init_write() # Initialize storage directory
+	exclude_nodes_for_hide_cards = [vbox.name, vboxstart.name, vboxbottom.name]
+	exclude_nodes_for_srart_menu = [vboxstart.name, vboxbottom.name]
 	init_task() # Initialize the task
 	
 
@@ -72,11 +80,12 @@ func ifrelease():
 
 # MARK: TASK
 func init_task(): # Initialize task, BLK design
-	init_ui()
+	if_opt_left = MathUtils.generate_random(0,1,"float")
 	Global.press_history = [] # Clear press history
 	Global.wealth = 0 # Initialize Global.wealth
 	trial_count = 0
 	number_of_trials = 0
+	initialized_flag = false
 	generate_all_trials(1) # Generate a block of trials
 	# Start 1st Trial
 	init_trial()
@@ -84,15 +93,17 @@ func init_task(): # Initialize task, BLK design
 	# Connect button signal
 	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
+	startButton.pressed.connect(_on_start_button_pressed)
+	quitButton.pressed.connect(_on_quit_button_pressed)
 
 
-func generate_all_trials(case = null):
+func generate_all_trials(case_ = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
-	match case:
+	match case_:
 		
 		1: # unfinished
 			print("=======Case 2: Random reward chance/value//distribution/tr_num =======")
-			inter_trial_interval = 0.8
+			_interval = 0.5
 
 			reward_given_timepoint_template = []
 			hold_reward_template=[]
@@ -105,7 +116,7 @@ func generate_all_trials(case = null):
 			print("Case _: Easy mode")
 			number_of_trials = 10 # Default number of trials
 			Global.num_of_trials = number_of_trials
-			inter_trial_interval = 0.8
+			_interval = 0.8
 			reward_given_timepoint = 3 # Default time point to give reward
 			hold_reward_template= []
 			hold_reward_template.resize(number_of_trials)
@@ -182,14 +193,18 @@ func blk_(_reward_chance_mode, distribution_type, save_loc,
 			Global.text2 = text
 		1: # Print to console
 			Global.text1 = text
-	
+
 
 #  MARK: Reset
 func init_trial():
 	if trial_count >=number_of_trials:
-		hide_all_children()
+		hide_nodes(exclude_nodes_for_hide_cards,original_states)
 		trial_count += 1
 		return 
+	if initialized_flag == false:
+		reset_scene_to_start_button()
+		initialized_flag = true
+		return
 	trial_count += 1
 	# Initialize the test status
 	reward_given_flag = false
@@ -200,18 +215,31 @@ func init_trial():
 	opt_out_reward = opt_out_reward_template[trial_count-1]
 	reward_given_timepoint = reward_given_timepoint_template[trial_count-1]
 	print("trial", trial_count, "\nreward: ", reward,"\t" ,opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
-	init_ui()
+	if_opt_left = MathUtils.generate_random(0,1,"float")
+	init_trial_ui()
 
 
-func reset_scene():
+func reset_scene_to_start_button():
 	# Reset the scene
-	hide_all_children()
-	await get_tree().create_timer(inter_trial_interval).timeout
+	if trial_count > 1:
+		original_states = hide_nodes(exclude_nodes_for_hide_cards,original_states)
+		await get_tree().create_timer(_interval).timeout
+	original_states_2 = hide_nodes([],original_states_2)
+	await get_tree().create_timer(_interval).timeout
+	quitButton.disabled = false
+	startButton.disabled = false
+	vboxstart.visible = true
+	vboxbottom.visible = true
+	
+
+func reset_to_start_next_trial():
 	if trial_count <= number_of_trials:
 		init_trial()
-		restore_all_children()
+		restore_nodes(original_states_2)
+		restore_nodes(original_states)
 		# Reset status
 		_label_refresh(Global.wealth,num_of_press,"init")
+
 	if trial_count > number_of_trials:
 		_label_refresh(Global.wealth,num_of_press,"finish")
 		end()
@@ -248,7 +276,7 @@ func _on_hold_button_pressed():
 			print("hold-reward_given_flag  ",reward_given_flag)
 			_label_refresh(Global.wealth,num_of_press,"reward_given")
 			record_press_data(current_time, trial_count, true, PressData.BtnType.HOLD)
-			reset_scene()
+			reset_scene_to_start_button()
 
 
 func _on_opt_out_button_pressed():
@@ -258,7 +286,13 @@ func _on_opt_out_button_pressed():
 	reward_given_flag = true
 	_label_refresh(Global.wealth, num_of_press, "opt_out")
 	record_press_data(current_time,trial_count, reward_given_flag, PressData.BtnType.OPT_OUT)
-	reset_scene()
+	reset_scene_to_start_button()
+
+func _on_quit_button_pressed():
+	get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
+
+func _on_start_button_pressed():
+	reset_to_start_next_trial()
 
 # 封装记录按键数据的函数
 func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: PressData.BtnType) -> void:
@@ -275,34 +309,38 @@ func place_button(if_opt_left):
 	var window_size = get_viewport_rect().size
 	var root = get_node("/root/Node2D" )
 	root.set_anchors_and_offsets_preset( PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE)# this is important!
-	LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.95, window_size)
-	LayoutManager.setup(vboxtop, PRESET_CENTER, 0.5, 0.05, window_size)
+	LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.25, window_size)
+	LayoutManager.setup(vboxstart, PRESET_CENTER, 0.5, 0.5, window_size)
+	LayoutManager.setup(vboxbottom, PRESET_CENTER, 0.5, 0.85, window_size)
 	match if_opt_left:
 		"left":
-			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
-			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
+			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.6, window_size)
+			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.6, window_size)
 		"right":
-			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.35, 0.4, window_size)
-			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.65, 0.4, window_size)
-	exclude_nodes_for_refresh = [vbox.name]
+			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.35, 0.6, window_size)
+			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.65, 0.6, window_size)
 	
-func init_ui():
-	var if_opt_left = MathUtils.generate_random(0,1,"float")
+
+func init_trial_ui():
 	if if_opt_left >=0.5:
 		place_button("left") # Initialize UI
 	else:
 		place_button("right") # Initialize UI with optout on the right
-	
+
+
+func _process(delta):
+	init_trial_ui()
+
 
 # MARK: Label Refresh
-func _label_refresh(wealth,num_of_press,case):
+func _label_refresh(wealth,num_of_press,case_text):
 	# 更新UI
 	var hold_reward = reward
 	var opt_out_reward = opt_out_reward
-	hold_button_label.text = "$" + str(hold_reward) 
-	opt_out_button_label.text = "$" + str(opt_out_reward) 
-	label_2.text = " Your wealth: " + str(wealth)
-	match case:
+	hold_button_label.text = "" + str(hold_reward) 
+	opt_out_button_label.text = "" + str(opt_out_reward) 
+	label_2.text = " Your Tokens: " + str(wealth)
+	match case_text:
 		"opt_out":
 			if opt_out_reward >= 0:
 				label_1.text = "Opt Out! +" +str(opt_out_reward)
@@ -314,22 +352,32 @@ func _label_refresh(wealth,num_of_press,case):
 			label_1.text = "Tokens added! +" +str(reward)
 			reward_given_flag = false
 		"init":
-			label_1.text = "Press the button to earn rewards"
+			if trial_count <= 1:
+				label_startbtn.text = "Press the Disk to Start"
+				label_1.text = "Press any of the buttons to earn tokens"
+			else:
+				label_startbtn.text = ""
+				label_1.text = ""
+			quitButton.disabled = true
+			startButton.disabled = true
+			vboxstart.visible = false
+			vboxbottom.visible = false
 		"finish":
 			label_1.text = "Finished!\n Close the window to exit"	
 		_:
-			label_1.text = ""
+			pass
+			
 
 
 # Hide all child nodes and deactivate interactive elements
-func hide_all_children():
+func hide_nodes(_list,_original_states):
 	# 先保存所有子节点的原始状态
-	original_states.clear()
+	_original_states.clear()
 	for child in get_children():
-		if child.name in exclude_nodes_for_refresh:
+		if child.name in _list:
 			continue  # 跳过不需要隐藏的节点
 	
-		original_states[child] = {
+		_original_states[child] = {
 			"visible": child.visible,
 			"disabled": child.disabled if "disabled" in child else null
 		}
@@ -342,20 +390,21 @@ func hide_all_children():
 			child.disabled = true
 	hold_button.disabled = true
 	opt_out_button.disabled = true
+	return _original_states
 
 # Restore all child nodes to their original state
-func restore_all_children():
-	for child in original_states:
+func restore_nodes(states):
+	for child in states:
 		# 恢复可见性
-		child.visible = original_states[child]["visible"]
+		child.visible = states[child]["visible"]
 		
 		# 恢复互动状态
-		if original_states[child]["disabled"] != null:
-			child.disabled = original_states[child]["disabled"]
+		if states[child]["disabled"] != null:
+			child.disabled = states[child]["disabled"]
 	hold_button.disabled = false
 	opt_out_button.disabled = false
 	
-	original_states.clear()
+	states.clear()
 
 # MARK: Timer
 func set_countdownTimer(ifset:bool):

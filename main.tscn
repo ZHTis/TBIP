@@ -1,9 +1,13 @@
-[gd_scene load_steps=5 format=3 uid="uid://dnbd1ds28c1bg"]
+[gd_scene load_steps=8 format=3 uid="uid://dnbd1ds28c1bg"]
 
 [ext_resource type="Script" uid="uid://4yswnbgludcw" path="res://Scripts/main.gd" id="1_h2yge"]
-[ext_resource type="Texture2D" uid="uid://yc810m0t01te" path="res://icon.svg" id="1_ul4es"]
+[ext_resource type="Texture2D" uid="uid://bx87lnkg4dodb" path="res://图片3.svg" id="3_7mycd"]
 [ext_resource type="LabelSettings" uid="uid://ci500ljqmykcn" path="res://label_setting_1.tres" id="3_h2yge"]
 [ext_resource type="LabelSettings" uid="uid://d4hcbsid2yp8" path="res://label_setting_wealth.tres" id="4_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://chjgyj3t6d0fy" path="res://图片2.svg" id="4_272bh"]
+[ext_resource type="Texture2D" uid="uid://kals2uscydo8" path="res://图片1.svg" id="6_5vw27"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_7mycd"]
 
 [node name="Node2D" type="Control"]
 layout_mode = 3
@@ -47,7 +51,8 @@ offset_right = 148.0
 offset_bottom = 60.0
 grow_horizontal = 2
 grow_vertical = 0
-icon = ExtResource("1_ul4es")
+icon = ExtResource("3_7mycd")
+flat = true
 icon_alignment = 1
 expand_icon = true
 
@@ -86,7 +91,8 @@ offset_right = 148.0
 offset_bottom = 60.0
 grow_horizontal = 2
 grow_vertical = 0
-icon = ExtResource("1_ul4es")
+icon = ExtResource("4_272bh")
+flat = true
 icon_alignment = 1
 expand_icon = true
 
@@ -97,10 +103,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 564.0
-offset_top = 477.0
-offset_right = 594.0
-offset_bottom = 579.0
+offset_left = 509.0
+offset_top = 444.0
+offset_right = 637.0
+offset_bottom = 851.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -127,20 +133,52 @@ text = "text
 label_settings = ExtResource("3_h2yge")
 horizontal_alignment = 1
 
-[node name="VBoxTop" type="VBoxContainer" parent="."]
+[node name="VBoxSTART" type="VBoxContainer" parent="."]
+layout_mode = 2
+offset_left = -200.0
+offset_top = 164.0
+offset_right = 1024.0
+offset_bottom = 1367.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.125, 0.125)
+
+[node name="StartButton" type="Button" parent="VBoxSTART"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+size_flags_stretch_ratio = 4.15
+focus_mode = 0
+icon = ExtResource("6_5vw27")
+flat = true
+autowrap_mode = 1
+icon_alignment = 1
+
+[node name="VBoxBottom" type="VSplitContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = 541.0
-offset_top = 12.0
-offset_right = 669.0
-offset_bottom = 419.0
+offset_left = -296.0
+offset_top = 508.0
+offset_right = 56.0
+offset_bottom = 700.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="QuitButton" type="Button" parent="VBoxTop"]
+[node name="Label" type="Label" parent="VBoxBottom"]
 layout_mode = 2
+text = "test"
+label_settings = SubResource("LabelSettings_7mycd")
+horizontal_alignment = 1
+vertical_alignment = 2
+clip_text = true
+
+[node name="QuitButton" type="Button" parent="VBoxBottom"]
+layout_mode = 2
+size_flags_vertical = 8
+size_flags_stretch_ratio = 4.7
 text = "QUIT"
+icon_alignment = 1
