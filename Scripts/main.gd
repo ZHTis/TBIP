@@ -4,8 +4,8 @@ extends Control
 @onready var label_2 = get_node("/root/Node2D/VBox/Label2" )
 @onready var hold_button = $MenuButton/HoldButton
 @onready var opt_out_button = $MenuButton2/OptOutButton
-@onready var hold_button_label = $MenuButton/Text
-@onready var opt_out_button_label = $MenuButton2/Text
+@onready var hold_button_label = $MenuButton/HoldButton/Text
+@onready var opt_out_button_label = $MenuButton2/OptOutButton/Text
 @onready var vbox = $VBox
 @onready var vboxstart = $VBoxSTART
 @onready var vboxbottom = $VBoxBottom
@@ -86,15 +86,17 @@ func init_task(): # Initialize task, BLK design
 	trial_count = 0
 	number_of_trials = 0
 	initialized_flag = false
-	generate_all_trials(1) # Generate a block of trials
-	# Start 1st Trial
-	init_trial()
-	_label_refresh(Global.wealth, num_of_press, "init")
 	# Connect button signal
 	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
+	# Generate a block of trials
+	generate_all_trials(1) 
+	# Start 1st Trial
+	init_trial()
+	_label_refresh(Global.wealth, num_of_press, "init")
+	
 
 
 func generate_all_trials(case_ = null):
@@ -108,14 +110,14 @@ func generate_all_trials(case_ = null):
 			reward_given_timepoint_template = []
 			hold_reward_template=[]
 			opt_out_reward_template =[]
-			blk_("random", "norm", 1, 2,20,-2,5, 60,150,  8,40) 
-			blk_("random", "norm", 2,  2,20,-2,5, 60,150,  8,40)
-			blk_("random", "norm", 3,  2,20,-2,5, 60,150,  8,40)
-			blk_("random", "norm", 4,  2,20,-2,5, 60,150,  8,40)
-			blk_("random", "norm", 5,  2,20,-2,5, 60,150,  8,40)
-			blk_("random", "norm", 6,  2,20,-2,5, 60,150,  8,40)
-			blk_("random", "norm", 7,  2,20,-2,5, 60,150,  8,40)
-			blk_("random", "norm", 8,  2,20,-2,5, 60,150,  8,40)
+			blk_("full", "norm", 1, 60,150,  8,40) 
+			blk_("random", "norm", 2, 60,150,  8,40)
+			blk_("random", "norm", 3, 60,150,  8,40)
+			blk_("random", "norm", 4, 60,150,  8,40)
+			blk_("random", "norm", 5, 60,150,  8,40)
+			blk_("random", "norm", 6, 60,150,  8,40)
+			blk_("random", "norm", 7, 60,150,  8,40)
+			blk_("random", "norm", 8, 60,150,  8,40)
 
 			# set blk switch
 		_: # Case _: Easy mode
@@ -133,8 +135,7 @@ func generate_all_trials(case_ = null):
 
 # MARK: BLK
 func blk_(_reward_chance_mode, distribution_type, save_loc,
-		# rwd value: a,b,hold; c,d,opt-out
-		a,b,c,d,
+		# rwd value:
 		# tr_num range:
 		tr_num1, tr_num2,
 		 #	reward_given_timepoint press:
@@ -156,9 +157,11 @@ func blk_(_reward_chance_mode, distribution_type, save_loc,
 		"full":
 			total_reward_chance = 1
 		"random":
-			var total_reward_chance_structure = [0.5,0.6,0.7,0.8,0.9,1]
+			var total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
 			var _dice = MathUtils.generate_random(0,5,"int")
 			total_reward_chance = total_reward_chance_structure[_dice] # set total reward chance
+
+
 	var mu
 	var variance
 	# data generated, depend on distribution type
@@ -179,6 +182,9 @@ func blk_(_reward_chance_mode, distribution_type, save_loc,
 
 				"flat": # flat distribution
 					timepoint = MathUtils.generate_random(_min, _max,"int")
+					
+				"norm_1st":
+					timepoint = 3
 			
 			reward_given_timepoint_template.append(timepoint)
 			reward_given_timepoint_template_this_blk.append(timepoint)
@@ -188,8 +194,18 @@ func blk_(_reward_chance_mode, distribution_type, save_loc,
 	# rnd rwd value for each trial
 	
 	for i in range(number_of_trials_this_blk):
-		var random_h = MathUtils.generate_random(a,b)  # Press and hold reward
-		var random_o = MathUtils.generate_random(c,d) # Opt-out reward
+		var h_value_list= [0,5,10,15,20]
+		var dice_h = MathUtils.generate_random(0,h_value_list.size()-1,"int")
+		var random_h = h_value_list[dice_h]
+		
+		var o_value_list
+		if random_h >=5:
+			o_value_list = [-15,-10,-5, 0, 5]
+		elif random_h == 0:
+			o_value_list = [-15,-10,-5, 0]
+		var dice_o = MathUtils.generate_random(0,o_value_list.size()-1,"int")
+		var random_o = o_value_list[dice_o]
+	
 		hold_reward_template.append(random_h) # Hold reward
 		opt_out_reward_template.append(random_o) # Opt-out reward
 		hold_reward_template_this_blk.append(random_h) # Hold reward
@@ -243,7 +259,7 @@ func init_trial():
 
 func reset_scene_to_start_button():
 	# Reset the scene
-	if trial_count > 1:
+	if trial_count >= 1:
 		original_states = hide_nodes(exclude_nodes_for_hide_cards,original_states)
 		await get_tree().create_timer(_interval).timeout
 	original_states_2 = hide_nodes([],original_states_2)
@@ -374,9 +390,14 @@ func _label_refresh(wealth,num_of_press,case_text):
 			label_1.text = "Tokens added! +" +str(reward)
 			reward_given_flag = false
 		"init":
-			if trial_count <= 1:
+			if trial_count <= 3:
 				label_startbtn.text = "Press the Disk to Start"
-				label_1.text = "Press any of the buttons to earn tokens"
+				if trial_count <= 1:
+					label_1.text = "Press BLUE once to give up, \n or keep pressing RED to earn more tokens"
+				if trial_count == 2:
+					label_1.text = "Value on buttons are tokens you can get if you press them."
+				if trial_count == 3:
+					label_1.text = "If you change your mind, you can always opt out via the BLUE one."
 			else:
 				label_startbtn.text = ""
 				label_1.text = ""
@@ -461,4 +482,11 @@ func _notification(what:int)->void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		if Global.saved_flag == false:
 			end() 
+			cleanup()
 		get_tree().quit()
+
+# 正确释放动态创建的节点
+func cleanup():
+	for child in get_children():
+		if child is CanvasItem:
+			child.queue_free()  # 标记节点在下一帧释放
