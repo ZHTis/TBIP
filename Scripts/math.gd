@@ -300,8 +300,8 @@ static func generate_random(start,stop,type = "int"):
 
 
 static func normrnd(mu, variance) -> float:
-	if variance <= 0.0:
-		print("方差必须大于0  当前值: %f" % variance)
+	if variance < 0.0:
+		print("方差必须非负  当前值: %f" % variance)
 		return 0.0
 	# 计算标准差
 	var sigma: float = sqrt(variance)
