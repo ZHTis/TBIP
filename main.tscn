@@ -118,7 +118,7 @@ grow_vertical = 2
 [node name="Label" type="Label" parent="VBoxBottom"]
 layout_mode = 2
 text = "test"
-label_settings = ExtResource("3_272bh")
+label_settings = ExtResource("3_h2yge")
 horizontal_alignment = 1
 vertical_alignment = 2
 clip_text = true

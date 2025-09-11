@@ -112,26 +112,26 @@ func generate_all_trials(case_ = null):
 			reward_given_timepoint_template = []
 			hold_reward_template=[]
 			opt_out_reward_template =[]
-			blk_("full", "norm_1st", 1, 5,10) 
-			blk_("random_distribution", "norm_after_1st", 2, 5,10)
-			blk_("random_distribution", "norm_after_1st", 3,5,10)
-			blk_("random", "norm_after_1st", 4, 1,2)
-			blk_("random", "norm_after_1st", 5, 1,2)
-			#blk_("random", "norm_after_1st", 6, 1,2)
-			#blk_("random", "norm_after_1st", 7, 1,2)
-			#blk_("random", "norm_after_1st", 8, 1,2)
-			#blk_("random", "norm_after_1st", 9, 1,2)
-			#blk_("random", "norm_after_1st", 10, 1,2)
-			#blk_("random", "norm_after_1st", 11, 1,2)
-			#blk_("random", "norm_after_1st", 12, 1,2)
-			#blk_("random", "norm_after_1st", 13, 1,2)
-			#blk_("random", "norm_after_1st", 14, 1,2)
-			#blk_("random", "norm_after_1st", 15, 1,2)
-			#blk_("random", "norm_after_1st", 16, 1,2)
-			#blk_("random", "norm_after_1st", 17, 1,2)
-			#blk_("random", "norm_after_1st", 18, 1,2)
-			#blk_("random", "norm_after_1st", 19, 1,2)
-			#blk_("random", "norm_after_1st", 20, 1,2)
+			blk_("full", "norm_1st", 1, 20,100) 
+			blk_("random_distribution", "norm_after_1st", 2, 20,100)
+			blk_("random_distribution", "norm_after_1st", 3, 20,100)
+			blk_("random", "norm_after_1st", 4, 20,100)
+			blk_("random", "norm_after_1st", 5, 20,100)
+			blk_("random", "norm_after_1st", 6, 20,100)
+			blk_("random", "norm_after_1st", 7, 20,100)
+			blk_("random", "norm_after_1st", 8, 20,100)
+			blk_("random", "norm_after_1st", 9, 20,100)
+			blk_("random", "norm_after_1st", 10, 20,100)
+			blk_("random", "norm_after_1st", 11, 20,100)
+			blk_("random", "norm_after_1st", 12, 20,100)
+			blk_("random", "norm_after_1st", 13, 20,100)
+			blk_("random", "norm_after_1st", 14, 20,100)
+			blk_("random", "norm_after_1st", 15, 20,100)
+			blk_("random", "norm_after_1st", 16, 20,100)
+			blk_("random", "norm_after_1st", 17, 20,100)
+			blk_("random", "norm_after_1st", 18, 20,100)
+			blk_("random", "norm_after_1st", 19, 20,100)
+			blk_("random", "norm_after_1st", 20, 20,100)
 
 
 			# set blk switch
@@ -262,18 +262,6 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		6: Global.text6 = text
 		7: Global.text7 = text
 		8: Global.text8 = text
-		9: Global.text9 = text
-		10: Global.text10 = text
-		11: Global.text11 = text
-		12: Global.text12 = text
-		13: Global.text13 = text
-		14: Global.text14 = text
-		15: Global.text15 = text
-		16: Global.text16 = text
-		17: Global.text17 = text
-		18: Global.text18 = text
-		19: Global.text19 = text
-		20: Global.text20 = text
 
 
 func blk_distribution(_distribution_type):
@@ -451,7 +439,7 @@ func _label_refresh(wealth,num_of_press,case_text):
 	# 更新UI
 	var hold_reward = reward
 	var opt_out_reward = opt_out_reward
-	hold_button_label.text = "+" + str(hold_reward)
+	hold_button_label.text = "" + str(hold_reward) 
 	opt_out_button_label.text = "" + str(opt_out_reward) 
 	label_2.text = " Your Tokens: " + str(wealth)
 	var neutralcolor = label_startbtn.label_settings.font_color

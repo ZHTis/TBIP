@@ -12,19 +12,6 @@ var text5: String = ""  # 文本5
 var text6: String = ""  # 文本6
 var text7: String = ""  # 文本7
 var text8: String = ""  # 文本8
-var text9: String = ""  # 文本9
-var text10: String = ""  # 文本10
-var text11: String = ""  # 文本11
-var text12: String = ""  # 文本12
-var text13: String = ""  # 文本13
-var text14: String = ""  # 文本14
-var text15: String = ""  # 文本15
-var text16: String = ""  # 文本16
-var text17: String = ""  # 文本17
-var text18: String = ""  # 文本18
-var text19: String = ""  # 文本19
-var text20: String = ""  # 文本20
-
 var iftextEditHasAppear: bool = false
 var wealth: int = 0
 var saved_flag: bool = false
@@ -101,18 +88,6 @@ func write_subject_data_to_file(filename) -> void:
 	file.store_line("blk6: %s" % text6)
 	file.store_line("blk7: %s" % text7)
 	file.store_line("blk8: %s" % text8)
-	file.store_line("blk9: %s" % text9)
-	file.store_line("blk10: %s" % text10)
-	file.store_line("blk11: %s" % text11)
-	file.store_line("blk12: %s" % text12)
-	file.store_line("blk13: %s" % text13)
-	file.store_line("blk14: %s" % text14)
-	file.store_line("blk15: %s" % text15)
-	file.store_line("blk16: %s" % text16)
-	file.store_line("blk17: %s" % text17)
-	file.store_line("blk18: %s" % text18)
-	file.store_line("blk19: %s" % text19)
-	file.store_line("blk20: %s" % text20)
 	file.store_line("# ------------------------")
 	file.store_line("# The following is CSV format data, one record per line")
 	file.store_line("# Format description: serial number, timestamp (ms), reward mark, key type")
