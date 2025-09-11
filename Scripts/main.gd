@@ -113,8 +113,8 @@ func generate_all_trials(case_ = null):
 			hold_reward_template=[]
 			opt_out_reward_template =[]
 			blk_("full", "norm_1st", 1, 60,150) 
-			blk_("random", "norm_after_1st", 2, 60,150)
-			blk_("random", "norm_after_1st", 3, 60,150)
+			blk_("random_distribution", "norm_after_1st", 2, 60,150)
+			blk_("random_distribution", "norm_after_1st", 3, 60,150)
 			blk_("random", "norm_after_1st", 4, 60,150)
 			blk_("random", "norm_after_1st", 5, 60,150)
 			blk_("random", "norm_after_1st", 6, 60,150)
@@ -159,22 +159,30 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 	match _reward_chance_mode:
 		"full":
 			total_reward_chance = 1
+			print("total_reward_chance: ",total_reward_chance)
+		"random_only_dsrtribution":
+			var total_reward_chance_structure = [1, 1,1,1,1,1]#0.95, 0.9, 0.85, 0.8, 0.75]
+			var _dice = MathUtils.generate_random(0,5,"int")
+			total_reward_chance = total_reward_chance_structure[_dice] # set total reward chance
+			print("total_reward_chance: ",total_reward_chance)
 		"random":
 			var total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
 			var _dice = MathUtils.generate_random(0,5,"int")
 			total_reward_chance = total_reward_chance_structure[_dice] # set total reward chance
+			print("total_reward_chance: ",total_reward_chance)
+			
 # from Block N to Block N+1, we either change
 # ONLY the distribution, 
 # or ONLY the reward reliability (%)
 	if _distribution_type == "norm_1st":
 		blk_distribution(_distribution_type)
 		print("mu_rwd_timepoint, variance_rwd_timepoint: ", mu_rwd_timepoint, ", ", variance_rwd_timepoint)
-		print("total_reward_chance: ",total_reward_chance)
+	
 	elif previous_total_reward_chance == total_reward_chance:
 		blk_distribution(_distribution_type)
-		print("change; mu_rwd_timepoint, variance_rwd_timepoint: ", mu_rwd_timepoint, ", ", variance_rwd_timepoint)
+		print("change distribution. mu_rwd_timepoint, variance_rwd_timepoint: ", mu_rwd_timepoint, ", ", variance_rwd_timepoint)
 	else:
-		print("change:total_reward_chance: ",total_reward_chance)
+		print("change total_reward_chance: ",total_reward_chance)
 	
 	# data generated, depend on distribution type
 	for i in range(number_of_trials_this_blk):
@@ -230,7 +238,7 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 	var text8 = "number_of_trials_this_blk: %s" % str(number_of_trials_this_blk)
 	var text6 = "distribution_type: %s" % str(_distribution_type)
 	var text7 = "mu_rwd_timepoint, variance_rwd_timepoint: %s, %s" % [str(mu_rwd_timepoint) , str(variance_rwd_timepoint)]
-	var text = text1 + "\n" + text2 + "\n" + text3 + "\n" + text4 + "\n" + text5 + "\n" + text8 + "\n" + text6 + "\n" + text7 + "\n"
+	var text =  text4 + "\n" +text1 + "\n" + text2 + "\n" + text3 + "\n" + text5 + "\n" + text8 + "\n" + text6 + "\n" + text7 + "\n"
 	
 	match save_loc:
 		2: Global.text2 = text
@@ -421,18 +429,34 @@ func _label_refresh(wealth,num_of_press,case_text):
 	hold_button_label.text = "" + str(hold_reward) 
 	opt_out_button_label.text = "" + str(opt_out_reward) 
 	label_2.text = " Your Tokens: " + str(wealth)
+	var neutralcolor = label_startbtn.label_settings.font_color
+	var positivecolor = Color("GREEN")
+	var negativecolor = Color("PLUM")
 	match case_text:
 		"opt_out":
 			if opt_out_reward >= 0:
-				label_1.text = "Opt Out! +" +str(opt_out_reward)
+				if opt_out_reward == 0:
+					label_1.text = "Tokens  + " +str(reward)
+					label_1.label_settings.font_color = neutralcolor
+				else:
+					label_1.text = "Opt Out! + " +str(opt_out_reward)
+					label_1.label_settings.font_color = positivecolor
 			else:	
 				label_1.text = "Opt Out! "+str(opt_out_reward)
+				label_1.label_settings.font_color = negativecolor
 		"pressing...":
 			label_1.text = str(num_of_press)
+			label_1.label_settings.font_color = neutralcolor
 		"reward_given":
-			label_1.text = "Tokens added! +" +str(reward)
+			if reward == 0:
+				label_1.text = "Tokens  + " +str(reward)
+				label_1.label_settings.font_color = neutralcolor
+			else:
+				label_1.text = "Tokens added! + " +str(reward)
+				label_1.label_settings.font_color = positivecolor
 			reward_given_flag = false
 		"init":
+			label_1.label_settings.font_color = neutralcolor
 			if trial_count <= 3:
 				label_startbtn.text = "Press the Disk to Start"
 				if trial_count <= 1:
