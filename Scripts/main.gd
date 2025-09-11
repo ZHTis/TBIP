@@ -87,8 +87,8 @@ func init_task(): # Initialize task, BLK design
 	trial_count = 0
 	number_of_trials = 0
 	initialized_flag = false
-	changed_dstribution_or_chance_flag = false
-	# Connect button signal
+	changed_dstribution_or_chance_flag
+	# Connect button signa
 	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
 	startButton.pressed.connect(_on_start_button_pressed)
@@ -112,27 +112,14 @@ func generate_all_trials(case_ = null):
 			reward_given_timepoint_template = []
 			hold_reward_template=[]
 			opt_out_reward_template =[]
-			blk_("full", "norm_1st", 1, 5,10) 
-			blk_("random_distribution", "norm_after_1st", 2, 5,10)
-			blk_("random_distribution", "norm_after_1st", 3,5,10)
-			blk_("random", "norm_after_1st", 4, 1,2)
-			blk_("random", "norm_after_1st", 5, 1,2)
-			#blk_("random", "norm_after_1st", 6, 1,2)
-			#blk_("random", "norm_after_1st", 7, 1,2)
-			#blk_("random", "norm_after_1st", 8, 1,2)
-			#blk_("random", "norm_after_1st", 9, 1,2)
-			#blk_("random", "norm_after_1st", 10, 1,2)
-			#blk_("random", "norm_after_1st", 11, 1,2)
-			#blk_("random", "norm_after_1st", 12, 1,2)
-			#blk_("random", "norm_after_1st", 13, 1,2)
-			#blk_("random", "norm_after_1st", 14, 1,2)
-			#blk_("random", "norm_after_1st", 15, 1,2)
-			#blk_("random", "norm_after_1st", 16, 1,2)
-			#blk_("random", "norm_after_1st", 17, 1,2)
-			#blk_("random", "norm_after_1st", 18, 1,2)
-			#blk_("random", "norm_after_1st", 19, 1,2)
-			#blk_("random", "norm_after_1st", 20, 1,2)
-
+			blk_("full", "norm_1st", 1, 60,150) 
+			blk_("random_distribution", "norm_after_1st", 2, 60,150)
+			blk_("random_distribution", "norm_after_1st", 3, 60,150)
+			blk_("random", "norm_after_1st", 4, 60,150)
+			blk_("random", "norm_after_1st", 5, 60,150)
+			blk_("random", "norm_after_1st", 6, 60,150)
+			blk_("random", "norm_after_1st", 7, 60,150)
+			blk_("random", "norm_after_1st", 8, 60,150)
 
 			# set blk switch
 		_: # Case _: Easy mode
@@ -262,18 +249,6 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		6: Global.text6 = text
 		7: Global.text7 = text
 		8: Global.text8 = text
-		9: Global.text9 = text
-		10: Global.text10 = text
-		11: Global.text11 = text
-		12: Global.text12 = text
-		13: Global.text13 = text
-		14: Global.text14 = text
-		15: Global.text15 = text
-		16: Global.text16 = text
-		17: Global.text17 = text
-		18: Global.text18 = text
-		19: Global.text19 = text
-		20: Global.text20 = text
 
 
 func blk_distribution(_distribution_type):
@@ -451,8 +426,16 @@ func _label_refresh(wealth,num_of_press,case_text):
 	# 更新UI
 	var hold_reward = reward
 	var opt_out_reward = opt_out_reward
-	hold_button_label.text = "+" + str(hold_reward)
-	opt_out_button_label.text = "" + str(opt_out_reward) 
+	if  hold_reward != null:
+		if hold_reward <= 0:
+			hold_button_label.text = "" + str(hold_reward)
+		else:
+			hold_button_label.text = "+" + str(hold_reward)
+		if opt_out_reward <= 0:
+			opt_out_button_label.text = "" + str(opt_out_reward) 
+		else:
+			opt_out_button_label.text = "+" + str(opt_out_reward)
+	
 	label_2.text = " Your Tokens: " + str(wealth)
 	var neutralcolor = label_startbtn.label_settings.font_color
 	var positivecolor = Color("GREEN")
@@ -483,7 +466,7 @@ func _label_refresh(wealth,num_of_press,case_text):
 		"init":
 			label_1.label_settings.font_color = neutralcolor
 			if trial_count <= 3:
-				label_startbtn.text = "Press the Disk \n to Start"
+				label_startbtn.text = "Press the Disk to Start"
 				if trial_count <= 1:
 					label_1.text = "Press BLUE once to give up, \n or keep pressing RED to earn more tokens"
 				if trial_count == 2:
