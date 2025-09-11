@@ -87,7 +87,7 @@ func init_task(): # Initialize task, BLK design
 	trial_count = 0
 	number_of_trials = 0
 	initialized_flag = false
-	changed_dstribution_or_chance_flag = false
+	changed_dstribution_or_chance_flag
 	# Connect button signal
 	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
