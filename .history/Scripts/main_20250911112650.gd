@@ -458,7 +458,7 @@ func _label_refresh(wealth,num_of_press,case_text):
 		"init":
 			label_1.label_settings.font_color = neutralcolor
 			if trial_count <= 3:
-				label_startbtn.text = "Press the Disk \n to Start"
+				label_startbtn.text = "Press the Disk to Start"
 				if trial_count <= 1:
 					label_1.text = "Press BLUE once to give up, \n or keep pressing RED to earn more tokens"
 				if trial_count == 2:
