@@ -1,14 +1,16 @@
 extends Control
 # Node reference
 @onready var label_1 = $VBox/Label
-@onready var label_2 = get_node("/root/Node2D/VBox/Label2" )
+@onready var label_2 = get_node("/root/Node2D/VBoxTop/Label2" )
 @onready var hold_button = $MenuButton/HoldButton
+@onready var menuButton = $MenuButton
 @onready var opt_out_button = $MenuButton2/OptOutButton
 @onready var hold_button_label = $MenuButton/HoldButton/Text
 @onready var opt_out_button_label = $MenuButton2/OptOutButton/Text
 @onready var vbox = $VBox
 @onready var vboxstart = $VBoxSTART
 @onready var vboxbottom = $VBoxBottom
+@onready var vboxtop = $VBoxTop
 @onready var quitButton = $VBoxBottom/QuitButton
 @onready var startButton = $VBoxSTART/StartButton
 @onready var label_startbtn = $VBoxBottom/Label
@@ -49,7 +51,7 @@ var opt_out_reward_template
 # Store the original state for recovery (processing possible initial hidden elements)
 var original_states = {}
 var original_states_2 = {}
-var exclude_nodes_for_hide_cards
+var exclude_label_1
 var exclude_nodes_for_srart_menu
 
 
@@ -59,8 +61,8 @@ func _ready():
 	get_tree().auto_accept_quit = false	
 	set_countdownTimer(false)
 	Global.init_write() # Initialize storage directory
-	exclude_nodes_for_hide_cards = [vbox.name, vboxstart.name, vboxbottom.name]
-	exclude_nodes_for_srart_menu = [vboxstart.name, vboxbottom.name]
+	exclude_label_1 = [vbox.name]
+	exclude_nodes_for_srart_menu = [vboxstart.name, vboxbottom.name, vboxtop.name]
 	init_task() # Initialize the task
 	
 
@@ -287,7 +289,7 @@ func blk_distribution(_distribution_type):
 #MARK: Reset
 func init_trial():
 	if trial_count >=number_of_trials:
-		hide_nodes(exclude_nodes_for_hide_cards,original_states)
+		hide_nodes(exclude_label_1,original_states)
 		trial_count += 1
 		return 
 	if initialized_flag == false:
@@ -311,14 +313,15 @@ func init_trial():
 func reset_scene_to_start_button():
 	# Reset the scene
 	if trial_count >= 1:
-		original_states = hide_nodes(exclude_nodes_for_hide_cards,original_states)
-		await get_tree().create_timer(_interval).timeout
+		original_states = hide_nodes(exclude_label_1,original_states)
+		await get_tree().create_timer(_interval * 2).timeout
 	original_states_2 = hide_nodes([],original_states_2)
 	await get_tree().create_timer(_interval).timeout
 	quitButton.disabled = false
 	startButton.disabled = false
 	vboxstart.visible = true
 	vboxbottom.visible = true
+	vboxtop.visible = true
 	
 
 func reset_to_start_next_trial():
@@ -398,16 +401,20 @@ func place_button(if_opt_left):
 	var window_size = get_viewport_rect().size
 	var root = get_node("/root/Node2D" )
 	root.set_anchors_and_offsets_preset( PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE)# this is important!
-	LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.25, window_size)
+	if menuButton.visible == true:
+		LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.85, window_size)
+	else:
+		LayoutManager.setup(vbox, PRESET_CENTER, 0.5, 0.5, window_size)
 	LayoutManager.setup(vboxstart, PRESET_CENTER, 0.5, 0.5, window_size)
 	LayoutManager.setup(vboxbottom, PRESET_CENTER, 0.5, 0.85, window_size)
+	LayoutManager.setup(vboxtop, PRESET_CENTER, 0.5, 0.15, window_size)
 	match if_opt_left:
 		"left":
-			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.6, window_size)
-			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.6, window_size)
+			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
+			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
 		"right":
-			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.35, 0.6, window_size)
-			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.65, 0.6, window_size)
+			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.35, 0.4, window_size)
+			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.65, 0.4, window_size)
 	
 
 func init_trial_ui():
@@ -442,37 +449,41 @@ func _label_refresh(wealth,num_of_press,case_text):
 	var negativecolor = Color("PLUM")
 	match case_text:
 		"opt_out":
-			if opt_out_reward >= 0:
-				if opt_out_reward == 0:
-					label_1.text = "Tokens  + " +str(reward)
-					label_1.label_settings.font_color = neutralcolor
-				else:
-					label_1.text = "Opt Out! + " +str(opt_out_reward)
-					label_1.label_settings.font_color = positivecolor
+			label_1.label_settings.font_size = 72
+			if opt_out_reward > 0:
+				label_1.text = "Tokens! + " +str(opt_out_reward)
+				label_1.label_settings.font_color = positivecolor
+			elif opt_out_reward == 0:
+				label_1.text = " + " +str(opt_out_reward)
+				label_1.label_settings.font_color = neutralcolor
 			else:	
 				label_1.text = "Opt Out! "+str(opt_out_reward)
 				label_1.label_settings.font_color = negativecolor
-		"pressing...":
-			label_1.text = str(num_of_press)
-			label_1.label_settings.font_color = neutralcolor
 		"reward_given":
+			label_1.label_settings.font_size = 72
 			if reward == 0:
-				label_1.text = "Tokens  + " +str(reward)
+				label_1.text = "+ " +str(reward)
 				label_1.label_settings.font_color = neutralcolor
 			else:
-				label_1.text = "Tokens added! + " +str(reward)
+				label_1.text = "Tokens! + " +str(reward)
 				label_1.label_settings.font_color = positivecolor
 			reward_given_flag = false
+
+		"pressing...":
+			label_1.label_settings.font_size = 36
+			label_1.text = str(num_of_press)
+			label_1.label_settings.font_color = neutralcolor
 		"init":
+			label_1.label_settings.font_size = 36
 			label_1.label_settings.font_color = neutralcolor
 			if trial_count <= 3:
-				label_startbtn.text = "Press the Disk to Start"
+				label_startbtn.text = "Press the Disk \n to Start"
 				if trial_count <= 1:
 					label_1.text = "Press BLUE once to give up, \n or keep pressing RED to earn more tokens"
 				if trial_count == 2:
-					label_1.text = "Value on buttons are tokens you can get if you press them."
+					label_1.text = "Value on buttons are tokens you can get\n if you press them."
 				if trial_count == 3:
-					label_1.text = "If you change your mind, you can always opt out via the BLUE one."
+					label_1.text = "If you change your mind, \n you can always opt out via the BLUE one."
 			else:
 				label_startbtn.text = ""
 				label_1.text = ""
@@ -480,6 +491,7 @@ func _label_refresh(wealth,num_of_press,case_text):
 			startButton.disabled = true
 			vboxstart.visible = false
 			vboxbottom.visible = false
+			vboxtop.visible = false
 		"finish":
 			label_1.text = "Finished!\n Close the window to exit"	
 		_:
@@ -494,20 +506,14 @@ func hide_nodes(_list,_original_states):
 	for child in get_children():
 		if child.name in _list:
 			continue  # 跳过不需要隐藏的节点
-	
 		_original_states[child] = {
-			"visible": child.visible,
+			"visible": child.visible,	
 			"disabled": child.disabled if "disabled" in child else null
 		}
-		
-		# 隐藏子节点
 		child.visible = false
-		
-		# 停用互动元素
 		if "disabled" in child:
-			child.disabled = true
-	hold_button.disabled = true
-	opt_out_button.disabled = true
+			child.disabled = true						
+	print(_original_states)
 	return _original_states
 
 # Restore all child nodes to their original state
