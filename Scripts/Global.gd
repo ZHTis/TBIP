@@ -24,6 +24,22 @@ var text17: String = ""  # 文本17
 var text18: String = ""  # 文本18
 var text19: String = ""  # 文本19
 var text20: String = ""  # 文本20
+var text21: String = ""  # 文本21
+var text22: String = ""  # 文本22
+var text23: String = ""  # 文本23
+var text24: String = ""  # 文本24
+var text25: String = ""  # 文本25
+var text26: String = ""  # 文本26
+var text27: String = ""  # 文本27
+var text28: String = ""  # 文本28
+var text29: String = ""  # 文本29
+var text30: String = ""  # 文本30
+var text31: String = ""  # 文本31
+var text32: String = ""  # 文本32
+var text33: String = ""  # 文本33
+var text34: String = ""  # 文本34
+var text35: String = ""  # 文本35
+var text36: String = ""  # 文本36
 
 var iftextEditHasAppear: bool = false
 var wealth: int = 0
@@ -99,26 +115,9 @@ func write_subject_data_to_file(data_filename) -> void:
 	file.store_line("Number of tests: %d" % num_of_trials)
 	file.store_line("Key History: %d" % press_history.size())
 	file.store_line("tokens: %d" % wealth)
-	file.store_line("blk1: %s" % text1)
-	file.store_line("blk2: %s" % text2)
-	file.store_line("blk3: %s" % text3)
-	file.store_line("blk4: %s" % text4)
-	file.store_line("blk5: %s" % text5)
-	file.store_line("blk6: %s" % text6)
-	file.store_line("blk7: %s" % text7)
-	file.store_line("blk8: %s" % text8)
-	file.store_line("blk9: %s" % text9)
-	file.store_line("blk10: %s" % text10)
-	file.store_line("blk11: %s" % text11)
-	file.store_line("blk12: %s" % text12)
-	file.store_line("blk13: %s" % text13)
-	file.store_line("blk14: %s" % text14)
-	file.store_line("blk15: %s" % text15)
-	file.store_line("blk16: %s" % text16)
-	file.store_line("blk17: %s" % text17)
-	file.store_line("blk18: %s" % text18)
-	file.store_line("blk19: %s" % text19)
-	file.store_line("blk20: %s" % text20)
+	for i in range(1,37):
+		var text_value = get("text" + str(i))
+		file.store_line("blk%s: %s" % [str(i), text_value])
 	file.store_line("# ------------------------")
 	file.close()
 

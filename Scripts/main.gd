@@ -93,7 +93,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# Generate a block of trials
-	generate_all_trials(1) 
+	generate_all_trials(20,1) 
 	save_data("head")
 	# Start 1st Trial
 	init_trial()
@@ -101,7 +101,7 @@ func init_task(): # Initialize task, BLK design
 	
 
 
-func generate_all_trials(case_ = null):
+func generate_all_trials(blk_num = 1, case_ = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
 	match case_:
 		
@@ -112,13 +112,20 @@ func generate_all_trials(case_ = null):
 			reward_given_timepoint_template = []
 			hold_reward_template=[]
 			opt_out_reward_template =[]
-			blk_("full", "norm_1st", 1, 20,60) 
-			blk_("2nd", "norm_after_1nd", 2, 20,60)
-			blk_("random_distribution", "norm_after_1st", 3, 20,60)
-			blk_("random_chance", "norm_after_1st", 4, 20,60)
+			for i in range(1,blk_num+1):
+				if i == 1:
+					blk_("full", "norm_1st", 1, 20,60) 
+				elif i == 2:
+					blk_("2nd", "norm_after_1nd", 2, 20,60)
+				else:
+					var dice_ = MathUtils.generate_random(0,1,"int")
+					if dice_ == 0:
+						blk_("random_distribution", "norm_after_1st", i, 20,60)
+					else:
+						blk_("random_chance", "norm_after_1st", i, 20,60)
 			
 			Global.write_subject_data_to_file(Global.filename_config)
-			Global.saved_flag = false
+
 
 			# set blk switch
 		_: # Case _: Easy mode
@@ -242,16 +249,11 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 	var text7 = "mu_rwd_timepoint, std_rwd_timepoint: %s, %s" % [str(mu_rwd_timepoint) , str(std_rwd_timepoint)]
 	var text =  text4 + "\n" +text1 + "\n" + text2 + "\n" + text3 + "\n" + text5 + "\n" + text8 + "\n" + text6 + "\n" + text7 + "\n"
 	
-	match save_loc:
-		2: Global.text2 = text
-		1: Global.text1 = text
-		3: Global.text3 = text
-		4: Global.text4 = text
-		5: Global.text5 = text
-		6: Global.text6 = text
-		7: Global.text7 = text
-		8: Global.text8 = text
-
+	if save_loc<=36:
+		var save_loc_ = "text"+str(save_loc)
+		Global.set(save_loc_, text)
+	else:
+		print("save_loc too large")
 
 
 func blk_distribution(_distribution_type):
@@ -327,7 +329,6 @@ func save_data(_case):
 			file.close()
 
 		"body":
-			print(Global.press_history)
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 					# CSV格式：用逗号分隔字段，字符串包含逗号时需用引号包裹
 			var csv_line
