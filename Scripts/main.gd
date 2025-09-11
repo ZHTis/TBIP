@@ -32,7 +32,6 @@ var max_hold_reward
 var min_opt_out_reward
 var max_opt_out_reward
 var if_opt_left
-var changed_dstribution_or_chance_flag
 #################################################
 ## Function variables
 var trial_count
@@ -53,7 +52,6 @@ var original_states = {}
 var original_states_2 = {}
 var exclude_label_1
 var exclude_nodes_for_srart_menu
-
 
 
 func _ready():
@@ -84,12 +82,11 @@ func ifrelease():
 # MARK: TASK
 func init_task(): # Initialize task, BLK design
 	if_opt_left = MathUtils.generate_random(0,1,"float")
-	Global.press_history = [] # Clear press history
+	Global.press_history = [] # Clear new_press history
 	Global.wealth = 0 # Initialize Global.wealth
 	trial_count = 0
 	number_of_trials = 0
 	initialized_flag = false
-	changed_dstribution_or_chance_flag
 	# Connect button signa
 	hold_button.pressed.connect(_on_hold_button_pressed)
 	opt_out_button.pressed.connect(_on_opt_out_button_pressed)
@@ -97,6 +94,7 @@ func init_task(): # Initialize task, BLK design
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# Generate a block of trials
 	generate_all_trials(1) 
+	save_data("head")
 	# Start 1st Trial
 	init_trial()
 	_label_refresh(Global.wealth, num_of_press, "init")
@@ -122,6 +120,8 @@ func generate_all_trials(case_ = null):
 			blk_("random", "norm_after_1st", 6, 60,150)
 			blk_("random", "norm_after_1st", 7, 60,150)
 			blk_("random", "norm_after_1st", 8, 60,150)
+			Global.write_subject_data_to_file(Global.filename_config)
+			Global.saved_flag = false
 
 			# set blk switch
 		_: # Case _: Easy mode
@@ -142,7 +142,7 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		# rwd value:
 		# tr_num range:
 		tr_num1, tr_num2,
-		 #	reward_given_timepoint press:
+		 #	reward_given_timepoint new_press:
 		_min=0,_max=0):
 			
 	var dice_if_rwd_given
@@ -301,6 +301,7 @@ func init_trial():
 	reward_given_flag = false
 	start_time = 0.0
 	num_of_press = 0.0
+	Global.press_history.clear()
 	# Initialization rewards
 	reward = hold_reward_template[trial_count-1]
 	opt_out_reward = opt_out_reward_template[trial_count-1]
@@ -310,7 +311,37 @@ func init_trial():
 	init_trial_ui()
 
 
+func save_data(_case):
+	match _case:
+		"head":
+			var file = FileAccess.open(Global.filename_data, FileAccess.WRITE)
+			file.store_line("# The following is CSV format data, one record per line")
+			file.store_line("# Format description: serial number, timestamp (ms), reward mark, key type")
+			file.store_line("# Button type: 0:hold; 1:opt-out")
+			file.store_line("trial num, press_num, timestamp_ms, reward_flag, button_type")  # CSV列标题
+			file.close()
+
+		"body":
+			print(Global.press_history)
+			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
+					# CSV格式：用逗号分隔字段，字符串包含逗号时需用引号包裹
+			var csv_line
+			for press in Global.press_history:
+				csv_line = "%d,%d ,%d,%s,%s" % [
+						press.trial_count,
+						num_of_press,  # 序号
+						press.timestamp,  # 时间戳
+						str(press.rwd_marker).to_lower(),  # 奖励标记（转为小写，如true/false）
+						press.btn_type_marker  # 按键类型
+					]
+				file.seek_end()
+				file.store_line(csv_line)
+		
+			file.close()
+
+
 func reset_scene_to_start_button():
+	save_data("body")
 	# Reset the scene
 	if trial_count >= 1:
 		original_states = hide_nodes(exclude_label_1,original_states)
@@ -334,7 +365,7 @@ func reset_to_start_next_trial():
 
 	if trial_count > number_of_trials:
 		_label_refresh(Global.wealth,num_of_press,"finish")
-		end()
+
 
 
 # MARK: Buttons Response
@@ -380,6 +411,7 @@ func _on_opt_out_button_pressed():
 	record_press_data(current_time,trial_count, reward_given_flag, PressData.BtnType.OPT_OUT)
 	reset_scene_to_start_button()
 
+
 func _on_quit_button_pressed():
 	get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 
@@ -390,10 +422,8 @@ func _on_start_button_pressed():
 func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: PressData.BtnType) -> void:
 	# 创建PressData实例
 	var new_press = PressData.new(current_time, _tr_count, _reward_given_flag, btn_type)
-	# 添加到全局历史记录
 	Global.press_history.append(new_press)
-	#print("Recorded PressData: ", new_press)
-
+	
 
 # MARK: UI
 func place_button(if_opt_left):
@@ -481,7 +511,7 @@ func _label_refresh(wealth,num_of_press,case_text):
 				if trial_count <= 1:
 					label_1.text = "Press BLUE once to give up, \n or keep pressing RED to earn more tokens"
 				if trial_count == 2:
-					label_1.text = "Value on buttons are tokens you can get\n if you press them."
+					label_1.text = "Value on buttons are tokens you can get\n if you new_press them."
 				if trial_count == 3:
 					label_1.text = "If you change your mind, \n you can always opt out via the BLUE one."
 			else:
@@ -513,7 +543,7 @@ func hide_nodes(_list,_original_states):
 		child.visible = false
 		if "disabled" in child:
 			child.disabled = true						
-	print(_original_states)
+
 	return _original_states
 
 # Restore all child nodes to their original state
@@ -554,16 +584,11 @@ func _on_timer_timeout():
 		countdownTimer.stop()  
 		get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 
-func end():
-	print("Exiting the experiment, saving data...")
-	Global.write_subject_data_to_file(Global.filename) # Save data before exiting
-	print("Data saved. Goodbye!") 
+
 
 func _notification(what:int)->void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		if Global.saved_flag == false:
-			end() 
-			cleanup()
+		cleanup()
 		get_tree().quit()
 
 # 正确释放动态创建的节点
