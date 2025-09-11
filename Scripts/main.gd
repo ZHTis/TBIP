@@ -25,7 +25,7 @@ var total_reward_chance
 var _interval 
 var step # timewindow step
 var mu_rwd_timepoint
-var variance_rwd_timepoint
+var std_rwd_timepoint
 var number_of_trials
 var min_hold_reward 
 var max_hold_reward 
@@ -112,14 +112,11 @@ func generate_all_trials(case_ = null):
 			reward_given_timepoint_template = []
 			hold_reward_template=[]
 			opt_out_reward_template =[]
-			blk_("full", "norm_1st", 1, 60,150) 
-			blk_("random_distribution", "norm_after_1st", 2, 60,150)
-			blk_("random_distribution", "norm_after_1st", 3, 60,150)
-			blk_("random", "norm_after_1st", 4, 60,150)
-			blk_("random", "norm_after_1st", 5, 60,150)
-			blk_("random", "norm_after_1st", 6, 60,150)
-			blk_("random", "norm_after_1st", 7, 60,150)
-			blk_("random", "norm_after_1st", 8, 60,150)
+			blk_("full", "norm_1st", 1, 20,60) 
+			blk_("2nd", "norm_after_1nd", 2, 20,60)
+			blk_("random_distribution", "norm_after_1st", 3, 20,60)
+			blk_("random_chance", "norm_after_1st", 4, 20,60)
+			
 			Global.write_subject_data_to_file(Global.filename_config)
 			Global.saved_flag = false
 
@@ -162,27 +159,31 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		"full":
 			total_reward_chance = 1
 			print("total_reward_chance: ",total_reward_chance)
-		"random_only_dsrtribution":
-			var total_reward_chance_structure = [1, 1,1,1,1,1]#0.95, 0.9, 0.85, 0.8, 0.75]
-			var _dice = MathUtils.generate_random(0,5,"int")
-			total_reward_chance = total_reward_chance_structure[_dice] # set total reward chance
+		"random_distribution":
+			total_reward_chance = previous_total_reward_chance 
 			print("total_reward_chance: ",total_reward_chance)
-		"random":
+		"random_chance":
 			var total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
-			var _dice = MathUtils.generate_random(0,5,"int")
+			var _dice 
+			while true:
+				_dice = MathUtils.generate_random(0,5,"int")
+				if total_reward_chance_structure[_dice] != previous_total_reward_chance:
+					break
 			total_reward_chance = total_reward_chance_structure[_dice] # set total reward chance
 			print("total_reward_chance: ",total_reward_chance)
+		"2nd":
+			total_reward_chance = 0.9
 			
 # from Block N to Block N+1, we either change
 # ONLY the distribution, 
 # or ONLY the reward reliability (%)
 	if _distribution_type == "norm_1st":
 		blk_distribution(_distribution_type)
-		print("mu_rwd_timepoint, variance_rwd_timepoint: ", mu_rwd_timepoint, ", ", variance_rwd_timepoint)
+		print("mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
 	
 	elif previous_total_reward_chance == total_reward_chance:
 		blk_distribution(_distribution_type)
-		print("change distribution. mu_rwd_timepoint, variance_rwd_timepoint: ", mu_rwd_timepoint, ", ", variance_rwd_timepoint)
+		print("change distribution. mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
 	else:
 		print("change total_reward_chance: ",total_reward_chance)
 	
@@ -193,13 +194,13 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 			match _distribution_type:
 				"norm_after_1st": # Normal distribution
 					while true: # Avoid generating negative numbers
-						timepoint = MathUtils.normrnd(mu_rwd_timepoint, variance_rwd_timepoint)
+						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
 						if timepoint > 0:
 							break 
 					timepoint = roundi(timepoint)
 				"norm_1st":
 					while true: # Avoid generating negative numbers
-						timepoint = MathUtils.normrnd(mu_rwd_timepoint, variance_rwd_timepoint)
+						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
 						if timepoint > 0:
 							break 
 					timepoint = roundi(timepoint)
@@ -211,9 +212,8 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		else:
 			reward_given_timepoint_template.append(null)
 			reward_given_timepoint_template_this_blk.append(null)
-	# rnd rwd value for each trial
-	
-	for i in range(number_of_trials_this_blk):
+
+		# rnd rwd value for each trial
 		var h_value_list= [0,5,10,15,20]
 		var dice_h = MathUtils.generate_random(0,h_value_list.size()-1,"int")
 		var random_h = h_value_list[dice_h]
@@ -239,7 +239,7 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 	var text5 = "number_of_trials_accumu_rwd_timepointlated: %s" % str(number_of_trials)
 	var text8 = "number_of_trials_this_blk: %s" % str(number_of_trials_this_blk)
 	var text6 = "distribution_type: %s" % str(_distribution_type)
-	var text7 = "mu_rwd_timepoint, variance_rwd_timepoint: %s, %s" % [str(mu_rwd_timepoint) , str(variance_rwd_timepoint)]
+	var text7 = "mu_rwd_timepoint, std_rwd_timepoint: %s, %s" % [str(mu_rwd_timepoint) , str(std_rwd_timepoint)]
 	var text =  text4 + "\n" +text1 + "\n" + text2 + "\n" + text3 + "\n" + text5 + "\n" + text8 + "\n" + text6 + "\n" + text7 + "\n"
 	
 	match save_loc:
@@ -253,35 +253,40 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		8: Global.text8 = text
 
 
+
 func blk_distribution(_distribution_type):
 
 	match _distribution_type:
 		"norm_after_1st": # Normal distribution
 			var mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
-			var dice_mu_rwd_timepoint = MathUtils.generate_random(0,mu_rwd_timepoint_change_list.size()-1,"int")
-			var mu_rwd_timepoint_change = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
-			mu_rwd_timepoint  = mu_rwd_timepoint * (1+mu_rwd_timepoint_change)
-			mu_rwd_timepoint = roundi(mu_rwd_timepoint)
+			var dice_mu_rwd_timepoint
+			while true: # Avoid generating negative numbers
+				dice_mu_rwd_timepoint = MathUtils.generate_random(0,mu_rwd_timepoint_change_list.size()-1,"int")
+				var mu_rwd_timepoint_change = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
+				var new_mu_rwd_timepoint  = mu_rwd_timepoint * (1+mu_rwd_timepoint_change)
+				new_mu_rwd_timepoint = roundi(new_mu_rwd_timepoint)
+				if new_mu_rwd_timepoint >= 10:
+					mu_rwd_timepoint = new_mu_rwd_timepoint
+					break
+				else: 
+					mu_rwd_timepoint_change_list.erase(dice_mu_rwd_timepoint)
+					print("removed a dice face")
+
 
 			var variance_rwd_timepoint_2mu_list = [0.5, 0.25]
 			var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0,variance_rwd_timepoint_2mu_list.size()-1,"int")
-			variance_rwd_timepoint = mu_rwd_timepoint* variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
-			variance_rwd_timepoint = roundf(variance_rwd_timepoint *1000) /100
-			variance_rwd_timepoint = variance_rwd_timepoint /10
+			std_rwd_timepoint = mu_rwd_timepoint* variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
+			std_rwd_timepoint = roundf(std_rwd_timepoint *1000) /100
+			std_rwd_timepoint = std_rwd_timepoint /10
 
 		"flat": # flat distribution
 			pass
-
+		
 		"norm_1st":
-			var mu_rwd_timepoint_list = [10,20,30]
-			var dice_mu_rwd_timepoint = MathUtils.generate_random(0,mu_rwd_timepoint_list.size()-1,"int")
-			mu_rwd_timepoint = mu_rwd_timepoint_list[dice_mu_rwd_timepoint]
-
-			var variance_rwd_timepoint_2mu_list = [0.5, 0.25]
-			var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0,variance_rwd_timepoint_2mu_list.size()-1,"int")
-			variance_rwd_timepoint = mu_rwd_timepoint* variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
-			variance_rwd_timepoint = roundf(variance_rwd_timepoint *1000) /100
-			variance_rwd_timepoint = variance_rwd_timepoint /10
+			mu_rwd_timepoint = 20
+			std_rwd_timepoint = 10
+			std_rwd_timepoint = roundf(std_rwd_timepoint *1000) /100
+			std_rwd_timepoint = std_rwd_timepoint /10
 	
 
 

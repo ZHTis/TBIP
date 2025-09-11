@@ -49,7 +49,7 @@ func gen_file_name() -> Array:
 	var timestamp = Time.get_datetime_string_from_system()
 	timestamp = timestamp.replace(":", "_")
 	var data_filename = "%s/%s_%s.txt" % [base_dir, safe_subject_name, timestamp]
-	var config_filename = "%s/%s_config.txt" % [base_dir, safe_subject_name]
+	var config_filename = "%s/%s_%s_config.txt" % [base_dir, safe_subject_name, timestamp]
 	
 	return [data_filename, config_filename]
 
