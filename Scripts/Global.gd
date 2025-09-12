@@ -4,6 +4,10 @@ extends Node
 var subject_name: String = ""  # 被试者名称
 var num_of_trials: int = 0  # 试验次数
 var press_history: Array[PressData] = []  # 按键历史记录
+
+var blk_num: int = 1
+var blks_para = []
+
 var text1: String = ""  # 文本1
 var text2: String = ""  # 文本2
 var text3: String = ""  # 文本3
@@ -120,4 +124,3 @@ func write_subject_data_to_file(data_filename) -> void:
 		file.store_line("blk%s: %s" % [str(i), text_value])
 	file.store_line("# ------------------------")
 	file.close()
-

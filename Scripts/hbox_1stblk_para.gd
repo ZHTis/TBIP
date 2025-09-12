@@ -12,7 +12,7 @@ var exclude_list
 
 func _ready():#                 len as [0,0.7,0.8,0.9,0.95,0.75] 
 	label_blkPara_distr_para_1.text = "                        "
-	label_blkPara_distr_para_2.text = "       "
+	label_blkPara_distr_para_2.text = "                        "
 	exclude_list = [vbox1,vbox2,vbox3]
 	distrType_optionButton.allow_reselect = true
 	distrType_optionButton.item_selected.connect(label_distr_para_refresh)
@@ -22,12 +22,12 @@ func _ready():#                 len as [0,0.7,0.8,0.9,0.95,0.75]
 func label_distr_para_refresh(_index):
 	print("distr type: ",_index)
 	match _index:
-		0:
-			label_blkPara_distr_para_1.text = "mu"
-			label_blkPara_distr_para_2.text = "mu/std"
+		0:                           #  len as [0,0.7,0.8,0.9,0.95,0.75] 
+			label_blkPara_distr_para_1.text = "            mu            "
+			label_blkPara_distr_para_2.text = "        mu/std         "
 		1:
-			label_blkPara_distr_para_1.text = "min" 
-			label_blkPara_distr_para_2.text = "max"
+			label_blkPara_distr_para_1.text = "     min     " 
+			label_blkPara_distr_para_2.text = "     max     "
 		# 可以添加其他选项的处理
 		_:
 			# 处理未匹配的情况
