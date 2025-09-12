@@ -1,84 +1,110 @@
-[gd_scene load_steps=4 format=3 uid="uid://crq8o12chnfi7"]
+[gd_scene load_steps=6 format=3 uid="uid://crq8o12chnfi7"]
 
 [ext_resource type="Script" uid="uid://dwc2qxma8u51r" path="res://Scripts/hbox_1stblk_para.gd" id="1_fc0h3"]
+[ext_resource type="Script" uid="uid://dx3jmnjvdaaa6" path="res://Scripts/blk_config.gd" id="1_u5vwc"]
 [ext_resource type="Script" uid="uid://7dgnqukr0xy2" path="res://Scripts/hbox_blk_para.gd" id="2_fc0h3"]
 [ext_resource type="LabelSettings" uid="uid://c4gn2t32fjvcx" path="res://config_label_settings.tres" id="3_u5vwc"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_sakkr"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -16.0
-offset_right = -10.0
+offset_right = 6.0
 offset_bottom = 8.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_u5vwc")
 
 [node name="VBox" type="VBoxContainer" parent="."]
 layout_mode = 1
-offset_right = 153.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -134.0
+offset_right = 134.0
 offset_bottom = 58.0
-scale = Vector2(2.50457, 2.40063)
+grow_horizontal = 2
 
 [node name="Label" type="Label" parent="VBox"]
 layout_mode = 2
 text = "How many bloocks?"
+label_settings = SubResource("LabelSettings_sakkr")
+horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="VBox"]
+[node name="OptionButton" type="OptionButton" parent="VBox"]
 layout_mode = 2
+size_flags_vertical = 4
+item_count = 4
+popup/item_0/text = "2"
+popup/item_0/id = 0
+popup/item_1/text = "3 -5"
+popup/item_1/id = 1
+popup/item_2/text = "6-8"
+popup/item_2/id = 2
+popup/item_3/text = "9-20"
+popup/item_3/id = 3
 
-[node name="btnBox" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_left = 400.0
-offset_top = 610.0
-offset_right = 651.0
-offset_bottom = 641.0
-
-[node name="Button" type="Button" parent="btnBox"]
+[node name="Button" type="Button" parent="VBox"]
 layout_mode = 2
 text = "Save and Start
 "
 icon_alignment = 1
 
-[node name="GridContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_left = 80.0
-offset_top = 250.0
-offset_right = 1150.0
-offset_bottom = 370.0
+[node name="HBox" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -539.0
+offset_top = -208.0
+offset_right = 543.0
+offset_bottom = 316.0
+grow_horizontal = 2
+grow_vertical = 2
+draw_focus_border = true
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
 
-[node name="HBox_BLK1" type="HBoxContainer" parent="GridContainer"]
+[node name="paraContainer" type="VBoxContainer" parent="HBox"]
+layout_mode = 2
+
+[node name="HBox_BLK1" type="HBoxContainer" parent="HBox/paraContainer"]
 layout_mode = 2
 script = ExtResource("1_fc0h3")
 
-[node name="Label" type="Label" parent="GridContainer/HBox_BLK1"]
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK1"]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "BLK 1  "
 
-[node name="blkPara_chance" type="VBoxContainer" parent="GridContainer/HBox_BLK1"]
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK1"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK1/blkPara_chance"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK1/blkPara_chance"]
 layout_mode = 2
 text = " chance-LIST  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK1/blkPara_chance"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK1/blkPara_chance"]
+layout_mode = 2
+text = "[1]"
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK1"]
 layout_mode = 2
 
-[node name="blkPara_distr_type" type="VBoxContainer" parent="GridContainer/HBox_BLK1"]
-layout_mode = 2
-
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK1/blkPara_distr_type"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK1/blkPara_distr_type"]
 layout_mode = 2
 text = "  distribution  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="OptionButton" type="OptionButton" parent="GridContainer/HBox_BLK1/blkPara_distr_type"]
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK1/blkPara_distr_type"]
 layout_mode = 2
 item_count = 2
 popup/item_0/text = "norm"
@@ -86,86 +112,91 @@ popup/item_0/id = 0
 popup/item_1/text = "flat"
 popup/item_1/id = 1
 
-[node name="blkPara_distr_para_1" type="VBoxContainer" parent="GridContainer/HBox_BLK1"]
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK1"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="GridContainer/HBox_BLK1/blkPara_distr_para_1"]
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK1/blkPara_distr_para_1"]
 layout_mode = 2
 text = "  [0,0.7,0.8,0.9,0.95,0.75] "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK1/blkPara_distr_para_1"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK1/blkPara_distr_para_1"]
+layout_mode = 2
+text = "[1,0.9,0.8,0.75]"
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK1"]
 layout_mode = 2
 
-[node name="blkPara_distr_para_2" type="VBoxContainer" parent="GridContainer/HBox_BLK1"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="GridContainer/HBox_BLK1/blkPara_distr_para_2"]
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK1/blkPara_distr_para_2"]
 layout_mode = 2
 text = "  [0,0.7,0.8,0.9,]  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK1/blkPara_distr_para_2"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK1/blkPara_distr_para_2"]
+layout_mode = 2
+text = "[0.25,0.5]"
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK1"]
 layout_mode = 2
 
-[node name="blkPara_value_list" type="VBoxContainer" parent="GridContainer/HBox_BLK1"]
-layout_mode = 2
-
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK1/blkPara_value_list"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK1/blkPara_value_list"]
 layout_mode = 2
 text = "  h_value-LIST  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK1/blkPara_value_list"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK1/blkPara_value_list"]
+layout_mode = 2
+text = "[0,5,10,15,20]"
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK1"]
 layout_mode = 2
 
-[node name="blkPara_value_list2" type="VBoxContainer" parent="GridContainer/HBox_BLK1"]
-layout_mode = 2
-
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK1/blkPara_value_list2"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK1/blkPara_value_list2"]
 layout_mode = 2
 text = "  o_value-LIST  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK1/blkPara_value_list2"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK1/blkPara_value_list2"]
+layout_mode = 2
+text = "[0,-5,5,10,-10]"
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK1"]
 layout_mode = 2
 
-[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="GridContainer/HBox_BLK1"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="GridContainer/HBox_BLK1/blkPara_tr_num_num_range"]
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK1/blkPara_tr_num_num_range"]
 layout_mode = 2
 text = "  tr num range  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK1/blkPara_tr_num_num_range"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK1/blkPara_tr_num_num_range"]
 layout_mode = 2
+text = "[20,60]"
 
-[node name="HBox_BLK2" type="HBoxContainer" parent="GridContainer"]
+[node name="HBox_BLK2" type="HBoxContainer" parent="HBox/paraContainer"]
 layout_mode = 2
 size_flags_stretch_ratio = 0.0
 script = ExtResource("2_fc0h3")
 
-[node name="Label" type="Label" parent="GridContainer/HBox_BLK2"]
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "BLK 2  "
 
-[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="GridContainer/HBox_BLK2"]
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK2/blkPara_change_distr_or_chance"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK2/blkPara_change_distr_or_chance"]
 layout_mode = 2
 text = "change"
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="OptionButton" type="OptionButton" parent="GridContainer/HBox_BLK2/blkPara_change_distr_or_chance"]
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK2/blkPara_change_distr_or_chance"]
 layout_mode = 2
 item_count = 3
 popup/item_0/text = "chance"
@@ -175,28 +206,28 @@ popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
 
-[node name="blkPara_chance" type="VBoxContainer" parent="GridContainer/HBox_BLK2"]
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK2/blkPara_chance"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK2/blkPara_chance"]
 layout_mode = 2
 text = " chance-LIST  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK2/blkPara_chance"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK2/blkPara_chance"]
 layout_mode = 2
 
-[node name="blkPara_distr_type" type="VBoxContainer" parent="GridContainer/HBox_BLK2"]
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK2/blkPara_distr_type"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK2/blkPara_distr_type"]
 layout_mode = 2
 text = "  distribution  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="OptionButton" type="OptionButton" parent="GridContainer/HBox_BLK2/blkPara_distr_type"]
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK2/blkPara_distr_type"]
 layout_mode = 2
 item_count = 2
 popup/item_0/text = "norm"
@@ -204,62 +235,2168 @@ popup/item_0/id = 0
 popup/item_1/text = "flat"
 popup/item_1/id = 1
 
-[node name="blkPara_distr_para_1" type="VBoxContainer" parent="GridContainer/HBox_BLK2"]
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="GridContainer/HBox_BLK2/blkPara_distr_para_1"]
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK2/blkPara_distr_para_1"]
 layout_mode = 2
 text = "  [0,0.7,0.8,0.9,0.95,0.75] "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK2/blkPara_distr_para_1"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK2/blkPara_distr_para_1"]
 layout_mode = 2
 
-[node name="blkPara_distr_para_2" type="VBoxContainer" parent="GridContainer/HBox_BLK2"]
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="GridContainer/HBox_BLK2/blkPara_distr_para_2"]
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK2/blkPara_distr_para_2"]
 layout_mode = 2
 text = "  [0,0.7,0.8,0.9,]  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK2/blkPara_distr_para_2"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK2/blkPara_distr_para_2"]
 layout_mode = 2
 
-[node name="blkPara_value_list" type="VBoxContainer" parent="GridContainer/HBox_BLK2"]
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK2/blkPara_value_list"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK2/blkPara_value_list"]
 layout_mode = 2
 text = "  h_value-LIST  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK2/blkPara_value_list"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK2/blkPara_value_list"]
 layout_mode = 2
 
-[node name="blkPara_value_list2" type="VBoxContainer" parent="GridContainer/HBox_BLK2"]
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="GridContainer/HBox_BLK2/blkPara_value_list2"]
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK2/blkPara_value_list2"]
 layout_mode = 2
 text = "  o_value-LIST  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK2/blkPara_value_list2"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK2/blkPara_value_list2"]
 layout_mode = 2
 
-[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="GridContainer/HBox_BLK2"]
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="GridContainer/HBox_BLK2/blkPara_tr_num_num_range"]
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK2/blkPara_tr_num_num_range"]
 layout_mode = 2
 text = "  tr num range  "
 label_settings = ExtResource("3_u5vwc")
 horizontal_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="GridContainer/HBox_BLK2/blkPara_tr_num_num_range"]
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK2/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK3" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 3  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK3/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK3/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK3/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK3/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK3/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK3/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK3/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK3/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK3/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK3/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK3/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK3/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK3/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK3/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK3/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK3/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK4" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 4   "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK4/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK4/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK4/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK4/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK4/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK4/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK4/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK4/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK4/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK4/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK4/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK4/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK4/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK4/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK4/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK4/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK5" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 5  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK5/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK5/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK5/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK5/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK5/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK5/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK5/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK5/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK5/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK5/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK5/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK5/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK5/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK5/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK5/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK5/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK6" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 6  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK6/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK6/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK6/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK6/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK6/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK6/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK6/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK6/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK6/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK6/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK6/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK6/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK6/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK6/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK6/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK6/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK7" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 7  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK7/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK7/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK7/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK7/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK7/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK7/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK7/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK7/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK7/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK7/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK7/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK7/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK7/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK7/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK7/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK7/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK8" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 8  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK8/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK8/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK8/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK8/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK8/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK8/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK8/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK8/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK8/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK8/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK8/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK8/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK8/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK8/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK8/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK8/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK9" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 9  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK9/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK9/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK9/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK9/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK9/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK9/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK9/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK9/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK9/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK9/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK9/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK9/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK9/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK9/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK9/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK9/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK10" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 10  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK10/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK10/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK10/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK10/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK10/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK10/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK10/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK10/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK10/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK10/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK10/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK10/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK10/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK10/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK10/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK10/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK11" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 11  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK11/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK11/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK11/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK11/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK11/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK11/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK11/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK11/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK11/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK11/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK11/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK11/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK11/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK11/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK11/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK11/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK12" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 12  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK12/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK12/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK12/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK12/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK12/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK12/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK12/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK12/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK12/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK12/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK12/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK12/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK12/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK12/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK12/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK12/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK13" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 13  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK13/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK13/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK13/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK13/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK13/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK13/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK13/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK13/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK13/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK13/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK13/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK13/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK13/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK13/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK13/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK13/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK14" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 14  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK14/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK14/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK14/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK14/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK14/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK14/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK14/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK14/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK14/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK14/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK14/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK14/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK14/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK14/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK14/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK14/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK15" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 15  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK15/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK15/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK15/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK15/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK15/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK15/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK15/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK15/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK15/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK15/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK15/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK15/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK15/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK15/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK15/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK15/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK16" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 16  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK16/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK16/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK16/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK16/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK16/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK16/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK16/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK16/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK16/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK16/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK16/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK16/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK16/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK16/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK16/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK16/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK17" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 17  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK17/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK17/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK17/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK17/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK17/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK17/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK17/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK17/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK17/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK17/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK17/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK17/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK17/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK17/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK17/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK17/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK18" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 18 "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK18/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK18/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK18/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK18/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK18/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK18/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK18/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK18/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK18/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK18/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK18/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK18/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK18/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK18/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK18/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK18/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK19" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 19  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK19/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK19/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK19/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK19/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK19/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK19/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK19/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK19/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK19/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK19/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK19/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK19/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK19/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK19/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK19/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK19/blkPara_tr_num_num_range"]
+layout_mode = 2
+
+[node name="HBox_BLK20" type="HBoxContainer" parent="HBox/paraContainer"]
+layout_mode = 2
+script = ExtResource("2_fc0h3")
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "BLK 20  "
+
+[node name="blkPara_change_distr_or_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK20/blkPara_change_distr_or_chance"]
+layout_mode = 2
+text = "change"
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK20/blkPara_change_distr_or_chance"]
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "chance"
+popup/item_0/id = 0
+popup/item_1/text = "distribution"
+popup/item_1/id = 1
+popup/item_2/text = "random"
+popup/item_2/id = 2
+
+[node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK20/blkPara_chance"]
+layout_mode = 2
+text = " chance-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK20/blkPara_chance"]
+layout_mode = 2
+
+[node name="blkPara_distr_type" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK20/blkPara_distr_type"]
+layout_mode = 2
+text = "  distribution  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK20/blkPara_distr_type"]
+layout_mode = 2
+item_count = 2
+popup/item_0/text = "norm"
+popup/item_0/id = 0
+popup/item_1/text = "flat"
+popup/item_1/id = 1
+
+[node name="blkPara_distr_para_1" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK20/blkPara_distr_para_1"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,0.95,0.75] "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK20/blkPara_distr_para_1"]
+layout_mode = 2
+
+[node name="blkPara_distr_para_2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK20/blkPara_distr_para_2"]
+layout_mode = 2
+text = "  [0,0.7,0.8,0.9,]  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK20/blkPara_distr_para_2"]
+layout_mode = 2
+
+[node name="blkPara_value_list" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK20/blkPara_value_list"]
+layout_mode = 2
+text = "  h_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK20/blkPara_value_list"]
+layout_mode = 2
+
+[node name="blkPara_value_list2" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HBox/paraContainer/HBox_BLK20/blkPara_value_list2"]
+layout_mode = 2
+text = "  o_value-LIST  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK20/blkPara_value_list2"]
+layout_mode = 2
+
+[node name="blkPara_tr_num_num_range" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/paraContainer/HBox_BLK20/blkPara_tr_num_num_range"]
+layout_mode = 2
+text = "  tr num range  "
+label_settings = ExtResource("3_u5vwc")
+horizontal_alignment = 1
+
+[node name="LineEdit" type="LineEdit" parent="HBox/paraContainer/HBox_BLK20/blkPara_tr_num_num_range"]
 layout_mode = 2
