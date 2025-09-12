@@ -126,6 +126,8 @@ func generate_all_trials(blk_num = 1, case_ = null):
 			
 			Global.write_subject_data_to_file(Global.filename_config)
 
+		2: # input config
+			pass
 
 			# set blk switch
 		_: # Case _: Easy mode
@@ -140,6 +142,7 @@ func generate_all_trials(blk_num = 1, case_ = null):
 			opt_out_reward_template =[]
 			opt_out_reward_template.resize(number_of_trials)
 			opt_out_reward_template.fill(2)
+
 
 # MARK: BLK
 func blk_(_reward_chance_mode, _distribution_type, save_loc,
