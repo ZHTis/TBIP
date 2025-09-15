@@ -27,9 +27,50 @@ func _save_and_start():
 		print("blk_num is null")
 		return
 	for i in range(0, blk_num):
-		var blk_para_node = BLKs_para_nodes[i].get_child(1).get_child(1)
-		print(blk_para_node.name)
 		var blk_para = BLKPara.new()
+		blk_para.blk = "blk" + str(i + 1)
+		var blk_para_node_root = BLKs_para_nodes[i]
+		var node_length = blk_para_node_root.get_child_count()
+		for j in range(1, node_length):
+			var input_cell = blk_para_node_root.get_child(j)
+			input_cell_to_config(input_cell.name, input_cell.get_child(1), blk_para)
+
+		#blk_para_node_root.get_child(1).get_child(1)
+		# /root/Control/HBox/paraContainer/HBox_BLK%s/blkPara_%chance%/LineEdit
+		print("blk_para: ", blk_para.blk, "\t",
+		blk_para.change, "\t", blk_para.chance_list, blk_para.distr_type,
+		blk_para.distr_para_1, blk_para.distr_para_2, 
+		blk_para.h_value_list, blk_para.o_value_list, blk_para.tr_num_range)
+		
+
+
+func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
+	match input_cell_name:
+		"blkPara_change_distr_or_chance":
+			if _input_cell.selected == 0:
+				_blk_para.change = "chance"
+			if _input_cell.selected == 1:
+				_blk_para.change = "distr"
+			if _input_cell.selected == 2:
+				_blk_para.change = "random"
+		"blkPara_distr_type":
+			if  _input_cell.selected == 0:
+				_blk_para.distr_type = "NROM"
+			if  _input_cell.selected == 1:
+				_blk_para.distr_type = "FLAT"
+		"blkPara_distr_para_1":
+			_blk_para.distr_para_1 = _input_cell.text
+		"blkPara_distr_para_2":
+			_blk_para.distr_para_2 = _input_cell.text
+		"blkPara_chance":
+			_blk_para.chance_list = _input_cell.text
+		"blkPara_h_value":
+			_blk_para.h_value_list = _input_cell.text
+		"blkPara_o_value":
+			_blk_para.o_value_list = _input_cell.text
+		"blkPara_tr_num_range":
+			_blk_para.tr_num_range = _input_cell.text
+
 
 
 func _update_blk_num(_index):
