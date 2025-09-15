@@ -23,35 +23,40 @@ func _ready():
 
 
 func _save_and_start():
+	Global.blks_para = []
 	if blk_num == null:
 		print("blk_num is null")
 		return
 	for i in range(0, blk_num):
 		var blk_para = BLKPara.new()
 		blk_para.blk = "blk" + str(i + 1)
+		# process the child nodes of BLKs_para_nodes[i],
 		var blk_para_node_root = BLKs_para_nodes[i]
 		var node_length = blk_para_node_root.get_child_count()
 		for j in range(1, node_length):
 			var input_cell = blk_para_node_root.get_child(j)
 			input_cell_to_config(input_cell.name, input_cell.get_child(1), blk_para)
 
-		#blk_para_node_root.get_child(1).get_child(1)
-		# /root/Control/HBox/paraContainer/HBox_BLK%s/blkPara_%chance%/LineEdit
-		print("blk_para: ", blk_para.blk, "\t",
-		blk_para.change, "\t", blk_para.chance_list, blk_para.distr_type,
-		blk_para.distr_para_1, blk_para.distr_para_2, 
-		blk_para.h_value_list, blk_para.o_value_list, blk_para.tr_num_range)
+		# print("blk_para: ", blk_para.blk, "\t",
+		# blk_para.change, "\t", blk_para.chance_list, blk_para.distr_type,
+		# blk_para.distr_para_1, blk_para.distr_para_2, 
+		# blk_para.h_value_list, blk_para.o_value_list, blk_para.tr_num_range)
+		Global.blks_para.append(blk_para)
+	
+	print("blks_para: ", Global.blks_para[1].blk, "\n", Global.blks_para[1].chance_list, "\n")
 		
 
 
 func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
 	match input_cell_name:
 		"blkPara_change_distr_or_chance":
-			if _input_cell.selected == 0:
+			if _blk_para.blk == "blk1":
+				pass
+			elif _input_cell.selected == 0:
 				_blk_para.change = "chance"
-			if _input_cell.selected == 1:
+			elif _input_cell.selected == 1:
 				_blk_para.change = "distr"
-			if _input_cell.selected == 2:
+			elif _input_cell.selected == 2:
 				_blk_para.change = "random"
 		"blkPara_distr_type":
 			if  _input_cell.selected == 0:
@@ -59,17 +64,35 @@ func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
 			if  _input_cell.selected == 1:
 				_blk_para.distr_type = "FLAT"
 		"blkPara_distr_para_1":
-			_blk_para.distr_para_1 = _input_cell.text
+			if _input_cell.text == "" or _input_cell.text == null:
+				return
+			else:
+				_blk_para.distr_para_1 = Utils.parse_numeric_array(_input_cell.text) 
 		"blkPara_distr_para_2":
-			_blk_para.distr_para_2 = _input_cell.text
+			if _input_cell.text == "" or _input_cell.text == null:
+				return
+			else:
+				_blk_para.distr_para_2 = Utils.parse_numeric_array(_input_cell.text)
 		"blkPara_chance":
-			_blk_para.chance_list = _input_cell.text
-		"blkPara_h_value":
-			_blk_para.h_value_list = _input_cell.text
-		"blkPara_o_value":
-			_blk_para.o_value_list = _input_cell.text
-		"blkPara_tr_num_range":
-			_blk_para.tr_num_range = _input_cell.text
+			if _input_cell.text == "" or _input_cell.text == null:
+				return
+			else:
+				_blk_para.chance_list = Utils.parse_numeric_array(_input_cell.text)
+		"blkPara_value_list":
+			if _input_cell.text == "" or _input_cell.text == null:
+				return
+			else:
+				_blk_para.h_value_list = Utils.parse_numeric_array(_input_cell.text)
+		"blkPara_value_list2":
+			if _input_cell.text == "" or _input_cell.text == null:
+				return
+			else:
+				_blk_para.o_value_list = Utils.parse_numeric_array(_input_cell.text)
+		"blkPara_tr_num_num_range":
+			if _input_cell.text == "" or _input_cell.text == null:
+				return
+			else:
+				_blk_para.tr_num_range = Utils.parse_numeric_array(_input_cell.text)
 
 
 

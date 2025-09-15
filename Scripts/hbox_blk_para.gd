@@ -25,11 +25,11 @@ func label_distr_para_refresh(_index):
 	print("distr type: ",_index)
 	match _index:
 		0:
-			label_blkPara_distr_para_1.text = "mu"
-			label_blkPara_distr_para_2.text = "mu/std"
+			label_blkPara_distr_para_1.text = "            mu            "
+			label_blkPara_distr_para_2.text = "        mu/std         "
 		1:
-			label_blkPara_distr_para_1.text = "min" 
-			label_blkPara_distr_para_2.text = "max"
+			label_blkPara_distr_para_1.text = "     min     " 
+			label_blkPara_distr_para_2.text = "     max     " 
 		# 可以添加其他选项的处理
 		_:
 			# 处理未匹配的情况
