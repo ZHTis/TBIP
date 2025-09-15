@@ -12,6 +12,7 @@ var configuration
 
 func _ready():
 	configuration = ConfigFile.new()
+	load_states()
 	save_btn.pressed.connect(_save_and_start)
 	blk_num_OptionButton.allow_reselect = true
 	blk_num_OptionButton.item_selected.connect(_update_blk_num)
@@ -22,6 +23,7 @@ func _ready():
 		BLKs_para_nodes.append(blk_node)
 		if i > 1:
 			BLKs_para_nodes[i - 1].visible = false
+
 
 
 func _save_and_start():
@@ -104,6 +106,14 @@ func save_states():
 	var user_path = ProjectSettings.globalize_path("user://")
 	var path = user_path + "task_config.cfg"
 	configuration.save(path)
+
+func load_states():
+	var err =  configuration.load("user://task_config.cfg"):
+	if err!=OK:
+		return # Error! We don't have a save to load.
+	for blk in configuration.get_sections():
+
+
 
 func _update_blk_num(_index):
 	var a = []
