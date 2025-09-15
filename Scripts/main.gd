@@ -509,9 +509,10 @@ func _label_refresh(wealth,num_of_press,case_text):
 			reward_given_flag = false
 
 		"pressing...":
-			label_1.label_settings.font_size = 36
-			label_1.text = str(num_of_press)
-			label_1.label_settings.font_color = neutralcolor
+			label_1.text = ""
+			#label_1.label_settings.font_size = 36
+			#label_1.text = str(num_of_press)
+			#label_1.label_settings.font_color = neutralcolor
 		"init":
 			label_1.label_settings.font_size = 36
 			label_1.label_settings.font_color = neutralcolor

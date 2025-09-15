@@ -8,8 +8,10 @@ extends Control
 
 var blk_num
 var BLKs_para_nodes
+var configuration
 
 func _ready():
+	configuration = ConfigFile.new()
 	save_btn.pressed.connect(_save_and_start)
 	blk_num_OptionButton.allow_reselect = true
 	blk_num_OptionButton.item_selected.connect(_update_blk_num)
@@ -44,7 +46,7 @@ func _save_and_start():
 		Global.blks_para.append(blk_para)
 	
 	print("blks_para: ", Global.blks_para[1].blk, "\n", Global.blks_para[1].chance_list, "\n")
-		
+	save_states()
 
 
 func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
@@ -94,7 +96,14 @@ func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
 			else:
 				_blk_para.tr_num_range = Utils.parse_numeric_array(_input_cell.text)
 
-
+func save_states():
+	for i in range(0, blk_num):
+		var _blk_para = Global.blks_para[i]
+		configuration.set_value("blk%s"%(i+1), "blkPara_change_distr_or_chance", _blk_para.change)
+	
+	var user_path = ProjectSettings.globalize_path("user://")
+	var path = user_path + "task_config.cfg"
+	configuration.save(path)
 
 func _update_blk_num(_index):
 	var a = []

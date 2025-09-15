@@ -90,8 +90,8 @@ func init_write() -> void:
 		print("Storage directory is ready: ", base_dir)
 		# 生成文件名
 		var files = gen_file_name()
-		filename_data = files[0]
 		filename_config = files[1]
+		filename_data = files[0]
 		for filename in files:
 		# 尝试打开文件以确认路径有效，但立即关闭
 			var file = FileAccess.open(filename, FileAccess.WRITE_READ)
