@@ -114,15 +114,15 @@ func generate_all_trials(blk_num = 1, case_ = null):
 			opt_out_reward_template =[]
 			for i in range(1,blk_num+1):
 				if i == 1:
-					blk_("full", "norm_1st", 1, 20,60) 
+					blk_("full", "norm_1st", 1, "fixed", 20,60) 
 				elif i == 2:
-					blk_("2nd", "norm_after_1st", 2, 20,60)
+					blk_("2nd", "norm_after_1st", 2,"fixed", 20,60)
 				else:
 					var dice_ = MathUtils.generate_random(0,1,"int")
 					if dice_ == 0:
-						blk_("random_distribution", "norm_after_1st", i, 20,60)
+						blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,60)
 					else:
-						blk_("random_chance", "norm_after_1st", i, 20,60)
+						blk_("random_chance", "norm_after_1st", i, "RANDOM",20,60)
 			
 			Global.write_subject_data_to_file(Global.filename_config)
 
@@ -147,10 +147,11 @@ func generate_all_trials(blk_num = 1, case_ = null):
 # MARK: BLK
 func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		# rwd value:
+		_value_type ,
 		# tr_num range:
 		tr_num1, tr_num2,
 		 #	reward_given_timepoint new_press:
-		_min=0,_max=0):
+		 _min=0,_max=0):
 			
 	var dice_if_rwd_given
 	var timepoint
@@ -224,22 +225,39 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 			reward_given_timepoint_template_this_blk.append(null)
 
 		# rnd rwd value for each trial
-		var h_value_list= [0,5,10,15,20]
-		var dice_h = MathUtils.generate_random(0,h_value_list.size()-1,"int")
-		var random_h = h_value_list[dice_h]
-		
+		var h_value_list
 		var o_value_list
-		if random_h >=5:
-			o_value_list = [-15,-10,-5, 0, 5]
-		elif random_h == 0:
-			o_value_list = [-15,-10,-5, 0]
-		var dice_o = MathUtils.generate_random(0,o_value_list.size()-1,"int")
-		var random_o = o_value_list[dice_o]
+		match _value_type:
+			"fixed":
+				h_value_list= [10]
+				o_value_list = [0]
+				var dice_h = MathUtils.generate_random(0,h_value_list.size()-1,"int")
+				var random_h = h_value_list[dice_h]
+				hold_reward_template.append(random_h)
+				hold_reward_template_this_blk.append(random_h) # Hold reward
+				var dice_o = MathUtils.generate_random(0,o_value_list.size()-1,"int")
+				var random_o = o_value_list[dice_o]
+				opt_out_reward_template.append(random_o) # Opt-out reward
+				opt_out_reward_template_this_blk.append(random_o) # Opt-out reward
+			"RANDOM":
+				h_value_list= [0,5,10,15,20]
+				var dice_h = MathUtils.generate_random(0,h_value_list.size()-1,"int")
+				var random_h = h_value_list[dice_h]
+				hold_reward_template.append(random_h) # Hold reward
+				hold_reward_template_this_blk.append(random_h) # Hold reward
+				if random_h >=5:
+					o_value_list = [-15,-10,-5, 0, 5]
+				elif random_h == 0:
+					o_value_list = [-15,-10,-5, 0]
+				var dice_o = MathUtils.generate_random(0,o_value_list.size()-1,"int")
+				var random_o = o_value_list[dice_o]
+				opt_out_reward_template.append(random_o) # Opt-out reward
+				opt_out_reward_template_this_blk.append(random_o) # Opt-out reward
 	
-		hold_reward_template.append(random_h) # Hold reward
-		opt_out_reward_template.append(random_o) # Opt-out reward
-		hold_reward_template_this_blk.append(random_h) # Hold reward
-		opt_out_reward_template_this_blk.append(random_o) # Opt-out reward
+		
+		
+		
+		
 	
 
 	var text1 = "reward_given_timepoint_template_this_blk : %s" % str(reward_given_timepoint_template_this_blk)
