@@ -9,6 +9,8 @@ extends Control
 var blk_num
 var BLKs_para_nodes
 var configuration
+var user_path = ProjectSettings.globalize_path("user://")
+var path = user_path + "task_config.cfg"
 
 func _ready():
 	configuration = ConfigFile.new()
@@ -40,6 +42,7 @@ func _save_and_start():
 		for j in range(1, node_length):
 			var input_cell = blk_para_node_root.get_child(j)
 			input_cell_to_config(input_cell.name, input_cell.get_child(1), blk_para)
+			configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).text)
 
 		# print("blk_para: ", blk_para.blk, "\t",
 		# blk_para.change, "\t", blk_para.chance_list, blk_para.distr_type,
@@ -48,7 +51,7 @@ func _save_and_start():
 		Global.blks_para.append(blk_para)
 	
 	print("blks_para: ", Global.blks_para[1].blk, "\n", Global.blks_para[1].chance_list, "\n")
-	save_states()
+	configuration.save(path)
 
 
 func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
@@ -98,20 +101,20 @@ func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
 			else:
 				_blk_para.tr_num_range = Utils.parse_numeric_array(_input_cell.text)
 
-func save_states():
-	for i in range(0, blk_num):
-		var _blk_para = Global.blks_para[i]
-		configuration.set_value("blk%s"%(i+1), "blkPara_change_distr_or_chance", _blk_para.change)
-	
-	var user_path = ProjectSettings.globalize_path("user://")
-	var path = user_path + "task_config.cfg"
-	configuration.save(path)
+
 
 func load_states():
-	var err =  configuration.load("user://task_config.cfg"):
-	if err!=OK:
-		return # Error! We don't have a save to load.
+	print("error: 	",configuration.load(path))
+	if configuration.load(path) != 0:
+		return
 	for blk in configuration.get_sections():
+		var i = int(blk.replace("blk", "")) - 1
+		var blk_para_node_root = BLKs_para_nodes[i]
+		var node_length = configuration.get_section_keys(blk).size()
+		for j in range(0,node_length):
+			var input_cell = blk_para_node_root.get_child(j).get_child(1)
+			var value = configuration.get_value(blk, configuration.get_section_keys(blk)[j])
+			input_cell.text = value
 
 
 
