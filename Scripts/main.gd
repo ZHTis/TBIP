@@ -116,7 +116,7 @@ func generate_all_trials(blk_num = 1, case_ = null):
 				if i == 1:
 					blk_("full", "norm_1st", 1, 20,60) 
 				elif i == 2:
-					blk_("2nd", "norm_after_1nd", 2, 20,60)
+					blk_("2nd", "norm_after_1st", 2, 20,60)
 				else:
 					var dice_ = MathUtils.generate_random(0,1,"int")
 					if dice_ == 0:
