@@ -14,7 +14,7 @@ var path = user_path + "task_config.cfg"
 
 func _ready():
 	configuration = ConfigFile.new()
-	load_states()
+	
 	save_btn.pressed.connect(_save_and_start)
 	blk_num_OptionButton.allow_reselect = true
 	blk_num_OptionButton.item_selected.connect(_update_blk_num)
@@ -25,7 +25,7 @@ func _ready():
 		BLKs_para_nodes.append(blk_node)
 		if i > 1:
 			BLKs_para_nodes[i - 1].visible = false
-
+	load_states()
 
 
 func _save_and_start():
@@ -42,7 +42,10 @@ func _save_and_start():
 		for j in range(1, node_length):
 			var input_cell = blk_para_node_root.get_child(j)
 			input_cell_to_config(input_cell.name, input_cell.get_child(1), blk_para)
-			configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).text)
+			if input_cell.name == "blkPara_change_distr_or_chance" or input_cell.name == "blkPara_distr_type":
+				configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).selected)
+			else:
+				configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).text)
 
 		# print("blk_para: ", blk_para.blk, "\t",
 		# blk_para.change, "\t", blk_para.chance_list, blk_para.distr_type,
@@ -110,11 +113,13 @@ func load_states():
 	for blk in configuration.get_sections():
 		var i = int(blk.replace("blk", "")) - 1
 		var blk_para_node_root = BLKs_para_nodes[i]
+		print("previous blk: ", i, "\t", "\t node root: ", blk_para_node_root.name)
 		var node_length = configuration.get_section_keys(blk).size()
-		for j in range(0,node_length):
-			var input_cell = blk_para_node_root.get_child(j).get_child(1)
-			var value = configuration.get_value(blk, configuration.get_section_keys(blk)[j])
-			input_cell.text = value
+		for j in range(1,node_length):
+			var input_cell = blk_para_node_root.get_child(j)#.get_child(1)
+			print("input cell name: ", input_cell.name)
+			#var value = configuration.get_value(blk, configuration.get_section_keys(blk)[j])
+			#input_cell.text = value
 
 
 
