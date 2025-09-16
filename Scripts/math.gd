@@ -177,8 +177,8 @@ static func float_to_denominator(value: float) -> int:
 		return 1
 		
 	# 将浮点数转换为字符串以处理小数部分
-	var str = str(value)
-	var parts = str.split(".")
+	var a_str = str(value)
+	var parts = a_str.split(".")
 	
 	# 如果是整数，分母为1
 	if parts.size() == 1:

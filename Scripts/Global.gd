@@ -1,10 +1,9 @@
 extends Node
 
-# 跨场景共享变量
-var subject_name: String = ""  # 被试者名称
-var num_of_trials: int = 0  # 试验次数
-var press_history: Array[PressData] = []  # 按键历史记录
-
+# Share variables across scenarios
+var subject_name: String = "" # Name of subject
+var num_of_trials: int = 0 # Number of tests
+var press_history: Array[PressData] = [] # Key History
 var blk_num: int = 1
 var blks_para = []
 
@@ -51,7 +50,7 @@ var saved_flag: bool = false
 var filename_config
 var filename_data
 
-# 获取基于被试者名称的CSV文件路径
+# Get the CSV file path based on the subject's name
 func gen_file_name() -> Array:
 	var base_dir = "user://save_data"
 	
@@ -62,8 +61,8 @@ func gen_file_name() -> Array:
 	
 	# 移除文件名中不允许的特殊字符
 	var invalid_chars = ["/", "\\", ":", "*", "?", "\"", "<", ">", "|"]
-	for char in invalid_chars:
-		safe_subject_name = safe_subject_name.replace(char, "_")
+	for any_char in invalid_chars:
+		safe_subject_name = safe_subject_name.replace(any_char, "_")
 	
 	# 生成带时间戳的文件名（CSV格式）
 	var timestamp = Time.get_datetime_string_from_system()

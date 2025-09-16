@@ -22,7 +22,7 @@ var countdownTimer
 var press_num_slot 
 var hold_reward_probabilities
 var total_reward_chance
-var _interval 
+var _interval : float
 var step # timewindow step
 var mu_rwd_timepoint
 var std_rwd_timepoint
@@ -93,11 +93,11 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# Generate a block of trials
-	generate_all_trials(20,1) 
+	generate_all_trials(4,1) 
 	save_data("head")
 	# Start 1st Trial
 	init_trial()
-	_label_refresh(Global.wealth, num_of_press, "init")
+	_label_refresh(Global.wealth, "init")
 	
 
 
@@ -134,7 +134,7 @@ func generate_all_trials(blk_num = 1, case_ = null):
 			print("Case _: Easy mode")
 			number_of_trials = 10 # Default number of trials
 			Global.num_of_trials = number_of_trials
-			_interval = 0.8
+			_interval  = 0.8
 			reward_given_timepoint = 3 # Default time point to give reward
 			hold_reward_template= []
 			hold_reward_template.resize(number_of_trials)
@@ -254,12 +254,6 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 				opt_out_reward_template.append(random_o) # Opt-out reward
 				opt_out_reward_template_this_blk.append(random_o) # Opt-out reward
 	
-		
-		
-		
-		
-	
-
 	var text1 = "reward_given_timepoint_template_this_blk : %s" % str(reward_given_timepoint_template_this_blk)
 	var text2 = "hold_reward_template_this_blk : %s" % str(hold_reward_template_this_blk)
 	var text3 = "opt_out_reward_template_this_blk : %s" % str(opt_out_reward_template_this_blk)
@@ -328,7 +322,7 @@ func init_trial():
 	# Initialize the test status
 	reward_given_flag = false
 	start_time = 0.0
-	num_of_press = 0.0
+	num_of_press = 0
 	Global.press_history.clear()
 	# Initialization rewards
 	reward = hold_reward_template[trial_count-1]
@@ -342,17 +336,17 @@ func init_trial():
 func save_data(_case):
 	match _case:
 		"head":
-			var file = FileAccess.open(Global.filename_data, FileAccess.WRITE)
-			file.store_line("# The following is CSV format data, one record per line")
-			file.store_line("# Format description: serial number, timestamp (ms), reward mark, key type")
-			file.store_line("# Button type: 0:hold; 1:opt-out")
-			file.store_line("trial num, press_num, timestamp_ms, reward_flag, button_type")  # CSV列标题
+			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
+			file.store_line("Tokens: %d\n" % Global.wealth)
+			file.store_line("# Button type: 0:hold; 1:opt-out")  # CSV列标题
+			file.store_line("# The following is CSV format data, one press record per line")
+			file.store_line("head: trial num, press_num, timestamp_ms, reward_flag, button_type\n")
 			file.close()
 
 		"body":
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
-					# CSV格式：用逗号分隔字段，字符串包含逗号时需用引号包裹
-			var csv_line
+					# CSV format: Use commas to separate fields, and strings need to be wrapped in quotes when they contain commas
+			var csv_line = ""
 			for press in Global.press_history:
 				csv_line = "%d,%d ,%d,%s,%s" % [
 						press.trial_count,
@@ -363,7 +357,11 @@ func save_data(_case):
 					]
 				file.seek_end()
 				file.store_line(csv_line)
-		
+			file.close()
+		"summary":
+			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE) # FileAccess.READ_WRITE will append, while FileAccess.WRITE will overwrite the whole file
+			file.seek(0)
+			file.store_line("Tokens: %d" % Global.wealth)
 			file.close()
 
 
@@ -388,10 +386,10 @@ func reset_to_start_next_trial():
 		restore_nodes(original_states_2)
 		restore_nodes(original_states)
 		# Reset status
-		_label_refresh(Global.wealth,num_of_press,"init")
+		_label_refresh(Global.wealth,"init")
 
 	if trial_count > number_of_trials:
-		_label_refresh(Global.wealth,num_of_press,"finish")
+		_label_refresh(Global.wealth,"finish")
 
 
 
@@ -412,19 +410,19 @@ func _on_hold_button_pressed():
 	# Handle invalid behavior
 	if reward_given_timepoint == null:
 		num_of_press += 1
-		_label_refresh(Global.wealth,num_of_press,"pressing...")
+		_label_refresh(Global.wealth,"pressing...")
 		record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD)
 		
 	elif reward_given_flag == false:
 		num_of_press += 1
-		_label_refresh(Global.wealth,num_of_press,"pressing...")
+		_label_refresh(Global.wealth,"pressing...")
 		if num_of_press < reward_given_timepoint:
 			record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD)
 		if num_of_press == reward_given_timepoint:
 			Global.wealth+= reward
 			reward_given_flag = true
 			print("hold-reward_given_flag  ",reward_given_flag)
-			_label_refresh(Global.wealth,num_of_press,"reward_given")
+			_label_refresh(Global.wealth,"reward_given")
 			record_press_data(current_time, trial_count, true, PressData.BtnType.HOLD)
 			reset_scene_to_start_button()
 
@@ -434,7 +432,7 @@ func _on_opt_out_button_pressed():
 	var current_time = Time.get_ticks_msec() 
 	Global.wealth += opt_out_reward
 	reward_given_flag = true
-	_label_refresh(Global.wealth, num_of_press, "opt_out")
+	_label_refresh(Global.wealth, "opt_out")
 	record_press_data(current_time,trial_count, reward_given_flag, PressData.BtnType.OPT_OUT)
 	reset_scene_to_start_button()
 
@@ -453,7 +451,7 @@ func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: Pr
 	
 
 # MARK: UI
-func place_button(if_opt_left):
+func place_button(_if_opt_left):
 	# 获取窗口尺寸
 	var window_size = get_viewport_rect().size
 	var root = get_node("/root/Node2D" )
@@ -465,7 +463,7 @@ func place_button(if_opt_left):
 	LayoutManager.setup(vboxstart, PRESET_CENTER, 0.5, 0.5, window_size)
 	LayoutManager.setup(vboxbottom, PRESET_CENTER, 0.5, 0.85, window_size)
 	LayoutManager.setup(vboxtop, PRESET_CENTER, 0.5, 0.15, window_size)
-	match if_opt_left:
+	match _if_opt_left:
 		"left":
 			LayoutManager.setup($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
 			LayoutManager.setup($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
@@ -481,15 +479,14 @@ func init_trial_ui():
 		place_button("right") # Initialize UI with optout on the right
 
 
-func _process(delta):
+func _process(_delta):
 	init_trial_ui()
 
 
 # MARK: Label Refresh
-func _label_refresh(wealth,num_of_press,case_text):
+func _label_refresh(wealth,case_text):
 	# 更新UI
 	var hold_reward = reward
-	var opt_out_reward = opt_out_reward
 	if  hold_reward != null:
 		if hold_reward <= 0:
 			hold_button_label.text = "" + str(hold_reward)
@@ -529,7 +526,7 @@ func _label_refresh(wealth,num_of_press,case_text):
 		"pressing...":
 			label_1.text = ""
 			#label_1.label_settings.font_size = 36
-			#label_1.text = str(num_of_press)
+			#label_1.text = str(num_of_press)# need t add num_of_press to the func parameter
 			#label_1.label_settings.font_color = neutralcolor
 		"init":
 			label_1.label_settings.font_size = 36
@@ -588,7 +585,7 @@ func restore_nodes(states):
 	
 	states.clear()
 
-# MARK: Timer
+# MARK: Timer/End
 func set_countdownTimer(ifset:bool):
 	if ifset == true:
 		countdownTimer = Timer.new()
@@ -616,7 +613,8 @@ func _on_timer_timeout():
 
 func _notification(what:int)->void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
-		cleanup()
+		save_data("summary")
+		#cleanup()
 		get_tree().quit()
 
 # 正确释放动态创建的节点
