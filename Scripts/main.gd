@@ -95,7 +95,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# Generate a block of trials
-	generate_all_trials(3,2) 
+	generate_all_trials(4,2) 
 	save_data("head")
 	# Start 1st Trial
 	init_trial()
@@ -136,9 +136,15 @@ func generate_all_trials(blk_num = 1, case_ = null):
 			for i in range(1,blk_num+1):
 				var dice_ = MathUtils.generate_random(0,1,"int")
 				if dice_ == 0:
-					blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,30,0.9,20,10)
+					if i == 1:
+						blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,30,0.9,20,10.0)
+					else:
+						blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,30)
 				else:
-					blk_("random_chance", "norm_after_1st", i, "RANDOM",20,30, 0.9,20,10)
+					if i == 1:
+						blk_("random_chance", "norm_after_1st", i, "RANDOM",20,30, 0.9,20,10.0)
+					else:
+						blk_("random_chance", "norm_after_1st", i, "RANDOM",20,30)
 			
 			Global.write_subject_data_to_file(Global.filename_config)
 	
