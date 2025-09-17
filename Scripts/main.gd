@@ -26,6 +26,8 @@ var _interval : float
 var step # timewindow step
 var mu_rwd_timepoint
 var std_rwd_timepoint
+var flat_min
+var flat_max
 var number_of_trials
 var min_hold_reward 
 var max_hold_reward 
@@ -93,7 +95,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# Generate a block of trials
-	generate_all_trials(4,1) 
+	generate_all_trials(6,3) 
 	save_data("head")
 	# Start 1st Trial
 	init_trial()
@@ -105,7 +107,7 @@ func generate_all_trials(blk_num = 1, case_ = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
 	match case_:
 		
-		1: # unfinished
+		1: # finished
 			print("=======Case 2: Random reward chance/value//distribution/tr_num =======")
 			_interval = 0.5
 
@@ -128,9 +130,42 @@ func generate_all_trials(blk_num = 1, case_ = null):
 
 		2: # input config
 			pass
+	
+		3:# Because the game will habitually crash after running for a few minutes,
+		  # before solving the crash problem, you can run this mode to package each blk. 
+		  # In this mode, blk_num does not represent the number of blks, but the type of blk
+			_interval = 0.5
+			reward_given_timepoint_template = []
+			hold_reward_template=[]
+			opt_out_reward_template =[]
+		  # blk(_reward_chance_mode, _distribution_type, 
+		  # 	save_loc, _value_type ,
+		  # 	tr_num1, tr_num2,
+		  #		 _previous_total_reward_chance = 0, _previous_mu=0, _previous_std=0):
+			if blk_num == 1:
+				# total_reward_chance = 1, random norm,  ~ N(20,10)
+				blk_("full", "norm_1st", 1, "fixed", 20,60) 
+			elif blk_num == 2:
+				#  fixed norm,  ~ N(20,10)
+				# total_reward_chance = 0.9, no matter what " _previous_total_reward_chance" is
+				blk_("2nd", "norm_after_1st", 2,"fixed", 20,60,0,20,10)
+			elif blk_num == 3:
+				# total_reward_chance = 0.9, random norm, EXCEPT for ~ N(20,10)
+				blk_("random_distribution", "norm_after_1st", 3, "RANDOM",20,60,0.9,20,10)
+			elif blk_num == 4:
+				# total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
+				#  fixed norm,  ~ N(20,10)
+				blk_("random_chance", "norm_after_1st", 4, "RANDOM",20,60,0.9,20,10)
+			elif blk_num == 5:
+				# total_reward_chance = 0.8, random norm, EXCEPT for ~ N(20,10)
+				blk_("random_distribution", "norm_after_1st", 3, "RANDOM",20,60,0.8,20,10)
+			elif blk_num == 6:
+				# total_reward_chance = 0.75, random norm, EXCEPT for ~ N(20,10)
+				blk_("random_distribution", "norm_after_1st", 3, "RANDOM",20,60,0.75,20,10)
+			Global.write_subject_data_to_file(Global.filename_config)
 
-			# set blk switch
-		_: # Case _: Easy mode
+
+		_: # Case _: Easy mode, this is only for testing if each node is fuctioning,  no distribution is envolved
 			print("Case _: Easy mode")
 			number_of_trials = 10 # Default number of trials
 			Global.num_of_trials = number_of_trials
@@ -150,8 +185,7 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		_value_type ,
 		# tr_num range:
 		tr_num1, tr_num2,
-		 #	reward_given_timepoint new_press:
-		 _min=0,_max=0):
+		 _previous_total_reward_chance = 0.0, _previous_mu=0, _previous_std=0.0):
 			
 	var dice_if_rwd_given
 	var timepoint
@@ -164,7 +198,11 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 
 	print("\nnumber_of_trials: ", number_of_trials)
 	Global.num_of_trials = number_of_trials
-	var previous_total_reward_chance = total_reward_chance
+	var previous_total_reward_chance
+	if _previous_total_reward_chance == 0:
+		previous_total_reward_chance = total_reward_chance
+	else:
+		previous_total_reward_chance = _previous_total_reward_chance
 
 	match _reward_chance_mode:
 		"full":
@@ -185,38 +223,50 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		"2nd":
 			total_reward_chance = 0.9
 			
-# from Block N to Block N+1, we either change
-# ONLY the distribution, 
-# or ONLY the reward reliability (%)
+	# from Block N to Block N+1, we either change
+	# ONLY the distribution, 
+	# or ONLY the reward reliability (%)
 	if _distribution_type == "norm_1st":
 		blk_distribution(_distribution_type)
 		print("mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
-	
-	elif previous_total_reward_chance == total_reward_chance:
-		blk_distribution(_distribution_type)
+	elif _distribution_type == "norm_after_1st" and previous_total_reward_chance == total_reward_chance:
+		if mu_rwd_timepoint == null :
+			blk_distribution(_distribution_type,0,0,_previous_mu)
+		else:
+			blk_distribution(_distribution_type)
 		print("change distribution. mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
-	else:
+	elif _distribution_type == "norm_after_1st" and previous_total_reward_chance != total_reward_chance:
 		print("change total_reward_chance: ",total_reward_chance)
-	
-	# data generated, depend on distribution type
+		if mu_rwd_timepoint == null :
+			mu_rwd_timepoint = _previous_mu
+			std_rwd_timepoint = _previous_std
+	else:
+		print("error: the case is not defined")
+
+
+	# based on the given distribution parameters,
+	# generate reward_given_timepoint template, which serves as the the "right" answer for trials
 	for i in range(number_of_trials_this_blk):
 		dice_if_rwd_given = MathUtils.generate_random(0,1,"float") # set total reward chance 
 		if dice_if_rwd_given <= total_reward_chance:
 			match _distribution_type:
+			# the cases here should mathch the cases in the fuction "blk_distribution(_distribution_type)"
+			# that's why there are two cases are identical.
+
 				"norm_after_1st": # Normal distribution
 					while true: # Avoid generating negative numbers
 						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
 						if timepoint > 0:
 							break 
 					timepoint = roundi(timepoint)
-				"norm_1st":
+				"norm_1st":# Normal distribution
 					while true: # Avoid generating negative numbers
 						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
 						if timepoint > 0:
 							break 
 					timepoint = roundi(timepoint)
 				"flat":
-					timepoint = MathUtils.generate_random(_min, _max,"int")
+					timepoint = MathUtils.generate_random(flat_min, flat_max,"int")
 
 			reward_given_timepoint_template.append(timepoint)
 			reward_given_timepoint_template_this_blk.append(timepoint)
@@ -271,7 +321,12 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 		print("save_loc too large")
 
 
-func blk_distribution(_distribution_type):
+func blk_distribution(_distribution_type, _min=0,_max=0,_previous_mu=0):
+	if _previous_mu ==0:
+		pass
+	else:
+		# Specify a previous distribution parameter
+		mu_rwd_timepoint = _previous_mu
 
 	match _distribution_type:
 		"norm_after_1st": # Normal distribution
@@ -297,7 +352,8 @@ func blk_distribution(_distribution_type):
 			std_rwd_timepoint = std_rwd_timepoint /10
 
 		"flat": # flat distribution
-			pass
+			flat_min = _min
+			flat_max = _max
 		
 		"norm_1st":
 			mu_rwd_timepoint = 20

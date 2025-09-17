@@ -1,0 +1,435 @@
+Godot Engine v4.4.1.stable.mono.official.49a5bc7b6 - https://godotengine.org
+OpenGL API 3.3.0 Core Profile Context 23.19.10.11.240620 - Compatibility - Using Device: ATI Technologies Inc. - AMD Radeon(TM) Graphics
+
+Storage directory is ready: user://save_data
+File created: user://save_data/zht_2025-09-16T09_12_37.txt
+File created: user://save_data/zht_2025-09-16T09_12_37_config.txt
+=======Case 2: Random reward chance/value//distribution/tr_num =======
+
+number_of_trials: 36
+total_reward_chance: 1
+mu_rwd_timepoint, std_rwd_timepoint: 20, 10.0
+
+number_of_trials: 75
+change total_reward_chance: 0.9
+
+number_of_trials: 120
+total_reward_chance: 0.9
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 20, 5.0
+
+number_of_trials: 144
+total_reward_chance: 0.9
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 15, 7.5
+
+number_of_trials: 193
+total_reward_chance: 0.9
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 23, 5.75
+
+number_of_trials: 242
+total_reward_chance: 0.85
+change total_reward_chance: 0.85
+
+number_of_trials: 290
+total_reward_chance: 0.85
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 35, 8.75
+
+number_of_trials: 347
+total_reward_chance: 0.95
+change total_reward_chance: 0.95
+
+number_of_trials: 405
+total_reward_chance: 0.95
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 44, 11.0
+
+number_of_trials: 451
+total_reward_chance: 0.9
+change total_reward_chance: 0.9
+
+number_of_trials: 506
+total_reward_chance: 0.9
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 44, 22.0
+
+number_of_trials: 547
+total_reward_chance: 0.9
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 33, 16.5
+
+number_of_trials: 571
+total_reward_chance: 0.9
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 33, 8.25
+
+number_of_trials: 630
+total_reward_chance: 0.9
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 50, 25.0
+
+number_of_trials: 665
+total_reward_chance: 0.8
+change total_reward_chance: 0.8
+
+number_of_trials: 719
+total_reward_chance: 0.75
+change total_reward_chance: 0.75
+
+number_of_trials: 768
+total_reward_chance: 0.75
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 38, 9.5
+
+number_of_trials: 805
+total_reward_chance: 0.75
+change distribution. mu_rwd_timepoint, std_rwd_timepoint: 29, 14.5
+
+number_of_trials: 863
+total_reward_chance: 0.95
+change total_reward_chance: 0.95
+
+number_of_trials: 921
+total_reward_chance: 0.75
+change total_reward_chance: 0.75
+File path: C:/Users/ICPBR/AppData/Roaming/Godot/app_userdata/PressToWin/	user://save_data/zht_2025-09-16T09_12_37_config.txt
+trial1
+reward: 10	0	reward_given_timepoint: 24
+hold-reward_given_flag  true
+trial2
+reward: 10	0	reward_given_timepoint: 14
+hold-reward_given_flag  true
+trial3
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial4
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial5
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial6
+reward: 10	0	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial7
+reward: 10	0	reward_given_timepoint: 21
+hold-reward_given_flag  true
+trial8
+reward: 10	0	reward_given_timepoint: 26
+hold-reward_given_flag  true
+trial9
+reward: 10	0	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial10
+reward: 10	0	reward_given_timepoint: 24
+hold-reward_given_flag  true
+trial11
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial12
+reward: 10	0	reward_given_timepoint: 21
+hold-reward_given_flag  true
+trial13
+reward: 10	0	reward_given_timepoint: 21
+hold-reward_given_flag  true
+trial14
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial15
+reward: 10	0	reward_given_timepoint: 23
+hold-reward_given_flag  true
+trial16
+reward: 10	0	reward_given_timepoint: 26
+hold-reward_given_flag  true
+trial17
+reward: 10	0	reward_given_timepoint: 10
+hold-reward_given_flag  true
+trial18
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial19
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial20
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial21
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial22
+reward: 10	0	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial23
+reward: 10	0	reward_given_timepoint: 15
+hold-reward_given_flag  true
+trial24
+reward: 10	0	reward_given_timepoint: 15
+hold-reward_given_flag  true
+trial25
+reward: 10	0	reward_given_timepoint: 23
+hold-reward_given_flag  true
+trial26
+reward: 10	0	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial27
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial28
+reward: 10	0	reward_given_timepoint: 24
+hold-reward_given_flag  true
+trial29
+reward: 10	0	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial30
+reward: 10	0	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial31
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial32
+reward: 10	0	reward_given_timepoint: 23
+hold-reward_given_flag  true
+trial33
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial34
+reward: 10	0	reward_given_timepoint: 26
+hold-reward_given_flag  true
+trial35
+reward: 10	0	reward_given_timepoint: 26
+hold-reward_given_flag  true
+trial36
+reward: 10	0	reward_given_timepoint: 21
+hold-reward_given_flag  true
+trial37
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial38
+reward: 10	0	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial39
+reward: 10	0	reward_given_timepoint: 23
+hold-reward_given_flag  true
+trial40
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial41
+reward: 10	0	reward_given_timepoint: 25
+hold-reward_given_flag  true
+trial42
+reward: 10	0	reward_given_timepoint: <null>
+trial43
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial44
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial45
+reward: 10	0	reward_given_timepoint: <null>
+trial46
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial47
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial48
+reward: 10	0	reward_given_timepoint: <null>
+trial49
+reward: 10	0	reward_given_timepoint: 16
+hold-reward_given_flag  true
+trial50
+reward: 10	0	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial51
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial52
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial53
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial54
+reward: 10	0	reward_given_timepoint: 15
+hold-reward_given_flag  true
+trial55
+reward: 10	0	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial56
+reward: 10	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial57
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial58
+reward: 10	0	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial59
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial60
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial61
+reward: 10	0	reward_given_timepoint: 20
+trial62
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial63
+reward: 10	0	reward_given_timepoint: 21
+hold-reward_given_flag  true
+trial64
+reward: 10	0	reward_given_timepoint: 15
+hold-reward_given_flag  true
+trial65
+reward: 10	0	reward_given_timepoint: 30
+hold-reward_given_flag  true
+trial66
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial67
+reward: 10	0	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial68
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial69
+reward: 10	0	reward_given_timepoint: <null>
+trial70
+reward: 10	0	reward_given_timepoint: 15
+hold-reward_given_flag  true
+trial71
+reward: 10	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial72
+reward: 10	0	reward_given_timepoint: 16
+hold-reward_given_flag  true
+trial73
+reward: 10	0	reward_given_timepoint: 15
+hold-reward_given_flag  true
+trial74
+reward: 10	0	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial75
+reward: 10	0	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial76
+reward: 15	0	reward_given_timepoint: 14
+hold-reward_given_flag  true
+trial77
+reward: 0	-10	reward_given_timepoint: 18
+trial78
+reward: 5	-10	reward_given_timepoint: <null>
+trial79
+reward: 10	-5	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial80
+reward: 15	0	reward_given_timepoint: 23
+hold-reward_given_flag  true
+trial81
+reward: 10	-5	reward_given_timepoint: 23
+hold-reward_given_flag  true
+trial82
+reward: 20	5	reward_given_timepoint: 21
+hold-reward_given_flag  true
+trial83
+reward: 20	-5	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial84
+reward: 10	-10	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial85
+reward: 5	-10	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial86
+reward: 5	0	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial87
+reward: 15	-5	reward_given_timepoint: 24
+hold-reward_given_flag  true
+trial88
+reward: 15	5	reward_given_timepoint: 24
+hold-reward_given_flag  true
+trial89
+reward: 5	-10	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial90
+reward: 20	0	reward_given_timepoint: 18
+hold-reward_given_flag  true
+trial91
+reward: 10	-10	reward_given_timepoint: <null>
+trial92
+reward: 5	-5	reward_given_timepoint: <null>
+trial93
+reward: 15	5	reward_given_timepoint: 20
+trial94
+reward: 5	-10	reward_given_timepoint: 20
+trial95
+reward: 20	0	reward_given_timepoint: <null>
+trial96
+reward: 5	-15	reward_given_timepoint: 20
+hold-reward_given_flag  true
+trial97
+reward: 0	-15	reward_given_timepoint: 22
+trial98
+reward: 10	5	reward_given_timepoint: 18
+trial99
+reward: 20	0	reward_given_timepoint: 26
+hold-reward_given_flag  true
+trial100
+reward: 0	0	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial101
+reward: 5	-15	reward_given_timepoint: 22
+hold-reward_given_flag  true
+trial102
+reward: 15	-10	reward_given_timepoint: 17
+hold-reward_given_flag  true
+trial103
+reward: 10	0	reward_given_timepoint: 19
+hold-reward_given_flag  true
+trial104
+reward: 20	-10	reward_given_timepoint: 19
+hold-reward_given_flag  true
+ERROR: Element limit reached.
+   at: _allocate_rid (./core/templates/rid_owner.h:133)
+ERROR: Parameter "mem" is null.
+   at: initialize_rid (./core/templates/rid_owner.h:276)
+
+================================================================
+CrashHandlerException: Program crashed with signal 11
+Engine version: Godot Engine v4.4.1.stable.mono.official (49a5bc7b616bd04689a2c89e89bda41f50241464)
+Dumping the backtrace. Please include this when reporting the bug to the project developer.
+[1] error(-1): no debug info in PE/COFF executable
+[2] error(-1): no debug info in PE/COFF executable
+[3] error(-1): no debug info in PE/COFF executable
+[4] error(-1): no debug info in PE/COFF executable
+[5] error(-1): no debug info in PE/COFF executable
+[6] error(-1): no debug info in PE/COFF executable
+[7] error(-1): no debug info in PE/COFF executable
+[8] error(-1): no debug info in PE/COFF executable
+[9] error(-1): no debug info in PE/COFF executable
+[10] error(-1): no debug info in PE/COFF executable
+[11] error(-1): no debug info in PE/COFF executable
+[12] error(-1): no debug info in PE/COFF executable
+[13] error(-1): no debug info in PE/COFF executable
+[14] error(-1): no debug info in PE/COFF executable
+[15] error(-1): no debug info in PE/COFF executable
+[16] error(-1): no debug info in PE/COFF executable
+[17] error(-1): no debug info in PE/COFF executable
+[18] error(-1): no debug info in PE/COFF executable
+[19] error(-1): no debug info in PE/COFF executable
+[20] error(-1): no debug info in PE/COFF executable
+[21] error(-1): no debug info in PE/COFF executable
+[22] error(-1): no debug info in PE/COFF executable
+[23] error(-1): no debug info in PE/COFF executable
+[24] error(-1): no debug info in PE/COFF executable
+[25] error(-1): no debug info in PE/COFF executable
+[26] error(-1): no debug info in PE/COFF executable
+[27] error(-1): no debug info in PE/COFF executable
+[28] error(-1): no debug info in PE/COFF executable
+[29] error(-1): no debug info in PE/COFF executable
+[30] error(-1): no debug info in PE/COFF executable
+[31] error(-1): no debug info in PE/COFF executable
+[32] error(-1): no debug info in PE/COFF executable
+[33] error(-1): no debug info in PE/COFF executable
+[34] error(-1): no debug info in PE/COFF executable
+[35] error(-1): no debug info in PE/COFF executable
+[36] error(-1): no debug info in PE/COFF executable
+[37] error(-1): no debug info in PE/COFF executable
+[38] error(-1): no debug info in PE/COFF executable
+[39] error(-1): no debug info in PE/COFF executable
+-- END OF BACKTRACE --
+================================================================
