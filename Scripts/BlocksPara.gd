@@ -14,25 +14,25 @@ var tr_num_range: Array = []
 
 # 构造函数（可选，用于初始化时设置属性）
 func _init(
-    blk: String = "blk1",
-    change: String = "",
-    chance_list: Array = [],
-    distr_type: String = "",
-    distr_para_1: Array = [],
-    distr_para_2: Array = [],
-    h_value_list: Array = [],
-    o_value_list: Array = [],
-    tr_num_range: Array = []
+    _blk: String = "blk1",
+    _change: String = "",
+    _chance_list: Array = [],
+    _distr_type: String = "",
+    _distr_para_1: Array = [],
+    _distr_para_2: Array = [],
+    _h_value_list: Array = [],
+    _o_value_list: Array = [],
+    _tr_num_range: Array = []
 ) -> void:
-    self.blk = blk
-    self.change = change
-    self.chance_list = chance_list
-    self.distr_type = distr_type
-    self.distr_para_1 = distr_para_1
-    self.distr_para_2 = distr_para_2
-    self.h_value_list = h_value_list
-    self.o_value_list = o_value_list
-    self.tr_num_range = tr_num_range
+    self.blk = _blk
+    self.change = _change
+    self.chance_list = _chance_list
+    self.distr_type = _distr_type
+    self.distr_para_1 = _distr_para_1
+    self.distr_para_2 = _distr_para_2
+    self.h_value_list = _h_value_list
+    self.o_value_list = _o_value_list
+    self.tr_num_range = _tr_num_range
 
 # 可选：添加一个转换为字典的方法，方便序列化
 func to_dict() -> Dictionary:

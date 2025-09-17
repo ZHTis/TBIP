@@ -95,7 +95,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# Generate a block of trials
-	generate_all_trials(6,3) 
+	generate_all_trials(3,2) 
 	save_data("head")
 	# Start 1st Trial
 	init_trial()
@@ -107,7 +107,7 @@ func generate_all_trials(blk_num = 1, case_ = null):
 	# Generate a block of trials, generate reward_given_timepoint and reward given tremplate here
 	match case_:
 		
-		1: # finished
+		1: # fixed for the first 2
 			print("=======Case 2: Random reward chance/value//distribution/tr_num =======")
 			_interval = 0.5
 
@@ -116,20 +116,31 @@ func generate_all_trials(blk_num = 1, case_ = null):
 			opt_out_reward_template =[]
 			for i in range(1,blk_num+1):
 				if i == 1:
-					blk_("full", "norm_1st", 1, "fixed", 20,60) 
+					blk_("full", "norm_1st", 1, "fixed", 20,30) 
 				elif i == 2:
-					blk_("2nd", "norm_after_1st", 2,"fixed", 20,60)
+					blk_("2nd", "norm_after_1st", 2,"fixed", 20,30)
 				else:
 					var dice_ = MathUtils.generate_random(0,1,"int")
 					if dice_ == 0:
-						blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,60)
+						blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,30)
 					else:
-						blk_("random_chance", "norm_after_1st", i, "RANDOM",20,60)
+						blk_("random_chance", "norm_after_1st", i, "RANDOM",20,30)
 			
 			Global.write_subject_data_to_file(Global.filename_config)
 
-		2: # input config
-			pass
+		2: # no fixed 1 and 2
+			_interval = 0.5
+			reward_given_timepoint_template = []
+			hold_reward_template=[]
+			opt_out_reward_template =[]
+			for i in range(1,blk_num+1):
+				var dice_ = MathUtils.generate_random(0,1,"int")
+				if dice_ == 0:
+					blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,30,0.9,20,10)
+				else:
+					blk_("random_chance", "norm_after_1st", i, "RANDOM",20,30, 0.9,20,10)
+			
+			Global.write_subject_data_to_file(Global.filename_config)
 	
 		3:# Because the game will habitually crash after running for a few minutes,
 		  # before solving the crash problem, you can run this mode to package each blk. 
@@ -164,6 +175,8 @@ func generate_all_trials(blk_num = 1, case_ = null):
 				blk_("random_distribution", "norm_after_1st", 3, "RANDOM",20,60,0.75,20,10)
 			Global.write_subject_data_to_file(Global.filename_config)
 
+		4:
+			pass
 
 		_: # Case _: Easy mode, this is only for testing if each node is fuctioning,  no distribution is envolved
 			print("Case _: Easy mode")

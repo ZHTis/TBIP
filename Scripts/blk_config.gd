@@ -117,9 +117,13 @@ func load_states():
 		var node_length = configuration.get_section_keys(blk).size()
 		for j in range(1,node_length):
 			var input_cell = blk_para_node_root.get_child(j)#.get_child(1)
-			print("input cell name: ", input_cell.name)
-			#var value = configuration.get_value(blk, configuration.get_section_keys(blk)[j])
-			#input_cell.text = value
+			var value = configuration.get_value(blk, input_cell.name)
+			var input_cell_edit = input_cell.get_child(1)
+			if input_cell_edit is LineEdit:
+				input_cell_edit.text = value
+			elif input_cell_edit is OptionButton:
+				input_cell_edit.selected = int(value)
+			
 
 
 

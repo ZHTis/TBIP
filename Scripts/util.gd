@@ -1,13 +1,13 @@
 class_name Utils
 extends Object
 
-static func parse_numeric_array(str: String) -> Array:
+static func parse_numeric_array(_str: String) -> Array:
 	# 检查输入是否为空
-	if str == null:
+	if _str == null:
 		return []
 	
 	# 移除字符串中的方括号
-	var cleaned_str = str.replace("[", "").replace("]", "")
+	var cleaned_str = _str.replace("[", "").replace("]", "")
 	
 	# 如果清理后为空，返回空数组
 	if cleaned_str == null:
