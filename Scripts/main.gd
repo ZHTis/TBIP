@@ -19,7 +19,6 @@ extends Control
 var time_left : int = 900
 var countdownTimer
 var _reusable_timer: Timer = null
-var timer_case = 0
 ##### Global variables used in main.gd######
 var total_reward_chance
 var _interval : float
@@ -100,7 +99,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# Generate a block of trials
-	generate_all_trials(20,1) 
+	generate_all_trials(4) 
 	save_data("head")
 	# Start 1st Trial
 	_reusable_timer = Timer.new()
@@ -111,7 +110,7 @@ func init_task(): # Initialize task, BLK design
 	
 
 
-func generate_all_trials(blk_num = 1, case_ = null):
+func generate_all_trials(case_, blk_num = 1):
 	# Generate a block of trials, generate reward_given_timepoint and hold_reward given tremplate here
 	
 	match case_:
@@ -201,7 +200,54 @@ func generate_all_trials(blk_num = 1, case_ = null):
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
 		4:
-			pass
+			var user_path = ProjectSettings.globalize_path("user://")
+			var path = user_path + "task_config.cfg"
+			var configuration = ConfigFile.new()
+			if configuration.load(path) != 0:
+				return
+			blk_num = configuration.get_sections().size()
+			_interval = 0.5
+			reward_given_timepoint_template = []
+			hold_vlaue_template=[]
+			opt_out_value_template =[]
+			var reward_chance_mode
+
+			var i = 1
+			for blk in configuration.get_sections():
+				
+				print("\nconfiguration.get_value(%s, \"blkPara_chance\")"%blk,configuration.get_value(blk, "blkPara_chance"))
+				if str(blk) =="blk1":
+					blk_("full", "norm_1st", 1, "fixed", 20,60)
+
+				else:
+					i += 1
+					print("blk\t",blk,"\ti\t",i)
+					if configuration.get_value(blk, "blkPara_chance") =="":
+						print('ERROR: %s "blkPara_chance" not defined'%blk)
+						return
+					else:
+						total_reward_chance_structure = configuration.get_value(blk, "blkPara_chance")
+
+					
+					if configuration.get_value(blk, "blkPara_change_distr_or_chance") == 2:
+						var dice_ = MathUtils.generate_random(0,1,"int")
+						if dice_ == 0:
+							reward_chance_mode = "random_distribution"
+						else:
+							reward_chance_mode = "random_chance"
+					elif configuration.get_value(blk, "blkPara_change_distr_or_chance") == 1:
+						reward_chance_mode = "random_distribution"
+					elif configuration.get_value(blk, "blkPara_change_distr_or_chance") == 0:
+						reward_chance_mode = "random_chance"
+					else:
+						print("ERROR: %s 'change' not defined"%blk)
+						return
+				
+			
+				mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
+				variance_rwd_timepoint_2mu_list = [0.5, 0.25]
+				blk_(reward_chance_mode, "norm_after_1st", i, "RANDOM",20,60)
+
 
 
 # MARK: BLK
@@ -469,7 +515,7 @@ func reset_scene_to_start_button():
 	vboxstart.visible = true
 	vboxbottom.visible = true
 	vboxtop.visible = true
-	timer_case = 0
+
 	
 
 func reset_to_start_next_trial():
