@@ -136,10 +136,10 @@ icon_alignment = 1
 
 [node name="VBoxSTART" type="VBoxContainer" parent="."]
 layout_mode = 2
-offset_left = -200.0
-offset_top = 164.0
-offset_right = 1024.0
-offset_bottom = 1367.0
+offset_left = 568.0
+offset_top = 212.0
+offset_right = 1792.0
+offset_bottom = 1415.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.125, 0.125)

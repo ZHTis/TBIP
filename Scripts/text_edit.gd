@@ -29,5 +29,5 @@ func _save_text():
 
 func init_ui():
 	var window_size = get_viewport_rect().size
-	LayoutManager.setup(btnBox,PRESET_CENTER, 0.5,0.75, window_size)
-	LayoutManager.setup(vbox,PRESET_CENTER, 0.5,0.25, window_size)
+	Utils.setup_layout(btnBox,Control.PRESET_CENTER, 0.5,0.75, window_size)
+	Utils.setup_layout(vbox,PRESET_CENTER, 0.5,0.25, window_size)

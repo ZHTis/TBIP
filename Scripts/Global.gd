@@ -4,7 +4,7 @@ extends Node
 var subject_name: String = "" # Name of subject
 var num_of_trials: int = 0 # Number of tests
 var press_history: Array[PressData] = [] # Key History
-var blk_num: int = 1
+
 var blks_para = []
 
 var text1: String = ""  # 文本1
@@ -105,7 +105,7 @@ func init_write() -> void:
 
 
 # 将数据写入文件（头部说明 + CSV格式数据）
-func write_subject_data_to_file(data_filename) -> void:
+func write_sessionDesign_to_file(data_filename) -> void:
 	var user_path = ProjectSettings.globalize_path("user://")
 	print("File path: ", user_path,"\t",data_filename)
 
