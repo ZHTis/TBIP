@@ -30,6 +30,8 @@ var trial_count
 var initialized_flag : bool = false
 var num_of_press : int = 0
 var reward_given_flag : bool = false
+var h_value_list # seeds for "hold_vlaue_template"
+var o_value_list  # seeds for "opt_out_value_template"
 # Store the original state for recovery (processing possible initial hidden elements)
 var original_states = {}
 var original_states_2 = {}
@@ -51,8 +53,8 @@ var opt_out_value_template
 var total_reward_chance_structure
 var mu_rwd_timepoint_change_list
 var variance_rwd_timepoint_2mu_list
-var h_value_list # seeds for "hold_vlaue_template"
-var o_value_list # seeds for "opt_out_value_template"
+var h_value_listRND # case "RANDOM" options
+var o_value_listRND
 # flat
 var flat_min
 var flat_max
@@ -124,6 +126,9 @@ func generate_all_trials(case_, blk_num = 1):
 			opt_out_value_template =[]
 			mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
 			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
+			h_value_listRND= [0,5,10,15,20] # seeds for "hold_vlaue_template" for case "RANDOM"
+			o_value_listRND = [-15,-10,-5, 0, 5]
+
 			for i in range(1,blk_num+1):
 				if i == 1:
 					blk_("full", "norm_1st", 1, "fixed", 20,30) 
@@ -146,6 +151,8 @@ func generate_all_trials(case_, blk_num = 1):
 			opt_out_value_template =[]
 			mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
 			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
+			h_value_listRND= [0,5,10,15,20]
+			o_value_listRND = [-15,-10,-5, 0, 5]
 			for i in range(1,blk_num+1):
 				var dice_ = MathUtils.generate_random(0,1,"int")
 				if dice_ == 0:
@@ -173,6 +180,8 @@ func generate_all_trials(case_, blk_num = 1):
 			opt_out_value_template =[]
 			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
 			mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
+			h_value_listRND= [0,5,10,15,20]
+			o_value_listRND = [-15,-10,-5, 0, 5]
 		  # blk(_reward_chance_mode, _distribution_type, 
 		  # 	save_loc, _value_type ,
 		  # 	tr_num1, tr_num2,
@@ -221,34 +230,145 @@ func generate_all_trials(case_, blk_num = 1):
 
 				else:
 					i += 1
-					print("blk\t",blk,"\ti\t",i)
-					if configuration.get_value(blk, "blkPara_chance") =="":
-						print('ERROR: %s "blkPara_chance" not defined'%blk)
-						return
-					else:
-						total_reward_chance_structure = configuration.get_value(blk, "blkPara_chance")
+					print("blk\t",blk,"\tglobal.text_i =\t",i)
 
-					
-					if configuration.get_value(blk, "blkPara_change_distr_or_chance") == 2:
-						var dice_ = MathUtils.generate_random(0,1,"int")
-						if dice_ == 0:
-							reward_chance_mode = "random_distribution"
-						else:
-							reward_chance_mode = "random_chance"
-					elif configuration.get_value(blk, "blkPara_change_distr_or_chance") == 1:
-						reward_chance_mode = "random_distribution"
-					elif configuration.get_value(blk, "blkPara_change_distr_or_chance") == 0:
-						reward_chance_mode = "random_chance"
-					else:
-						print("ERROR: %s 'change' not defined"%blk)
-						return
-				
+					var a = load_from_config(blk,
+						configuration.get_value(blk, "blkPara_change_distr_or_chance"),
+						configuration.get_value(blk, "blkPara_distr_type"),
+						configuration.get_value(blk, "blkPara_distr_para_1"),
+						configuration.get_value(blk, "blkPara_distr_para_2"),
+						configuration.get_value(blk, "blkPara_chance"),
+						configuration.get_value(blk, "blkPara_value_list"),
+						configuration.get_value(blk, "blkPara_value_list2"),
+						configuration.get_value(blk, "blkPara_tr_num_num_range")
+					)
+
+					# the structure of  result is: 
+						#0 [ _reward_chance_mode, 
+						#1 _total_reward_chance_structure,
+						# _mu_rwd_timepoint_change_list,
+						#3 _variance_rwd_timepoint_2mu_list,
+						# _h_value_list_,
+						#5 _o_value_list_,
+						# _tr_num_n_range[0],
+						# _tr_num_n_range[1] 
+					reward_chance_mode = a[0]
+					h_value_listRND = a[4]
+					o_value_listRND = a[5]
+					total_reward_chance_structure = a[1]
+					mu_rwd_timepoint_change_list = a[2]
+					variance_rwd_timepoint_2mu_list = a[3]
+					print(
+						"reward_chance_mode ",reward_chance_mode
+						,"\ntotal_reward_chance_structure ",total_reward_chance_structure
+						,"\nmu_rwd_timepoint_change_list ",mu_rwd_timepoint_change_list.size()
+						,"\nvariance_rwd_timepoint_2mu_list ",variance_rwd_timepoint_2mu_list
+						,"\nh_value_listRND ",h_value_listRND
+						,"\no_value_listRND ",o_value_listRND
+						)
 			
-				mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
-				variance_rwd_timepoint_2mu_list = [0.5, 0.25]
-				blk_(reward_chance_mode, "norm_after_1st", i, "RANDOM",20,60)
+					blk_(reward_chance_mode, "norm_after_1st", i, "RANDOM",a[6],a[7])
+			
+			Global.write_sessionDesign_to_file(Global.filename_config)
 
 
+func load_from_config(_blk,
+					_blkPara_change_distr_or_chance,
+					_blkPara_distr_type,
+					_blkPara_distr_para_1,
+					_blkPara_distr_para_2,
+					_blkPara_chance,
+					_blkPara_value_list,
+					_blkPara_value_list_2,
+					_blkPara_tr_num_num_range
+					):
+
+	var _o_value_list_=[]
+	var _h_value_list_=[]
+	var _tr_num_n_range
+	if _blkPara_value_list == "":
+		print('ERROR: %s "blkPara_value_list" not defined'%_blk)
+		return
+	else:
+		var f_h_value_list_ = Utils.parse_numeric_array(_blkPara_value_list)
+		for floatitem in f_h_value_list_: 
+			var intitem = int(floatitem)
+			_h_value_list_.append(intitem)
+
+	if _blkPara_value_list_2 == "":
+		print('ERROR: %s "blkPara_value_list_2" not defined'%_blk)
+		return
+	else:
+		var f_o_value_list_ = Utils.parse_numeric_array(_blkPara_value_list_2)
+		for floatitem in f_o_value_list_: 
+			var intitem = int(floatitem)
+			_o_value_list_.append(intitem)
+
+	if _blkPara_tr_num_num_range == "":
+		print('ERROR: %s "blkPara_tr_num_num_range" not defined'%_blk)
+		return
+	else:
+		_tr_num_n_range = Utils.parse_numeric_array(_blkPara_tr_num_num_range)
+		if _tr_num_n_range.size() != 2 :
+			print('ERROR: %s "blkPara_tr_num_num_range" format error'%_blk)
+			return
+
+
+	var _total_reward_chance_structure
+	if _blkPara_chance == "":
+		print('ERROR: %s "blkPara_chance" not defined'%_blk)
+		return
+	else:
+		_total_reward_chance_structure = Utils.parse_numeric_array(_blkPara_chance)
+
+	var _mu_rwd_timepoint_change_list
+	var _variance_rwd_timepoint_2mu_list
+	match _blkPara_distr_type:
+		-1:
+			print("ERROR: %s 'distr_type' not defined"%_blk)
+			return
+		1:
+			pass
+		0: 
+			if _blkPara_distr_para_1 == "":
+				print("ERROR: %s 'distr_para_1' not defined"%_blk)
+				return
+			if _blkPara_distr_para_2 == "":
+				print("ERROR: %s 'distr_para_2' not defined"%_blk)
+				return
+			else:
+				_mu_rwd_timepoint_change_list = Utils.parse_numeric_array(_blkPara_distr_para_1)
+				_variance_rwd_timepoint_2mu_list = Utils.parse_numeric_array(_blkPara_distr_para_2)
+
+	var _reward_chance_mode
+	match _blkPara_change_distr_or_chance:
+		"":
+			print('ERROR: %s "blkPara_chance" not defined'%_blk)
+			return
+		2:
+			var dice_ = MathUtils.generate_random(0,1,"int")
+			if dice_ == 0:
+				_reward_chance_mode = "random_distribution"
+			else:
+				_reward_chance_mode = "random_chance"
+		1:
+			_reward_chance_mode = "random_distribution"
+		0:
+			_reward_chance_mode = "random_chance"
+		-1:
+			print("ERROR: %s 'change' not defined"%_blk)
+			return
+
+	var result = [ _reward_chance_mode, 
+	_total_reward_chance_structure,
+	_mu_rwd_timepoint_change_list,
+	_variance_rwd_timepoint_2mu_list,
+	_h_value_list_,
+	_o_value_list_,
+	_tr_num_n_range[0],
+	_tr_num_n_range[1]
+		]
+	return result
 
 # MARK: BLK
 func blk_(_reward_chance_mode, _distribution_type, save_loc,
@@ -349,6 +469,23 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 
 		# how much to give as reward
 		match _value_type:
+			"RANDOM":
+				# h_value_list,o_value_list should be predefined 
+				h_value_list = h_value_listRND
+				o_value_list = o_value_listRND
+				var dice_h = MathUtils.generate_random(0,h_value_list.size()-1,"int")
+				var random_h = h_value_list[dice_h]
+				var dice_o 
+				var random_o
+				while true: # Avoid generating negative numbers
+					dice_o = MathUtils.generate_random(0,o_value_list.size()-1,"int")
+					random_o = o_value_list[dice_o]
+					if random_o <= random_h:
+						break
+				hold_vlaue_template.append(random_h) # Hold hold_reward
+				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
+				opt_out_value_template.append(random_o) # Opt-out hold_reward
+				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
 			"fixed":
 				h_value_list= [10]
 				o_value_list = [0]
@@ -360,20 +497,7 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 				var random_o = o_value_list[dice_o]
 				opt_out_value_template.append(random_o) # Opt-out hold_reward
 				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
-			"RANDOM":
-				h_value_list= [0,5,10,15,20]
-				var dice_h = MathUtils.generate_random(0,h_value_list.size()-1,"int")
-				var random_h = h_value_list[dice_h]
-				hold_vlaue_template.append(random_h) # Hold hold_reward
-				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
-				if random_h >=5:
-					o_value_list = [-15,-10,-5, 0, 5]
-				elif random_h == 0:
-					o_value_list = [-15,-10,-5, 0]
-				var dice_o = MathUtils.generate_random(0,o_value_list.size()-1,"int")
-				var random_o = o_value_list[dice_o]
-				opt_out_value_template.append(random_o) # Opt-out hold_reward
-				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
+			
 			
 # save the configuration with data	
 	var text1 = "reward_given_timepoint_template_this_blk : \n%s" % str(reward_given_timepoint_template_this_blk)

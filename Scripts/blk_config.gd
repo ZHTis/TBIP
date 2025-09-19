@@ -29,7 +29,6 @@ func _ready():
 
 
 func _save_and_start():
-	Global.blks_para = []
 	if blk_num == null:
 		print("blk_num is null")
 		return
@@ -39,8 +38,15 @@ func _save_and_start():
 		# process the child nodes of BLKs_para_nodes[i],
 		var blk_para_node_root = BLKs_para_nodes[i]
 		var node_length = blk_para_node_root.get_child_count()
+
 		for j in range(1, node_length):
 			var input_cell = blk_para_node_root.get_child(j)
+			if i>1 and input_cell.get_child(1) is LineEdit:
+				if input_cell.get_child(1).text == "":
+					input_cell.get_child(1).text = BLKs_para_nodes[i-1].get_child(j).get_child(1).text
+			if i>1 and input_cell.get_child(1) is OptionButton:
+				if input_cell.get_child(1).selected ==  -1:
+					input_cell.get_child(1).selected = BLKs_para_nodes[i-1].get_child(j).get_child(1).selected
 			input_cell_to_config(input_cell.name, input_cell.get_child(1), blk_para)
 			if input_cell.name == "blkPara_change_distr_or_chance" or input_cell.name == "blkPara_distr_type":
 				configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).selected)
@@ -51,9 +57,11 @@ func _save_and_start():
 		# blk_para.change, "\t", blk_para.chance_list, blk_para.distr_type,
 		# blk_para.distr_para_1, blk_para.distr_para_2, 
 		# blk_para.h_value_list, blk_para.o_value_list, blk_para.tr_num_range)
-		Global.blks_para.append(blk_para)
 	
-	print("blks_para: ", Global.blks_para[1].blk, "\n", Global.blks_para[1].chance_list, "\n")
+	if blk_num < configuration.get_sections().size():
+		for i in range(blk_num, configuration.get_sections().size()+1):
+			var _blk = "blk" + str(i + 1)
+			configuration.erase_section(_blk)
 	configuration.save(path)
 
 

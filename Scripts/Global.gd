@@ -5,7 +5,7 @@ var subject_name: String = "" # Name of subject
 var num_of_trials: int = 0 # Number of tests
 var press_history: Array[PressData] = [] # Key History
 
-var blks_para = []
+
 
 var text1: String = ""  # 文本1
 var text2: String = ""  # 文本2
