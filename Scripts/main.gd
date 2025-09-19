@@ -101,7 +101,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# Generate a block of trials
-	generate_all_trials(4) 
+	generate_all_trials(1,12) 
 	save_data("head")
 	# Start 1st Trial
 	_reusable_timer = Timer.new()
@@ -131,15 +131,15 @@ func generate_all_trials(case_, blk_num = 1):
 
 			for i in range(1,blk_num+1):
 				if i == 1:
-					blk_("full", "norm_1st", 1, "fixed", 20,30) 
+					blk_("full", "norm_1st", 1, "fixed", 20,60) 
 				elif i == 2:
-					blk_("2nd", "norm_after_1st", 2,"fixed", 20,30)
+					blk_("2nd", "norm_after_1st", 2,"fixed", 20,60)
 				else:
 					var dice_ = MathUtils.generate_random(0,1,"int")
 					if dice_ == 0:
-						blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,30)
+						blk_("random_distribution", "norm_after_1st", i, "RANDOM",20,60)
 					else:
-						blk_("random_chance", "norm_after_1st", i, "RANDOM",20,30)
+						blk_("random_chance", "norm_after_1st", i, "RANDOM",20,60)
 			
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
@@ -225,50 +225,49 @@ func generate_all_trials(case_, blk_num = 1):
 			for blk in configuration.get_sections():
 				
 				print("\nconfiguration.get_value(%s, \"blkPara_chance\")"%blk,configuration.get_value(blk, "blkPara_chance"))
-				if str(blk) =="blk1":
-					blk_("full", "norm_1st", 1, "fixed", 20,60)
+	
+				print("blk\t",blk,"\tglobal.text_i =\t",i)
 
-				else:
-					i += 1
-					print("blk\t",blk,"\tglobal.text_i =\t",i)
+				var a = load_from_config(blk,
+					configuration.get_value(blk, "blkPara_change_distr_or_chance"),
+					configuration.get_value(blk, "blkPara_distr_type"),
+					configuration.get_value(blk, "blkPara_distr_para_1"),
+					configuration.get_value(blk, "blkPara_distr_para_2"),
+					configuration.get_value(blk, "blkPara_chance"),
+					configuration.get_value(blk, "blkPara_value_list"),
+					configuration.get_value(blk, "blkPara_value_list2"),
+					configuration.get_value(blk, "blkPara_tr_num_num_range")
+				)
 
-					var a = load_from_config(blk,
-						configuration.get_value(blk, "blkPara_change_distr_or_chance"),
-						configuration.get_value(blk, "blkPara_distr_type"),
-						configuration.get_value(blk, "blkPara_distr_para_1"),
-						configuration.get_value(blk, "blkPara_distr_para_2"),
-						configuration.get_value(blk, "blkPara_chance"),
-						configuration.get_value(blk, "blkPara_value_list"),
-						configuration.get_value(blk, "blkPara_value_list2"),
-						configuration.get_value(blk, "blkPara_tr_num_num_range")
+				# the structure of  result is: 
+					#0 [ _reward_chance_mode, 
+					#1 _total_reward_chance_structure,
+					# _mu_rwd_timepoint_change_list,
+					#3 _variance_rwd_timepoint_2mu_list,
+					# _h_value_list_,
+					#5 _o_value_list_,
+					# _tr_num_n_range[0],
+					# _tr_num_n_range[1] 
+				reward_chance_mode = a[0]
+				h_value_listRND = a[4]
+				o_value_listRND = a[5]
+				total_reward_chance_structure = a[1]
+				mu_rwd_timepoint_change_list = a[2]
+				variance_rwd_timepoint_2mu_list = a[3]
+				print(
+					"reward_chance_mode ",reward_chance_mode
+					,"\ntotal_reward_chance_structure ",total_reward_chance_structure
+					,"\nmu_rwd_timepoint_change_list ",mu_rwd_timepoint_change_list.size()
+					,"\nvariance_rwd_timepoint_2mu_list ",variance_rwd_timepoint_2mu_list
+					,"\nh_value_listRND ",h_value_listRND
+					,"\no_value_listRND ",o_value_listRND
 					)
 
-					# the structure of  result is: 
-						#0 [ _reward_chance_mode, 
-						#1 _total_reward_chance_structure,
-						# _mu_rwd_timepoint_change_list,
-						#3 _variance_rwd_timepoint_2mu_list,
-						# _h_value_list_,
-						#5 _o_value_list_,
-						# _tr_num_n_range[0],
-						# _tr_num_n_range[1] 
-					reward_chance_mode = a[0]
-					h_value_listRND = a[4]
-					o_value_listRND = a[5]
-					total_reward_chance_structure = a[1]
-					mu_rwd_timepoint_change_list = a[2]
-					variance_rwd_timepoint_2mu_list = a[3]
-					print(
-						"reward_chance_mode ",reward_chance_mode
-						,"\ntotal_reward_chance_structure ",total_reward_chance_structure
-						,"\nmu_rwd_timepoint_change_list ",mu_rwd_timepoint_change_list.size()
-						,"\nvariance_rwd_timepoint_2mu_list ",variance_rwd_timepoint_2mu_list
-						,"\nh_value_listRND ",h_value_listRND
-						,"\no_value_listRND ",o_value_listRND
-						)
-			
+				if str(blk) =="blk1":
+					blk_("random_chance", "norm_1st_custom", 1, "RANDOM", a[6], a[7])
+				else:
 					blk_(reward_chance_mode, "norm_after_1st", i, "RANDOM",a[6],a[7])
-			
+				i += 1
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
 
@@ -343,8 +342,9 @@ func load_from_config(_blk,
 	var _reward_chance_mode
 	match _blkPara_change_distr_or_chance:
 		"":
-			print('ERROR: %s "blkPara_chance" not defined'%_blk)
-			return
+			if _blk != "blk1":
+				print('ERROR: %s "blkPara_change_distr_or_chance" not defined'%_blk)
+				return
 		2:
 			var dice_ = MathUtils.generate_random(0,1,"int")
 			if dice_ == 0:
@@ -416,7 +416,7 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 	# from Block N to Block N+1, we either change
 	# ONLY the distribution, 
 	# or ONLY the hold_reward reliability (%)
-	if _distribution_type == "norm_1st":
+	if _distribution_type == "norm_1st" or _distribution_type == "norm_1st_custom":
 		blk_distribution(_distribution_type)
 		print("mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
 	elif _distribution_type == "norm_after_1st" and previous_total_reward_chance == total_reward_chance:
@@ -452,12 +452,21 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 						if timepoint > 0:
 							break 
 					timepoint = roundi(timepoint)
+					
+				"norm_1st_custom":
+					while true: # Avoid generating negative numbers
+						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
+						if timepoint > 0:
+							break 
+					timepoint = roundi(timepoint)
+
 				"norm_1st":# Normal distribution
 					while true: # Avoid generating negative numbers
 						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
 						if timepoint > 0:
 							break 
 					timepoint = roundi(timepoint)
+
 				"flat":
 					timepoint = MathUtils.generate_random(flat_min, flat_max,"int")
 
@@ -554,7 +563,13 @@ func blk_distribution(_distribution_type, _min=0,_max=0,_previous_mu=0):
 		"flat": # flat distribution
 			flat_min = _min
 			flat_max = _max
-		
+
+		"norm_1st_custom": # Normal distribution
+			var dice_mu_rwd_timepoint = MathUtils.generate_random(0,mu_rwd_timepoint_change_list.size()-1,"int")
+			mu_rwd_timepoint = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
+			var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0,variance_rwd_timepoint_2mu_list.size()-1,"int")
+			std_rwd_timepoint = mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
+
 		"norm_1st":
 			mu_rwd_timepoint = 20
 			std_rwd_timepoint = 10

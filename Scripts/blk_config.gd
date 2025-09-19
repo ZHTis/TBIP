@@ -1,6 +1,7 @@
 extends Control
 
-@onready var save_btn = get_node("/root/Control/VBox/Button")
+@onready var start_btn = get_node("/root/Control/VBox/HBox/Button")
+@onready var save_btn = get_node("/root/Control/VBox/HBox/Button2")
 @onready var vbox = $VBox
 @onready var hbox = $HBox
 @onready var blk_num_OptionButton = $VBox/OptionButton
@@ -15,9 +16,11 @@ var path = user_path + "task_config.cfg"
 func _ready():
 	configuration = ConfigFile.new()
 	
-	save_btn.pressed.connect(_save_and_start)
+	start_btn.pressed.connect(_save_and_start)
+	save_btn.pressed.connect(_save)
 	blk_num_OptionButton.allow_reselect = true
 	blk_num_OptionButton.item_selected.connect(_update_blk_num)
+
 	BLKs_para_nodes = []
 	for i in range(1, 21):
 		var blk_node_name = "/root/Control/HBox/paraContainer/HBox_BLK%s" % i
@@ -27,8 +30,7 @@ func _ready():
 			BLKs_para_nodes[i - 1].visible = false
 	load_states()
 
-
-func _save_and_start():
+func _save():
 	if blk_num == null:
 		print("blk_num is null")
 		return
@@ -39,19 +41,21 @@ func _save_and_start():
 		var blk_para_node_root = BLKs_para_nodes[i]
 		var node_length = blk_para_node_root.get_child_count()
 
-		for j in range(1, node_length):
-			var input_cell = blk_para_node_root.get_child(j)
-			if i>1 and input_cell.get_child(1) is LineEdit:
-				if input_cell.get_child(1).text == "":
-					input_cell.get_child(1).text = BLKs_para_nodes[i-1].get_child(j).get_child(1).text
-			if i>1 and input_cell.get_child(1) is OptionButton:
-				if input_cell.get_child(1).selected ==  -1:
-					input_cell.get_child(1).selected = BLKs_para_nodes[i-1].get_child(j).get_child(1).selected
-			input_cell_to_config(input_cell.name, input_cell.get_child(1), blk_para)
-			if input_cell.name == "blkPara_change_distr_or_chance" or input_cell.name == "blkPara_distr_type":
-				configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).selected)
-			else:
-				configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).text)
+		for j in range(1, node_length+1):
+			if blk_para_node_root.get_children().size() > j:
+				var input_cell = blk_para_node_root.get_child(j)
+				if i>1 and input_cell.get_child(1) is LineEdit:
+					if input_cell.get_child(1).text == "":
+						input_cell.get_child(1).text = BLKs_para_nodes[i-1].get_child(j).get_child(1).text
+				if i>1 and input_cell.get_child(1) is OptionButton:
+					if input_cell.get_child(1).selected ==  -1:
+						input_cell.get_child(1).selected = BLKs_para_nodes[i-1].get_child(j).get_child(1).selected
+
+				input_cell_to_config(input_cell.name, input_cell.get_child(1), blk_para)
+				if input_cell.name == "blkPara_change_distr_or_chance" or input_cell.name == "blkPara_distr_type":
+					configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).selected)
+				else:
+					configuration.set_value(blk_para.blk, input_cell.name, input_cell.get_child(1).text)
 
 		# print("blk_para: ", blk_para.blk, "\t",
 		# blk_para.change, "\t", blk_para.chance_list, blk_para.distr_type,
@@ -59,10 +63,14 @@ func _save_and_start():
 		# blk_para.h_value_list, blk_para.o_value_list, blk_para.tr_num_range)
 	
 	if blk_num < configuration.get_sections().size():
-		for i in range(blk_num, configuration.get_sections().size()+1):
+		for i in range(blk_num, configuration.get_sections().size()):
 			var _blk = "blk" + str(i + 1)
 			configuration.erase_section(_blk)
 	configuration.save(path)
+
+func _save_and_start():
+	_save()
+	get_tree().change_scene_to_file("res://main.tscn")
 
 
 func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
@@ -121,17 +129,19 @@ func load_states():
 	for blk in configuration.get_sections():
 		var i = int(blk.replace("blk", "")) - 1
 		var blk_para_node_root = BLKs_para_nodes[i]
-		print("previous blk: ", i, "\t", "\t node root: ", blk_para_node_root.name)
+		print("node root: ", blk_para_node_root.name)
 		var node_length = configuration.get_section_keys(blk).size()
-		for j in range(1,node_length):
-			var input_cell = blk_para_node_root.get_child(j)#.get_child(1)
-			var value = configuration.get_value(blk, input_cell.name)
-			var input_cell_edit = input_cell.get_child(1)
-			if input_cell_edit is LineEdit:
-				input_cell_edit.text = value
-			elif input_cell_edit is OptionButton:
-				input_cell_edit.selected = int(value)
-			
+		for j in range(1,node_length+1):
+			if blk_para_node_root.get_children().size() > j:
+				var input_cell = blk_para_node_root.get_child(j)#.get_child(1)
+				print("input cell: ", input_cell.name)
+				var value = configuration.get_value(blk, input_cell.name)
+				var input_cell_edit = input_cell.get_child(1)
+				if input_cell_edit is LineEdit:
+					input_cell_edit.text = value
+				elif input_cell_edit is OptionButton:
+					input_cell_edit.selected = int(value)
+
 
 
 
