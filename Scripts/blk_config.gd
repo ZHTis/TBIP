@@ -129,12 +129,12 @@ func load_states():
 	for blk in configuration.get_sections():
 		var i = int(blk.replace("blk", "")) - 1
 		var blk_para_node_root = BLKs_para_nodes[i]
-		print("node root: ", blk_para_node_root.name)
+
 		var node_length = configuration.get_section_keys(blk).size()
 		for j in range(1,node_length+1):
 			if blk_para_node_root.get_children().size() > j:
 				var input_cell = blk_para_node_root.get_child(j)#.get_child(1)
-				print("input cell: ", input_cell.name)
+			
 				var value = configuration.get_value(blk, input_cell.name)
 				var input_cell_edit = input_cell.get_child(1)
 				if input_cell_edit is LineEdit:

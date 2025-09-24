@@ -5,9 +5,11 @@ extends RefCounted  # 使用RefCounted以便安全地传递和存储
 var timestamp: float  # 按键的时间戳（秒）
 var rwd_marker: bool
 # 示例：用枚举限制按键类型（只能是以下值）
-enum BtnType {HOLD, OPT_OUT }
+enum BtnType {HOLD, OPT_OUT,INVALID }
 var btn_type_marker: BtnType  
 var trial_count :int
+
+enum GreenFlagType {SHOW, PRESS}
 
 # 构造函数：参数需覆盖所有要初始化的变量（新增 btn_type 参数）
 func _init(new_timestamp: float, new_trial_count:int, new_rwd_marker: Variant, new_btn_type_marker: Variant) -> void:

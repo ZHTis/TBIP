@@ -38,7 +38,9 @@ var original_states_2 = {}
 var exclude_label_1
 var exclude_nodes_for_srart_menu
 # timer variable, timer can be disabled by "set_countdownTimer(false)"
-var start_time : float = 0.0
+var start_time : float = 0.0 
+enum GreenFlagType {SHOW, PRESS}
+var green_flag
 
 # NORM
 # refresh for each trial
@@ -609,22 +611,38 @@ func save_data(_case):
 		"head":
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 			file.store_line("Tokens: %d\n" % Global.wealth)
-			file.store_line("# Button type: 0:hold; 1:opt-out")  # CSV列标题
+			file.store_line("# Button type: 0:hold; 1:opt-out; 2:INVALID")  # CSV列标题
+			file.store_line("# Green flag type: 0:sshow green btn; 1:press green")
 			file.store_line("# The following is CSV format data, one press record per line")
-			file.store_line("head: trial num, press_num, timestamp_ms, reward_flag, button_type\n")
+			file.store_line("head: trial num, press_num, timestamp_ms, reward_flag, button_type, green_flag\n")
 			file.close()
+		
+		"green":
+			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
+			var green_time = Time.get_ticks_msec() 
+			var green_info = "%s,%s ,%d,%s,%s" % [
+				"/",
+				"/",
+				green_time,
+				"/",
+				green_flag]
+			file.seek_end()
+			file.store_line(green_info)
+			file.close()
+
 
 		"body":
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 					# CSV format: Use commas to separate fields, and strings need to be wrapped in quotes when they contain commas
 			var csv_line = ""
 			for press in Global.press_history:
-				csv_line = "%d,%d ,%d,%s,%s" % [
+				csv_line = "%d,%d ,%d,%s,%s,%s" % [
 						press.trial_count,
 						num_of_press,  # 序号
 						press.timestamp,  # 时间戳
 						str(press.rwd_marker).to_lower(),  # 奖励标记（转为小写，如true/false）
-						press.btn_type_marker  # 按键类型
+						press.btn_type_marker , # 按键类型,
+						"/"
 					]
 				file.seek_end()
 				file.store_line(csv_line)
@@ -654,6 +672,8 @@ func reset_scene_to_start_button():
 	vboxstart.visible = true
 	vboxbottom.visible = true
 	vboxtop.visible = true
+	green_flag = GreenFlagType.SHOW
+	save_data("green")
 
 	
 
@@ -671,14 +691,27 @@ func reset_to_start_next_trial():
 
 
 # MARK: Buttons Response
-
 func _input(event):
-	if event.is_action_released("press_optout_button"):
-		if not opt_out_button.disabled:
-			opt_out_button.emit_signal("pressed")
-	if event.is_action_released("press_hold_button"):
-		if not hold_button.disabled:
-			hold_button.emit_signal("pressed")
+	if vboxstart.visible == false:
+		if event.is_action_released("press_optout_button"):
+			if not opt_out_button.disabled:
+				opt_out_button.emit_signal("pressed")
+		if event.is_action_released("press_hold_button"):
+			if not hold_button.disabled:
+				hold_button.emit_signal("pressed")
+		# 检测鼠标左键点击
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			var btn_area=hold_button.get_global_rect() 
+			var btn_area_2=opt_out_button.get_global_rect()
+			var click_pos = event.position
+			var current_time = Time.get_ticks_msec() 
+		
+			if btn_area.has_point(click_pos) or btn_area_2.has_point(click_pos):
+				pass	
+			else:
+				record_press_data(current_time,trial_count,reward_given_flag,PressData.BtnType.INVALID)
+			# change color of background:
+
 
 # When the button is released
 func _on_hold_button_pressed():
@@ -717,8 +750,12 @@ func _on_opt_out_button_pressed():
 func _on_quit_button_pressed():
 	get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 
+
 func _on_start_button_pressed():
+	green_flag = GreenFlagType.PRESS
+	save_data("green")
 	reset_to_start_next_trial()
+
 
 # 封装记录按键数据的函数
 func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: PressData.BtnType) -> void:
