@@ -15,6 +15,8 @@ extends Control
 @onready var startButton = $VBoxSTART/StartButton
 @onready var label_startbtn = $VBoxBottom/Label
 @onready var label_t = $VBox/TimerLabel  # 用于显示倒计时的标签
+@onready var sound = $AudioStreamPlayer
+@onready var colorRect= $ColorRect
 
 var time_left : int = 900
 var countdownTimer
@@ -41,7 +43,7 @@ var exclude_nodes_for_srart_menu
 var start_time : float = 0.0 
 enum GreenFlagType {SHOW, PRESS}
 var green_flag
-
+var opt_left_flag
 # NORM
 # refresh for each trial
 var reward_given_timepoint
@@ -109,6 +111,7 @@ func init_task(): # Initialize task, BLK design
 	_reusable_timer = Timer.new()
 	_reusable_timer.one_shot = true  # 单次触发模式
 	add_child(_reusable_timer)  # 确保添加到场景树
+	colorRect.visible = false
 	init_trial()
 	_label_refresh(Global.wealth, "init")
 	
@@ -491,7 +494,7 @@ func blk_(_reward_chance_mode, _distribution_type, save_loc,
 				while true: # Avoid generating negative numbers
 					dice_o = MathUtils.generate_random(0,o_value_list.size()-1,"int")
 					random_o = o_value_list[dice_o]
-					if random_o <= random_h:
+					if random_o < random_h:
 						break
 				hold_vlaue_template.append(random_h) # Hold hold_reward
 				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
@@ -612,9 +615,9 @@ func save_data(_case):
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 			file.store_line("Tokens: %d\n" % Global.wealth)
 			file.store_line("# Button type: 0:hold; 1:opt-out; 2:INVALID")  # CSV列标题
-			file.store_line("# Green flag type: 0:sshow green btn; 1:press green")
+			file.store_line("# Green flag type: 0:show green btn; 1:press green")
 			file.store_line("# The following is CSV format data, one press record per line")
-			file.store_line("head: trial num, press_num, timestamp_ms, reward_flag, button_type, green_flag\n")
+			file.store_line("head: trial num, valid_press_num, timestamp_ms, reward_flag, button_type, reward_given_timepoint, where_is_opt, green_flag\n")
 			file.close()
 		
 		"green":
@@ -636,12 +639,14 @@ func save_data(_case):
 					# CSV format: Use commas to separate fields, and strings need to be wrapped in quotes when they contain commas
 			var csv_line = ""
 			for press in Global.press_history:
-				csv_line = "%d,%d ,%d,%s,%s,%s" % [
+				csv_line = "%d,%d ,%d,%s,%s,%s,%s,%s" % [
 						press.trial_count,
-						num_of_press,  # 序号
+						press.press_count,  # 序号
 						press.timestamp,  # 时间戳
 						str(press.rwd_marker).to_lower(),  # 奖励标记（转为小写，如true/false）
 						press.btn_type_marker , # 按键类型,
+						reward_given_timepoint,
+						opt_left_flag,
 						"/"
 					]
 				file.seek_end()
@@ -709,8 +714,23 @@ func _input(event):
 			if btn_area.has_point(click_pos) or btn_area_2.has_point(click_pos):
 				pass	
 			else:
-				record_press_data(current_time,trial_count,reward_given_flag,PressData.BtnType.INVALID)
+				warning()
+				record_press_data(current_time,trial_count,reward_given_flag,PressData.BtnType.INVALID,num_of_press)
 			# change color of background:
+
+
+func warning():
+	sound.play()
+	var window_size = get_viewport_rect().size
+	colorRect.size = window_size
+	colorRect.color = Color.YELLOW_GREEN
+	colorRect.visible = true
+	_reusable_timer.wait_time = _interval /2
+	_reusable_timer.start()
+	await _reusable_timer.timeout
+	colorRect.visible = false
+	
+	
 
 
 # When the button is released
@@ -721,19 +741,19 @@ func _on_hold_button_pressed():
 	if reward_given_timepoint == null:
 		num_of_press += 1
 		_label_refresh(Global.wealth,"pressing...")
-		record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD)
+		record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD,num_of_press)
 		
 	elif reward_given_flag == false:
 		num_of_press += 1
 		_label_refresh(Global.wealth,"pressing...")
 		if num_of_press < reward_given_timepoint:
-			record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD)
+			record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD,num_of_press)
 		if num_of_press == reward_given_timepoint:
 			Global.wealth+= hold_reward
 			reward_given_flag = true
 			print("hold-reward_given_flag  ",reward_given_flag)
 			_label_refresh(Global.wealth,"reward_given")
-			record_press_data(current_time, trial_count, true, PressData.BtnType.HOLD)
+			record_press_data(current_time, trial_count, true, PressData.BtnType.HOLD,num_of_press)
 			reset_scene_to_start_button()
 
 
@@ -743,7 +763,7 @@ func _on_opt_out_button_pressed():
 	Global.wealth += opt_out_reward
 	reward_given_flag = true
 	_label_refresh(Global.wealth, "opt_out")
-	record_press_data(current_time,trial_count, reward_given_flag, PressData.BtnType.OPT_OUT)
+	record_press_data(current_time,trial_count, reward_given_flag, PressData.BtnType.OPT_OUT,num_of_press)
 	reset_scene_to_start_button()
 
 
@@ -758,9 +778,9 @@ func _on_start_button_pressed():
 
 
 # 封装记录按键数据的函数
-func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: PressData.BtnType) -> void:
+func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: PressData.BtnType,_press_count) -> void:
 	# 创建PressData实例
-	var new_press = PressData.new(current_time, _tr_count, _reward_given_flag, btn_type)
+	var new_press = PressData.new(current_time, _tr_count, _reward_given_flag, btn_type, _press_count)
 	Global.press_history.append(new_press)
 	
 
@@ -788,8 +808,10 @@ func place_button(_if_opt_left):
 
 func init_trial_ui():
 	if if_opt_left >=0.5:
+		opt_left_flag = "left"
 		place_button("left") # Initialize UI
 	else:
+		opt_left_flag = "right"
 		place_button("right") # Initialize UI with optout on the right
 
 
