@@ -832,7 +832,7 @@ func _label_refresh(wealth,case_text):
 		else:
 			opt_out_button_label.text = "+" + str(opt_out_reward)
 	
-	label_2.text = " Your Tokens: " + str(wealth)
+	label_2.text = " Your Tokens:\n " + str(wealth)
 	var neutralcolor = label_startbtn.label_settings.font_color
 	var positivecolor = Color("GREEN")
 	var negativecolor = Color("PLUM")
@@ -840,21 +840,21 @@ func _label_refresh(wealth,case_text):
 		"opt_out":
 			label_1.label_settings.font_size = 72
 			if opt_out_reward > 0:
-				label_1.text = "Tokens! + " +str(opt_out_reward)
+				label_1.text = "+ " +str(opt_out_reward)
 				label_1.label_settings.font_color = positivecolor
 			elif opt_out_reward == 0:
 				label_1.text = " + " +str(opt_out_reward)
-				label_1.label_settings.font_color = neutralcolor
+				label_1.label_settings.font_color = positivecolor
 			else:	
-				label_1.text = "Opt Out! "+str(opt_out_reward)
+				label_1.text = ""+str(opt_out_reward)
 				label_1.label_settings.font_color = negativecolor
 		"reward_given":
 			label_1.label_settings.font_size = 72
 			if hold_reward == 0:
 				label_1.text = "+ " +str(hold_reward)
-				label_1.label_settings.font_color = neutralcolor
+				label_1.label_settings.font_color = positivecolor
 			else:
-				label_1.text = "Tokens! + " +str(hold_reward)
+				label_1.text = "+ " +str(hold_reward)
 				label_1.label_settings.font_color = positivecolor
 			reward_given_flag = false
 
