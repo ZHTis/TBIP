@@ -2,9 +2,10 @@ extends Control
 
 
 @onready var input_cell = get_node("/root/Control/VBox/LineEdit")
-@onready var save_btn =  get_node("/root/Control/btnBox/Button")
+@onready var save_btn =  get_node("/root/Control/btnBox/Label/Button")
 @onready var vbox = $VBox
 @onready var btnBox = get_node("/root/Control/btnBox")
+@onready var tp_checkbutton = $VBox/HBoxContainer/CheckButton
 
 var subject_name
 

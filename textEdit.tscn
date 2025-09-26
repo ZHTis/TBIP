@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://bpds22yvgc4tj"]
 
 [ext_resource type="Script" uid="uid://b4l0fls52eauh" path="res://Scripts/text_edit.gd" id="1_ic7ti"]
-[ext_resource type="Texture2D" uid="uid://yc810m0t01te" path="res://icon.svg" id="2_d5p3o"]
-[ext_resource type="LabelSettings" uid="uid://ci500ljqmykcn" path="res://label_setting_1.tres" id="2_gm3lf"]
+[ext_resource type="Texture2D" uid="uid://kals2uscydo8" path="res://图片1.svg" id="3_gm3lf"]
+[ext_resource type="LabelSettings" uid="uid://dbx5jiyx4mikm" path="res://white_label.tres" id="3_tj14f"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -23,36 +23,103 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -229.0
-offset_top = -158.0
-offset_right = -52.0
-offset_bottom = -100.0
+offset_left = -171.0
+offset_top = -209.0
+offset_right = 6.0
+offset_bottom = -151.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(2.50457, 2.40063)
+scale = Vector2(1.07035, 1.16163)
 
 [node name="Label" type="Label" parent="VBox"]
 layout_mode = 2
+size_flags_horizontal = 4
 text = "What should I call you?"
-label_settings = ExtResource("2_gm3lf")
+label_settings = ExtResource("3_tj14f")
 
 [node name="LineEdit" type="LineEdit" parent="VBox"]
 layout_mode = 2
 
+[node name="Label3" type="Label" parent="VBox"]
+layout_mode = 2
+text = "
+"
+label_settings = ExtResource("3_tj14f")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Label" type="Label" parent="VBox/HBoxContainer"]
+layout_mode = 2
+text = "Time Based"
+label_settings = ExtResource("3_tj14f")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="VBox/HBoxContainer/Label"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.32549, 1, 1, 0.160784)
+
+[node name="CheckButton" type="CheckButton" parent="VBox/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+flat = true
+
+[node name="Label2" type="Label" parent="VBox/HBoxContainer"]
+layout_mode = 2
+text = "Press Based"
+label_settings = ExtResource("3_tj14f")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="VBox/HBoxContainer/Label2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.32549, 1, 1, 0.160784)
+
 [node name="btnBox" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 482.0
-offset_top = 351.0
-offset_right = 659.0
-offset_bottom = 541.0
+offset_left = 224.0
+offset_top = 290.0
+offset_right = 624.0
+offset_bottom = 490.0
 
 [node name="Label" type="Label" parent="btnBox"]
 layout_mode = 2
-text = "Click here to continue"
-label_settings = ExtResource("2_gm3lf")
+text = "
+Click here to continue"
+label_settings = ExtResource("3_tj14f")
 horizontal_alignment = 1
 
-[node name="Button" type="Button" parent="btnBox"]
-layout_mode = 2
-icon = ExtResource("2_d5p3o")
+[node name="Button" type="Button" parent="btnBox/Label"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -24.0
+offset_top = 27.5
+offset_right = 1200.0
+offset_bottom = 1230.5
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.035, 0.035)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+icon = ExtResource("3_gm3lf")
+flat = true
 icon_alignment = 1
