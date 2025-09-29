@@ -217,3 +217,5 @@ vertical_alignment = 2
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("9_kek77")
+
+[node name="InferBaseTimer" type="Timer" parent="."]

@@ -5,7 +5,7 @@ extends RefCounted  # 使用RefCounted以便安全地传递和存储
 var timestamp: float  # 按键的时间戳（秒）
 var rwd_marker: bool
 # 示例：用枚举限制按键类型（只能是以下值）
-enum BtnType {HOLD, OPT_OUT, INVALID }
+enum BtnType {HOLD, OPT_OUT, INVALID, WAIT }
 var btn_type_marker: BtnType  
 var trial_count :int
 var press_count :int

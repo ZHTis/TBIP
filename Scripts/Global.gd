@@ -2,6 +2,8 @@ extends Node
 
 # Share variables across scenarios
 var subject_name: String = "" # Name of subject
+var inference_type
+enum InferenceFlagType {time_based, press_based}
 var num_of_trials: int = 0 # Number of tests
 var press_history: Array[PressData] = [] # Key History
 

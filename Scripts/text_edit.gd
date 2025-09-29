@@ -13,6 +13,7 @@ func _ready():
 	Global.iftextEditHasAppear = true	
 	init_ui()
 	save_btn.pressed.connect(_save_text)
+	tp_checkbutton.toggled.connect(_on_check)
 
 
 func _save_text():
@@ -27,6 +28,13 @@ func _save_text():
 	
 	Global.subject_name = subject_name
 	get_tree().change_scene_to_file("res://main.tscn")
+
+func _on_check(_toggled):
+	if _toggled == true:
+		Global.inference_type = Global.InferenceFlagType.press_based
+	if _toggled ==false:
+		Global.inference_type = Global.InferenceFlagType.time_based
+	
 
 func init_ui():
 	var window_size = get_viewport_rect().size
