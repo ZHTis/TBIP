@@ -108,7 +108,7 @@ icon_alignment = 1
 [node name="Button2" type="Button" parent="VBox/HBox"]
 layout_mode = 2
 size_flags_horizontal = 10
-text = "Save"
+text = "Save/Duplicate"
 icon_alignment = 1
 
 [node name="HBox" type="ScrollContainer" parent="."]
