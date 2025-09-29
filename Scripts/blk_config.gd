@@ -164,11 +164,17 @@ func _update_blk_num(_index):
 	match _index:
 		0: # 2
 			blk_num = 2
-		1: # 3-5
+		1:
+			blk_num = 4
+		2:
+			blk_num = 8
+		3:
+			blk_num = 12
+		4: # 3-5
 			blk_num = a[0]
-		2: # 6-8
+		5: # 6-8
 			blk_num = a[1]
-		3: # 9-20
+		6: # 9-20
 			blk_num = a[2]
 	print("blk num reset to: ", blk_num)
 	for i in range(blk_num, 21):

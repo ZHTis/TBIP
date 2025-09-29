@@ -463,15 +463,18 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 				if Global.inference_type == Global.InferenceFlagType.press_based:
 					timepoint = MathUtils.generate_random(flat_min, flat_max, "int")
 			else:
-				while true: # Avoid generating negative numbers
-					timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
-					if timepoint > 0:
-						break
-				if Global.inference_type == Global.InferenceFlagType.press_based:
-					timepoint = roundi(timepoint)
-				elif Global.inference_type == Global.InferenceFlagType.time_based:
-					timepoint = roundf(timepoint *100) /10
-					timepoint = timepoint / 10
+				if mu_rwd_timepoint <= 0:# responded to blk_distribution when ERROR reported
+					get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
+				else:
+					while true: # Avoid generating negative numbers
+						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
+						if timepoint > 0:
+							break
+					if Global.inference_type == Global.InferenceFlagType.press_based:
+						timepoint = roundi(timepoint)
+					elif Global.inference_type == Global.InferenceFlagType.time_based:
+						timepoint = roundf(timepoint *100) /10
+						timepoint = timepoint / 10
 
 			reward_given_timepoint_template.append(timepoint)
 			reward_given_timepoint_template_this_blk.append(timepoint)
@@ -543,6 +546,7 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 			var new_mu_rwd_timepoint
 			var new_std_rwd_timepoint
 			while true: # Avoid same as previous
+				var dicelen = mu_rwd_timepoint_change_list.size()
 				while true: # Avoid generating negative numbers
 					dice_mu_rwd_timepoint = MathUtils.generate_random(0, mu_rwd_timepoint_change_list.size() - 1, "int")
 					var mu_rwd_timepoint_change = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
@@ -550,13 +554,17 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 					new_mu_rwd_timepoint = roundi(new_mu_rwd_timepoint)
 					if Global.inference_type == Global.InferenceFlagType.press_based and new_mu_rwd_timepoint >= 10:
 						break
-					elif Global.inference_type == Global.InferenceFlagType.time_based and new_mu_rwd_timepoint >= 1: # set min of mu
+					elif Global.inference_type == Global.InferenceFlagType.time_based and new_mu_rwd_timepoint >= 0.5: # set min of mu
 						break
 					else:
 						mu_rwd_timepoint_change_list.erase(dice_mu_rwd_timepoint)
-						print("removed a dice face")
-						if mu_rwd_timepoint_change_list.size() == 0:
-							break
+						dicelen -= 1
+						print("removed a dice face",mu_rwd_timepoint_change_list)
+						if dicelen == 0:	
+							print("ERROR!!!!: invalid distribution parameters")
+							mu_rwd_timepoint=0
+							std_rwd_timepoint=0
+							return
 		
 				var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0, variance_rwd_timepoint_2mu_list.size() - 1, "int")
 				new_std_rwd_timepoint = new_mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
@@ -580,6 +588,11 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 
 		DistributionType.NORM_1ST:
 			mu_rwd_timepoint = _1st_mu_rwd_timepoint
+			if Global.inference_type == Global.InferenceFlagType.press_based:
+				mu_rwd_timepoint = roundi(mu_rwd_timepoint)
+			elif Global.inference_type == Global.InferenceFlagType.time_based:
+				mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
+				mu_rwd_timepoint = mu_rwd_timepoint / 10
 			std_rwd_timepoint = _1st_std_rwd_timepoint
 			std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
 			std_rwd_timepoint = std_rwd_timepoint / 10
@@ -623,10 +636,12 @@ func save_data(_case):
 		"head":
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 			file.store_line("Tokens: %d\n" % Global.wealth)
+			file.store_line("Inference Type: %s\n" % Global.inference_type) 
+			file.store_line("# Inference Type: 0:time-based; 1:press-based") 
 			file.store_line("# Button type: 0:hold; 1:opt-out; 2:INVALID,3:sart to wait") # CSV列标题
 			file.store_line("# Green flag type: 0:show green btn; 1:press green")
 			file.store_line("# The following is CSV format data, one press record per line")
-			file.store_line("head: trial num, valid_press_num, timestamp_ms, reward_flag, button_type, reward_given_timepoint, where_is_opt, green_flag\n")
+			file.store_line("\nhead: trial num, valid_press_num, timestamp_ms, reward_flag, button_type, reward_given_timepoint, where_is_opt, green_flag\n")
 			file.close()
 		
 		"green":
@@ -913,6 +928,8 @@ func _label_refresh(wealth, case_text):
 			vboxtop.visible = false
 		"finish":
 			label_1.text = "Finished!\n Close the window to exit"
+		"finish_warning":
+			label_1.text = "INVALID task design\n Close the window to exit\nRestart to setup a new task"
 		_:
 			pass
 			

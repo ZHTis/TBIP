@@ -26,7 +26,7 @@ func label_distr_para_refresh(_index):
 	match _index:
 		0:
 			label_blkPara_distr_para_1.text = "            mu            "
-			label_blkPara_distr_para_2.text = "        mu/std         "
+			label_blkPara_distr_para_2.text = "         std/mu           "
 		1:
 			label_blkPara_distr_para_1.text = "     min     " 
 			label_blkPara_distr_para_2.text = "     max     " 
