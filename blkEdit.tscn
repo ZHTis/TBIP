@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://crq8o12chnfi7"]
+[gd_scene load_steps=7 format=3 uid="uid://crq8o12chnfi7"]
 
 [ext_resource type="Script" uid="uid://dwc2qxma8u51r" path="res://Scripts/hbox_1stblk_para.gd" id="1_fc0h3"]
 [ext_resource type="Script" uid="uid://dx3jmnjvdaaa6" path="res://Scripts/blk_config.gd" id="1_u5vwc"]
 [ext_resource type="Script" uid="uid://7dgnqukr0xy2" path="res://Scripts/hbox_blk_para.gd" id="2_fc0h3"]
 [ext_resource type="LabelSettings" uid="uid://c4gn2t32fjvcx" path="res://config_label_settings.tres" id="3_u5vwc"]
+[ext_resource type="LabelSettings" uid="uid://dbx5jiyx4mikm" path="res://white_label.tres" id="5_sakkr"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_sakkr"]
 
@@ -46,6 +47,48 @@ popup/item_2/text = "6-8"
 popup/item_2/id = 2
 popup/item_3/text = "9-20"
 popup/item_3/id = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Label" type="Label" parent="VBox/HBoxContainer"]
+layout_mode = 2
+text = "Time Based"
+label_settings = ExtResource("5_sakkr")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="VBox/HBoxContainer/Label"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.32549, 1, 1, 0.160784)
+
+[node name="CheckButton" type="CheckButton" parent="VBox/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+flat = true
+
+[node name="Label2" type="Label" parent="VBox/HBoxContainer"]
+layout_mode = 2
+text = "Press Based"
+label_settings = ExtResource("5_sakkr")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="VBox/HBoxContainer/Label2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.32549, 1, 1, 0.160784)
 
 [node name="HBox" type="HBoxContainer" parent="VBox"]
 layout_mode = 2

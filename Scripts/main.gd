@@ -22,8 +22,6 @@ extends Control
 var time_left: int = 900
 var countdownTimer
 var _reusable_timer: Timer = null
-enum InferenceFlagType {time_based, press_based}
-var inference_type
 enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM}
 ##### Global variables used in main.gd######
 var total_reward_chance
@@ -40,8 +38,6 @@ var duration
 # infer_base_timer variable 
 var start_time: float = 0.0
 # trial variables
-
-
 var initialized_flag: bool = false
 var num_of_press: int = 0
 var reward_given_flag: bool = false
@@ -52,7 +48,6 @@ var original_states = {}
 var original_states_2 = {}
 var exclude_label_1
 var exclude_nodes_for_srart_menu
-
 enum GreenFlagType {SHOW, PRESS}
 var green_flag
 var opt_left_flag
@@ -84,10 +79,10 @@ func _ready():
 	Global.init_write() # Initialize storage directory
 	exclude_label_1 = [vbox.name]
 	exclude_nodes_for_srart_menu = [vboxstart.name, vboxbottom.name, vboxtop.name]
-	init_task(InferenceFlagType.time_based) # Initialize the task
+	init_task() # Initialize the task
 
 # MARK: TASK
-func init_task(_inference_flag): # Initialize task, BLK design
+func init_task(): # Initialize task, BLK design
 	if_opt_left = MathUtils.generate_random(0, 1, "float")
 	Global.press_history = [] # Clear new_press history
 	Global.wealth = 0 # Initialize Global.wealth
@@ -101,33 +96,31 @@ func init_task(_inference_flag): # Initialize task, BLK design
 	colorRect.visible = false
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
-	inference_type = _inference_flag
+	# Generate a block of trials
+	generate_all_trials(4)
 
-	if _inference_flag == InferenceFlagType.time_based:
+	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
 		opt_out_button.pressed.connect(_on_opt_out_button_pressed)
 		infer_base_timer.timeout.connect(_on_infer_baser_timer_timeout)
-		generate_all_trials_press_based(5, 12)
 
-	if _inference_flag == InferenceFlagType.press_based:
+	if  Global.inference_type== Global.InferenceFlagType.press_based:
 		# press based
 		# Connect button signa
 		hold_button.pressed.connect(_on_hold_button_pressed)
 		opt_out_button.pressed.connect(_on_opt_out_button_pressed)
-		# Generate a block of trials
-		generate_all_trials_press_based(1, 12)
-	
+		
 	init_trial()
 	save_data("head")
 	_label_refresh(Global.wealth, "init")
 	
 
-func generate_all_trials_press_based(case_, blk_num = 1):
+func generate_all_trials(case_, blk_num = 1):
 	# Generate a block of trials, generate reward_given_timepoint and hold_reward given tremplate here
 	match case_:
 		1: # fixed for the first 2
 			print("=======Case 2: Random hold_reward chance/value//distribution/tr_num =======")
-	
+			Global.inference_type = Global.InferenceFlagType.press_based
 			total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
@@ -152,7 +145,7 @@ func generate_all_trials_press_based(case_, blk_num = 1):
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
 		2: # no fixed 1 and 2
-	
+			Global.inference_type = Global.InferenceFlagType.press_based
 			total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
@@ -180,7 +173,7 @@ func generate_all_trials_press_based(case_, blk_num = 1):
 	
 		3: #  run this mode to package each blk. 
 		  # In this mode, blk_num does not represent the number of blks, but the type of blk
-	
+			Global.inference_type = Global.InferenceFlagType.press_based
 			total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
@@ -276,6 +269,7 @@ func generate_all_trials_press_based(case_, blk_num = 1):
 				i += 1
 			Global.write_sessionDesign_to_file(Global.filename_config)
 		5:
+			Global.inference_type = Global.InferenceFlagType.time_based
 			total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
@@ -286,9 +280,9 @@ func generate_all_trials_press_based(case_, blk_num = 1):
 			o_value_listRND = [-15, -10, -5, 0, 5]
 			for i in range(1, blk_num + 1):
 				if i == 1:
-					blk_(0.5, "full", DistributionType.NORM_1ST, 1, "RANDOM", 20, 60)
+					blk_(0.5, "full", DistributionType.NORM_1ST, 1, "fixed", 20, 60)
 				elif i >= 2:
-					blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 60)
+					blk_(0.5, "random", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 60)
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
 
@@ -437,9 +431,9 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 	# ONLY the distribution, 
 	# or ONLY the hold_reward reliability (%)
 	if _distribution_type == DistributionType.NORM_1ST or _distribution_type == DistributionType.NORM_1ST_CUSTOM:
-		if inference_type == InferenceFlagType.press_based:
+		if Global.inference_type == Global.InferenceFlagType.press_based:
 			blk_distribution(_distribution_type)
-		elif inference_type == InferenceFlagType.time_based:
+		elif Global.inference_type == Global.InferenceFlagType.time_based:
 			blk_distribution(_distribution_type,0,0,0,3,1)
 		print("mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
 	elif _distribution_type == DistributionType.NORM_AFTER_1ST and previous_total_reward_chance == total_reward_chance:
@@ -466,17 +460,17 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 		if dice_if_rwd_given <= total_reward_chance:
 			# if given, when?
 			if _distribution_type == DistributionType.FLAT:
-				if inference_type == InferenceFlagType.press_based:
+				if Global.inference_type == Global.InferenceFlagType.press_based:
 					timepoint = MathUtils.generate_random(flat_min, flat_max, "int")
 			else:
 				while true: # Avoid generating negative numbers
 					timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
 					if timepoint > 0:
 						break
-				if inference_type == InferenceFlagType.press_based:
+				if Global.inference_type == Global.InferenceFlagType.press_based:
 					timepoint = roundi(timepoint)
-				elif inference_type == InferenceFlagType.time_based:
-					timepoint = roundf(timepoint *1000) /100
+				elif Global.inference_type == Global.InferenceFlagType.time_based:
+					timepoint = roundf(timepoint *100) /10
 					timepoint = timepoint / 10
 
 			reward_given_timepoint_template.append(timepoint)
@@ -554,9 +548,9 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 					var mu_rwd_timepoint_change = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
 					new_mu_rwd_timepoint = mu_rwd_timepoint * (1 + mu_rwd_timepoint_change)
 					new_mu_rwd_timepoint = roundi(new_mu_rwd_timepoint)
-					if inference_type == InferenceFlagType.press_based and new_mu_rwd_timepoint >= 10:
+					if Global.inference_type == Global.InferenceFlagType.press_based and new_mu_rwd_timepoint >= 10:
 						break
-					elif inference_type == InferenceFlagType.time_based and new_mu_rwd_timepoint >= 1:
+					elif Global.inference_type == Global.InferenceFlagType.time_based and new_mu_rwd_timepoint >= 1: # set min of mu
 						break
 					else:
 						mu_rwd_timepoint_change_list.erase(dice_mu_rwd_timepoint)
@@ -591,7 +585,7 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 			std_rwd_timepoint = std_rwd_timepoint / 10
 	
 func init_trial():
-	if inference_type == InferenceFlagType.time_based:
+	if Global.inference_type == Global.InferenceFlagType.time_based:
 			has_been_pressed = false
 			is_holding = false
 			start_time = 0.0
@@ -901,9 +895,12 @@ func _label_refresh(wealth, case_text):
 			if trial_count <= 3:
 				label_startbtn.text = "Press the Disk \n to Start"
 				if trial_count <= 1:
-					label_1.text = "Press BLUE once to give up, \n or keep pressing RED to earn more tokens"
+					if Global.inference_type == Global.InferenceFlagType.time_based:
+						label_1.text = "Press BLUE once to give up, \n or press RED to wait for more tokens"
+					elif Global.inference_type == Global.InferenceFlagType.press_based:
+						label_1.text = "Press BLUE once to give up, \n or keep pressing RED to earn more tokens"
 				if trial_count == 2:
-					label_1.text = "Value on buttons are tokens you can get\n if you new_press them."
+					label_1.text = "Value on buttons are tokens you can get\n if you press them."
 				if trial_count == 3:
 					label_1.text = "If you change your mind, \n you can always opt out via the BLUE one."
 			else:

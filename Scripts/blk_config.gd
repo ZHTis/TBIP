@@ -5,7 +5,7 @@ extends Control
 @onready var vbox = $VBox
 @onready var hbox = $HBox
 @onready var blk_num_OptionButton = $VBox/OptionButton
-
+@onready var tp_checkbutton = $VBox/HBoxContainer/CheckButton
 
 var blk_num
 var BLKs_para_nodes
@@ -20,6 +20,8 @@ func _ready():
 	save_btn.pressed.connect(_save)
 	blk_num_OptionButton.allow_reselect = true
 	blk_num_OptionButton.item_selected.connect(_update_blk_num)
+	tp_checkbutton.toggled.connect(_on_check)
+	tp_checkbutton.toggled.emit(false)
 
 	BLKs_para_nodes = []
 	for i in range(1, 21):
@@ -30,6 +32,15 @@ func _ready():
 			BLKs_para_nodes[i - 1].visible = false
 	load_states()
 
+
+func _on_check(_toggled):
+	if _toggled == true:
+		Global.inference_type = Global.InferenceFlagType.press_based
+	if _toggled ==false:
+		Global.inference_type = Global.InferenceFlagType.time_based
+	print("inference type: ", Global.inference_type)
+
+	
 func _save():
 	if blk_num == null:
 		print("blk_num is null")
