@@ -64,6 +64,8 @@ var opt_out_value_template
 var total_reward_chance_structure
 var mu_rwd_timepoint_change_list
 var variance_rwd_timepoint_2mu_list
+var mu1st
+var std1st
 var h_value_listRND # case "RANDOM" options
 var o_value_listRND
 # flat
@@ -96,7 +98,7 @@ func init_task(): # Initialize task, BLK design
 	colorRect.visible = false
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
-	# Generate a block of trials
+	# MARK: Generate a block of trials
 	generate_all_trials(4)
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
@@ -117,6 +119,7 @@ func init_task(): # Initialize task, BLK design
 
 func generate_all_trials(case_, blk_num = 1):
 	# Generate a block of trials, generate reward_given_timepoint and hold_reward given tremplate here
+	print("=======Generate a block of trials=======","\t",case_,"\t", blk_num)
 	match case_:
 		1: # fixed for the first 2
 			print("=======Case 2: Random hold_reward chance/value//distribution/tr_num =======")
@@ -270,20 +273,295 @@ func generate_all_trials(case_, blk_num = 1):
 			Global.write_sessionDesign_to_file(Global.filename_config)
 		5:
 			Global.inference_type = Global.InferenceFlagType.time_based
-			total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
 			opt_out_value_template = []
-			mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
+			mu_rwd_timepoint_change_list = mu_change("linear", [0.25, 0.5,-0.25,0.5])
 			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
-			h_value_listRND = [0, 5, 10, 15, 20]
-			o_value_listRND = [-15, -10, -5, 0, 5]
+			h_value_listRND = [10]
+			o_value_listRND = [0]
+			mu1st = MathUtils.generate_random(3, 4, "int") # see in blk_distribution
+			std1st = 0.5*mu1st
 			for i in range(1, blk_num + 1):
 				if i == 1:
-					blk_(0.5, "full", DistributionType.NORM_1ST, 1, "fixed", 20, 60)
-				elif i >= 2:
-					blk_(0.5, "random", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 60)
+					total_reward_chance_structure = [1]
+					blk_(0.5, "full", DistributionType.NORM_1ST, 1, "RANDOM", 80, 120)
+				elif i == 2:
+					total_reward_chance_structure = [0.9, 0.8]
+					blk_(0.5, "random_chance", DistributionType.NORM_AFTER_1ST, 2, "RANDOM", 80, 120)
+				elif i > 2:
+					total_reward_chance_structure = [1, 0.9, 0.8, 0.7]
+					blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 80, 120)
 			Global.write_sessionDesign_to_file(Global.filename_config)
+
+#unfinish
+func mu_change(_type, _value) -> Array:
+	# notice that new_mu_rwd_timepoint = mu_rwd_timepoint * (1 + mu_rwd_timepoint_change)
+	var _mu_rwd_timepoint_change_list
+	match _type:
+		"linear":
+			_mu_rwd_timepoint_change_list = _value
+		"logarithmic linear":
+			var step = log(_value)
+			step = roundf(step*100)/10
+			step = step/10
+			_mu_rwd_timepoint_change_list = []
+	return _mu_rwd_timepoint_change_list
+
+# MARK: BLK
+func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
+		# rwd value:
+		_value_type,
+		# tr_num range:
+		tr_num1, tr_num2,
+		 _previous_total_reward_chance = 0.0, _previous_mu = 0, _previous_std = 0.0):
+	unit_interval = _interval
+	var dice_if_rwd_given
+	var timepoint
+	var reward_given_timepoint_template_this_blk = []
+	var hold_reward_template_this_blk = []
+	var opt_out_reward_template_this_blk = []
+	# rnd tr_num
+	var number_of_trials_this_blk = MathUtils.generate_random(tr_num1, tr_num2, "int")
+	number_of_trials += number_of_trials_this_blk
+
+	print("number_of_trials: ", number_of_trials)
+	Global.num_of_trials = number_of_trials
+	var previous_total_reward_chance
+	if _previous_total_reward_chance == 0:
+		previous_total_reward_chance = total_reward_chance
+	else:
+		previous_total_reward_chance = _previous_total_reward_chance
+
+	match _reward_chance_mode:
+		"full":
+			total_reward_chance = 1
+			print("total_reward_chance: ", total_reward_chance)
+		"random_distribution":
+			total_reward_chance = previous_total_reward_chance
+			print("total_reward_chance: ", total_reward_chance)
+		"random_chance":
+			var _dice
+			var _dicelen = total_reward_chance_structure.size()
+			while true:
+				_dice = MathUtils.generate_random(0, _dicelen - 1, "int")
+				if total_reward_chance_structure[_dice] != previous_total_reward_chance:
+					break
+			total_reward_chance = total_reward_chance_structure[_dice] # set total hold_reward chance
+			print("total_reward_chance: ", total_reward_chance)
+		"2nd":
+			total_reward_chance = 0.9
+			
+	# from Block N to Block N+1, we either change
+	# ONLY the distribution, 
+	# or ONLY the hold_reward reliability (%)
+	if _distribution_type == DistributionType.NORM_1ST or _distribution_type == DistributionType.NORM_1ST_CUSTOM:
+		if Global.inference_type == Global.InferenceFlagType.press_based:
+			blk_distribution(_distribution_type)
+		elif Global.inference_type == Global.InferenceFlagType.time_based:
+			#MARK: 1st full
+			blk_distribution(_distribution_type,0,0,0,mu1st,std1st)
+		print("mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
+	elif _distribution_type == DistributionType.NORM_AFTER_1ST and previous_total_reward_chance == total_reward_chance:
+		if mu_rwd_timepoint == null:
+			blk_distribution(_distribution_type, 0, 0, _previous_mu)
+		else:
+			blk_distribution(_distribution_type)
+		print("change distribution. mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
+	elif _distribution_type == DistributionType.NORM_AFTER_1ST and previous_total_reward_chance != total_reward_chance:
+		print("change total_reward_chance: ", total_reward_chance)
+		if mu_rwd_timepoint == null:
+			mu_rwd_timepoint = _previous_mu
+			std_rwd_timepoint = _previous_std
+	else:
+		print("error: the case is not defined")
+
+
+	# based on the given distribution parameters,
+	# generate reward_given_timepoint template, which serves as the the "right" answer for trials
+	# all about tokens
+	# MARK: Timepoint
+	for i in range(number_of_trials_this_blk):
+		# if reward is given
+		dice_if_rwd_given = MathUtils.generate_random(0, 1, "float") # set total hold_reward chance
+		if dice_if_rwd_given <= total_reward_chance:
+			# if given, when?
+			if _distribution_type == DistributionType.FLAT:
+				if Global.inference_type == Global.InferenceFlagType.press_based:
+					timepoint = MathUtils.generate_random(flat_min, flat_max, "int")
+			else:
+				if mu_rwd_timepoint <= 0:# responded to blk_distribution when ERROR reported
+					get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
+				else:
+					while true: # Avoid generating negative numbers
+						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
+						if timepoint > 0:
+							break
+					if Global.inference_type == Global.InferenceFlagType.press_based:
+						timepoint = roundi(timepoint)
+					elif Global.inference_type == Global.InferenceFlagType.time_based:
+						timepoint = roundf(timepoint *100) /10
+						timepoint = timepoint / 10
+						timepoint = timepoint * 4
+						timepoint = roundf(timepoint)/4
+
+
+			reward_given_timepoint_template.append(timepoint)
+			reward_given_timepoint_template_this_blk.append(timepoint)
+		else:
+			reward_given_timepoint_template.append(null)
+			reward_given_timepoint_template_this_blk.append(null)
+
+		# how much to give as reward
+		match _value_type:
+			"RANDOM":
+				# h_value_list,o_value_list should be predefined 
+				h_value_list = h_value_listRND
+				o_value_list = o_value_listRND
+				var dice_h = MathUtils.generate_random(0, h_value_list.size() - 1, "int")
+				var random_h = h_value_list[dice_h]
+				var dice_o
+				var random_o
+				while true: # Avoid generating negative numbers
+					dice_o = MathUtils.generate_random(0, o_value_list.size() - 1, "int")
+					random_o = o_value_list[dice_o]
+					if random_o < random_h:
+						break
+				hold_vlaue_template.append(random_h) # Hold hold_reward
+				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
+				opt_out_value_template.append(random_o) # Opt-out hold_reward
+				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
+			"fixed":
+				h_value_list = [10]
+				o_value_list = [0]
+				var dice_h = MathUtils.generate_random(0, h_value_list.size() - 1, "int")
+				var random_h = h_value_list[dice_h]
+				hold_vlaue_template.append(random_h)
+				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
+				var dice_o = MathUtils.generate_random(0, o_value_list.size() - 1, "int")
+				var random_o = o_value_list[dice_o]
+				opt_out_value_template.append(random_o) # Opt-out hold_reward
+				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
+			
+			
+# save the configuration with data	
+	var text1 = "reward_given_timepoint_template_this_blk : \n%s" % str(reward_given_timepoint_template_this_blk)
+	var text2 = "hold_reward_template_this_blk : \n%s" % str(hold_reward_template_this_blk)
+	var text3 = "opt_out_reward_template_this_blk :\n %s" % str(opt_out_reward_template_this_blk)
+	var text4 = "total_reward_chance: %s" % str(total_reward_chance)
+	var text5 = "number_of_trials_accumu_rwd_timepointlated: %s" % str(number_of_trials)
+	var text8 = "number_of_trials_this_blk: %s" % str(number_of_trials_this_blk)
+	var text6 = "distribution_type: %s" % str(_distribution_type)
+	var text7 = "mu_rwd_timepoint, std_rwd_timepoint: %s, %s" % [str(mu_rwd_timepoint), str(std_rwd_timepoint)]
+	var text = text4 + "\n" + text7 + "\n" + text8 + "\n" + text6 + "\n" + text1 + "\n" + text2 + "\n" + text3 + "\n" + text5 + "\n"
+	
+	if save_loc <= 36:
+		var save_loc_ = "text" + str(save_loc)
+		Global.set(save_loc_, text)
+	else:
+		print("save_loc too large")
+
+
+func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0, 
+	_1st_mu_rwd_timepoint =20, _1st_std_rwd_timepoint=10):
+	if _previous_mu == 0:
+		pass
+	else:
+		# Specify a previous distribution parameter
+		mu_rwd_timepoint = _previous_mu
+	
+	match _distribution_type:
+		DistributionType.NORM_AFTER_1ST: # Normal distribution
+			var new_mu_rwd_timepoint
+			var new_std_rwd_timepoint
+			while true: # Avoid same as previous
+				var dicelen = mu_rwd_timepoint_change_list.size()
+				while true: # Avoid generating negative numbers
+					var dice_mu_rwd_timepoint = MathUtils.generate_random(0, mu_rwd_timepoint_change_list.size() - 1, "int")
+					var mu_rwd_timepoint_change = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
+					new_mu_rwd_timepoint = mu_rwd_timepoint * (1 + mu_rwd_timepoint_change)
+					new_mu_rwd_timepoint = roundi(new_mu_rwd_timepoint)
+					
+					if Global.inference_type == Global.InferenceFlagType.press_based:
+						if new_mu_rwd_timepoint >= 10:
+							break
+					elif Global.inference_type == Global.InferenceFlagType.time_based:
+						if new_mu_rwd_timepoint >= 2 and new_mu_rwd_timepoint <= 12:
+						#MARK:  Floor&Ceiling of mu
+							break
+				
+					mu_rwd_timepoint_change_list.erase(mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint])
+					dicelen = mu_rwd_timepoint_change_list.size()
+					print("REMOVED a dice face",mu_rwd_timepoint_change_list)
+					if dicelen == 0:	
+						print("ERROR!!!!: invalid distribution parameters")
+						mu_rwd_timepoint=0
+						std_rwd_timepoint=0
+						return
+		
+				var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0, variance_rwd_timepoint_2mu_list.size() - 1, "int")
+				new_std_rwd_timepoint = new_mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
+				new_std_rwd_timepoint = roundf(new_std_rwd_timepoint * 1000) / 100
+				new_std_rwd_timepoint = new_std_rwd_timepoint / 10
+				if new_std_rwd_timepoint != mu_rwd_timepoint:
+					break
+
+			mu_rwd_timepoint = new_mu_rwd_timepoint
+			std_rwd_timepoint = new_std_rwd_timepoint
+
+		DistributionType.FLAT: # flat distribution
+			flat_min = _min
+			flat_max = _max
+
+		DistributionType.NORM_1ST_CUSTOM: # Normal distribution
+			var dice_mu_rwd_timepoint = MathUtils.generate_random(0, mu_rwd_timepoint_change_list.size() - 1, "int")
+			mu_rwd_timepoint = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
+			var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0, variance_rwd_timepoint_2mu_list.size() - 1, "int")
+			std_rwd_timepoint = mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
+
+		DistributionType.NORM_1ST:
+			mu_rwd_timepoint = _1st_mu_rwd_timepoint
+			if Global.inference_type == Global.InferenceFlagType.press_based:
+				mu_rwd_timepoint = roundi(mu_rwd_timepoint)
+			elif Global.inference_type == Global.InferenceFlagType.time_based:
+				mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
+				mu_rwd_timepoint = mu_rwd_timepoint / 10
+			std_rwd_timepoint = _1st_std_rwd_timepoint
+			std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
+			std_rwd_timepoint = std_rwd_timepoint / 10
+	
+func init_trial():
+	if Global.inference_type == Global.InferenceFlagType.time_based:
+			has_been_pressed = false
+			is_holding = false
+			start_time = 0.0
+			duration = 0.0
+			reward_given_flag = false
+			# Initialization rewards
+			hold_reward = 10
+			opt_out_reward = 2
+
+	if trial_count >= number_of_trials:
+		hide_nodes(exclude_label_1, original_states)
+		trial_count += 1
+		return
+	if initialized_flag == false:
+		reset_scene_to_start_button()
+		initialized_flag = true
+		return
+	trial_count += 1
+	# Initialize the test status
+	reward_given_flag = false
+	start_time = 0.0
+	num_of_press = 0
+	Global.press_history.clear()
+	# Initialization rewards
+	hold_reward = hold_vlaue_template[trial_count - 1]
+	opt_out_reward = opt_out_value_template[trial_count - 1]
+	reward_given_timepoint = reward_given_timepoint_template[trial_count - 1]
+	print("trial", trial_count, "\nreward: ", hold_reward, "\t", opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
+	if_opt_left = MathUtils.generate_random(0, 1, "float")
+	init_trial_ui()
 
 
 func load_from_config(_blk,
@@ -383,252 +661,6 @@ func load_from_config(_blk,
 	_tr_num_n_range[1]
 		]
 	return result
-
-# MARK: BLK
-func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
-		# rwd value:
-		_value_type,
-		# tr_num range:
-		tr_num1, tr_num2,
-		 _previous_total_reward_chance = 0.0, _previous_mu = 0, _previous_std = 0.0):
-	unit_interval = _interval
-	var dice_if_rwd_given
-	var timepoint
-	var reward_given_timepoint_template_this_blk = []
-	var hold_reward_template_this_blk = []
-	var opt_out_reward_template_this_blk = []
-	# rnd tr_num
-	var number_of_trials_this_blk = MathUtils.generate_random(tr_num1, tr_num2, "int")
-	number_of_trials += number_of_trials_this_blk
-
-	print("number_of_trials: ", number_of_trials)
-	Global.num_of_trials = number_of_trials
-	var previous_total_reward_chance
-	if _previous_total_reward_chance == 0:
-		previous_total_reward_chance = total_reward_chance
-	else:
-		previous_total_reward_chance = _previous_total_reward_chance
-
-	match _reward_chance_mode:
-		"full":
-			total_reward_chance = 1
-			print("total_reward_chance: ", total_reward_chance)
-		"random_distribution":
-			total_reward_chance = previous_total_reward_chance
-			print("total_reward_chance: ", total_reward_chance)
-		"random_chance":
-			var _dice
-			while true:
-				_dice = MathUtils.generate_random(0, total_reward_chance_structure.size() - 1, "int")
-				if total_reward_chance_structure[_dice] != previous_total_reward_chance:
-					break
-			total_reward_chance = total_reward_chance_structure[_dice] # set total hold_reward chance
-			print("total_reward_chance: ", total_reward_chance)
-		"2nd":
-			total_reward_chance = 0.9
-			
-	# from Block N to Block N+1, we either change
-	# ONLY the distribution, 
-	# or ONLY the hold_reward reliability (%)
-	if _distribution_type == DistributionType.NORM_1ST or _distribution_type == DistributionType.NORM_1ST_CUSTOM:
-		if Global.inference_type == Global.InferenceFlagType.press_based:
-			blk_distribution(_distribution_type)
-		elif Global.inference_type == Global.InferenceFlagType.time_based:
-			blk_distribution(_distribution_type,0,0,0,3,1)
-		print("mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
-	elif _distribution_type == DistributionType.NORM_AFTER_1ST and previous_total_reward_chance == total_reward_chance:
-		if mu_rwd_timepoint == null:
-			blk_distribution(_distribution_type, 0, 0, _previous_mu)
-		else:
-			blk_distribution(_distribution_type)
-		print("change distribution. mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
-	elif _distribution_type == DistributionType.NORM_AFTER_1ST and previous_total_reward_chance != total_reward_chance:
-		print("change total_reward_chance: ", total_reward_chance)
-		if mu_rwd_timepoint == null:
-			mu_rwd_timepoint = _previous_mu
-			std_rwd_timepoint = _previous_std
-	else:
-		print("error: the case is not defined")
-
-
-	# based on the given distribution parameters,
-	# generate reward_given_timepoint template, which serves as the the "right" answer for trials
-	# all about tokens
-	for i in range(number_of_trials_this_blk):
-		# if reward is given
-		dice_if_rwd_given = MathUtils.generate_random(0, 1, "float") # set total hold_reward chance
-		if dice_if_rwd_given <= total_reward_chance:
-			# if given, when?
-			if _distribution_type == DistributionType.FLAT:
-				if Global.inference_type == Global.InferenceFlagType.press_based:
-					timepoint = MathUtils.generate_random(flat_min, flat_max, "int")
-			else:
-				if mu_rwd_timepoint <= 0:# responded to blk_distribution when ERROR reported
-					get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
-				else:
-					while true: # Avoid generating negative numbers
-						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
-						if timepoint > 0:
-							break
-					if Global.inference_type == Global.InferenceFlagType.press_based:
-						timepoint = roundi(timepoint)
-					elif Global.inference_type == Global.InferenceFlagType.time_based:
-						timepoint = roundf(timepoint *100) /10
-						timepoint = timepoint / 10
-
-			reward_given_timepoint_template.append(timepoint)
-			reward_given_timepoint_template_this_blk.append(timepoint)
-		else:
-			reward_given_timepoint_template.append(null)
-			reward_given_timepoint_template_this_blk.append(null)
-
-		# how much to give as reward
-		match _value_type:
-			"RANDOM":
-				# h_value_list,o_value_list should be predefined 
-				h_value_list = h_value_listRND
-				o_value_list = o_value_listRND
-				var dice_h = MathUtils.generate_random(0, h_value_list.size() - 1, "int")
-				var random_h = h_value_list[dice_h]
-				var dice_o
-				var random_o
-				while true: # Avoid generating negative numbers
-					dice_o = MathUtils.generate_random(0, o_value_list.size() - 1, "int")
-					random_o = o_value_list[dice_o]
-					if random_o < random_h:
-						break
-				hold_vlaue_template.append(random_h) # Hold hold_reward
-				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
-				opt_out_value_template.append(random_o) # Opt-out hold_reward
-				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
-			"fixed":
-				h_value_list = [10]
-				o_value_list = [0]
-				var dice_h = MathUtils.generate_random(0, h_value_list.size() - 1, "int")
-				var random_h = h_value_list[dice_h]
-				hold_vlaue_template.append(random_h)
-				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
-				var dice_o = MathUtils.generate_random(0, o_value_list.size() - 1, "int")
-				var random_o = o_value_list[dice_o]
-				opt_out_value_template.append(random_o) # Opt-out hold_reward
-				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
-			
-			
-# save the configuration with data	
-	var text1 = "reward_given_timepoint_template_this_blk : \n%s" % str(reward_given_timepoint_template_this_blk)
-	var text2 = "hold_reward_template_this_blk : \n%s" % str(hold_reward_template_this_blk)
-	var text3 = "opt_out_reward_template_this_blk :\n %s" % str(opt_out_reward_template_this_blk)
-	var text4 = "total_reward_chance: %s" % str(total_reward_chance)
-	var text5 = "number_of_trials_accumu_rwd_timepointlated: %s" % str(number_of_trials)
-	var text8 = "number_of_trials_this_blk: %s" % str(number_of_trials_this_blk)
-	var text6 = "distribution_type: %s" % str(_distribution_type)
-	var text7 = "mu_rwd_timepoint, std_rwd_timepoint: %s, %s" % [str(mu_rwd_timepoint), str(std_rwd_timepoint)]
-	var text = text4 + "\n" + text7 + "\n" + text8 + "\n" + text6 + "\n" + text1 + "\n" + text2 + "\n" + text3 + "\n" + text5 + "\n"
-	
-	if save_loc <= 36:
-		var save_loc_ = "text" + str(save_loc)
-		Global.set(save_loc_, text)
-	else:
-		print("save_loc too large")
-
-
-func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0, 
-	_1st_mu_rwd_timepoint =20, _1st_std_rwd_timepoint=10):
-	if _previous_mu == 0:
-		pass
-	else:
-		# Specify a previous distribution parameter
-		mu_rwd_timepoint = _previous_mu
-	
-	match _distribution_type:
-		DistributionType.NORM_AFTER_1ST: # Normal distribution
-			var dice_mu_rwd_timepoint
-			var new_mu_rwd_timepoint
-			var new_std_rwd_timepoint
-			while true: # Avoid same as previous
-				var dicelen = mu_rwd_timepoint_change_list.size()
-				while true: # Avoid generating negative numbers
-					dice_mu_rwd_timepoint = MathUtils.generate_random(0, mu_rwd_timepoint_change_list.size() - 1, "int")
-					var mu_rwd_timepoint_change = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
-					new_mu_rwd_timepoint = mu_rwd_timepoint * (1 + mu_rwd_timepoint_change)
-					new_mu_rwd_timepoint = roundi(new_mu_rwd_timepoint)
-					if Global.inference_type == Global.InferenceFlagType.press_based and new_mu_rwd_timepoint >= 10:
-						break
-					elif Global.inference_type == Global.InferenceFlagType.time_based and new_mu_rwd_timepoint >= 0.5: # set min of mu
-						break
-					else:
-						mu_rwd_timepoint_change_list.erase(dice_mu_rwd_timepoint)
-						dicelen -= 1
-						print("removed a dice face",mu_rwd_timepoint_change_list)
-						if dicelen == 0:	
-							print("ERROR!!!!: invalid distribution parameters")
-							mu_rwd_timepoint=0
-							std_rwd_timepoint=0
-							return
-		
-				var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0, variance_rwd_timepoint_2mu_list.size() - 1, "int")
-				new_std_rwd_timepoint = new_mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
-				new_std_rwd_timepoint = roundf(new_std_rwd_timepoint * 1000) / 100
-				new_std_rwd_timepoint = new_std_rwd_timepoint / 10
-				if new_std_rwd_timepoint != mu_rwd_timepoint:
-					break
-
-			mu_rwd_timepoint = new_mu_rwd_timepoint
-			std_rwd_timepoint = new_std_rwd_timepoint
-
-		DistributionType.FLAT: # flat distribution
-			flat_min = _min
-			flat_max = _max
-
-		DistributionType.NORM_1ST_CUSTOM: # Normal distribution
-			var dice_mu_rwd_timepoint = MathUtils.generate_random(0, mu_rwd_timepoint_change_list.size() - 1, "int")
-			mu_rwd_timepoint = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
-			var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0, variance_rwd_timepoint_2mu_list.size() - 1, "int")
-			std_rwd_timepoint = mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
-
-		DistributionType.NORM_1ST:
-			mu_rwd_timepoint = _1st_mu_rwd_timepoint
-			if Global.inference_type == Global.InferenceFlagType.press_based:
-				mu_rwd_timepoint = roundi(mu_rwd_timepoint)
-			elif Global.inference_type == Global.InferenceFlagType.time_based:
-				mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
-				mu_rwd_timepoint = mu_rwd_timepoint / 10
-			std_rwd_timepoint = _1st_std_rwd_timepoint
-			std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
-			std_rwd_timepoint = std_rwd_timepoint / 10
-	
-func init_trial():
-	if Global.inference_type == Global.InferenceFlagType.time_based:
-			has_been_pressed = false
-			is_holding = false
-			start_time = 0.0
-			duration = 0.0
-			reward_given_flag = false
-			# Initialization rewards
-			hold_reward = 10
-			opt_out_reward = 2
-
-	if trial_count >= number_of_trials:
-		hide_nodes(exclude_label_1, original_states)
-		trial_count += 1
-		return
-	if initialized_flag == false:
-		reset_scene_to_start_button()
-		initialized_flag = true
-		return
-	trial_count += 1
-	# Initialize the test status
-	reward_given_flag = false
-	start_time = 0.0
-	num_of_press = 0
-	Global.press_history.clear()
-	# Initialization rewards
-	hold_reward = hold_vlaue_template[trial_count - 1]
-	opt_out_reward = opt_out_value_template[trial_count - 1]
-	reward_given_timepoint = reward_given_timepoint_template[trial_count - 1]
-	print("trial", trial_count, "\nreward: ", hold_reward, "\t", opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
-	if_opt_left = MathUtils.generate_random(0, 1, "float")
-	init_trial_ui()
 
 
 func save_data(_case):

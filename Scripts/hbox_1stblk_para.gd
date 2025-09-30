@@ -24,7 +24,8 @@ func label_distr_para_refresh(_index):
 	match _index:
 		0:                           #  len as [0,0.7,0.8,0.9,0.95,0.75] 
 			label_blkPara_distr_para_1.text = "            mu            "
-			label_blkPara_distr_para_2.text = "        mu/std         "
+			label_blkPara_distr_para_2.text = "         std/mu     "
+			# main: 	std_rwd_timepoint = mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
 		1:
 			label_blkPara_distr_para_1.text = "     min     " 
 			label_blkPara_distr_para_2.text = "     max     "

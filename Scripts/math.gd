@@ -299,12 +299,12 @@ static func generate_random(start,stop,type = "int"):
 		return random_float
 
 
-static func normrnd(mu, variance) -> float:
-	if variance < 0.0:
-		print("方差必须非负  当前值: %f" % variance)
+static func normrnd(mu, std) -> float:
+	if std < 0.0:
+		print("方差必须非负  当前值: %f" % std)
 		return 0.0
 	# 计算标准差
-	var sigma: float = sqrt(variance)
+	var sigma: float = std #sqrt(variance)
 	# Box-Muller变换生成标准正态分布随机数
 	var u1 = generate_random(0,1,"float")
 	var u2 =  generate_random(0,1,"float")

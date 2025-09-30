@@ -25,7 +25,7 @@ func label_distr_para_refresh(_index):
 	print("distr type: ",_index)
 	match _index:
 		0:
-			label_blkPara_distr_para_1.text = "            mu            "
+			label_blkPara_distr_para_1.text = "            mu change            "
 			label_blkPara_distr_para_2.text = "         std/mu           "
 		1:
 			label_blkPara_distr_para_1.text = "     min     " 
