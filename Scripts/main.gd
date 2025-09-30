@@ -99,7 +99,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(4)
+	generate_all_trials(5,12)
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -280,7 +280,7 @@ func generate_all_trials(case_, blk_num = 1):
 			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
 			h_value_listRND = [10]
 			o_value_listRND = [0]
-			mu1st = MathUtils.generate_random(3, 4, "int") # see in blk_distribution
+			mu1st = MathUtils.generate_random(3,4, "int") # see in blk_distribution
 			std1st = 0.5*mu1st
 			for i in range(1, blk_num + 1):
 				if i == 1:
