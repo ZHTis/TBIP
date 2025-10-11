@@ -99,7 +99,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(5,12)
+	generate_all_trials(4,12)
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -791,8 +791,9 @@ func _on_start_to_wait_button_pressed():
 		has_been_pressed = true
 		record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.WAIT, num_of_press)
 		infer_base_timer.one_shot = true # 单次触发模式
-		infer_base_timer.start(reward_given_timepoint)	
-		print("Wait Time Start")
+		if reward_given_timepoint != null:
+			infer_base_timer.start(reward_given_timepoint)	
+		print("Wait Time Start%s" % reward_given_timepoint)
 
 func _on_infer_baser_timer_timeout():
 	infer_base_timer.stop()
