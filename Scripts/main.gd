@@ -99,7 +99,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(4,12)
+	generate_all_trials(5,12)
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -121,96 +121,6 @@ func generate_all_trials(case_, blk_num = 1):
 	# Generate a block of trials, generate reward_given_timepoint and hold_reward given tremplate here
 	print("=======Generate a block of trials=======","\t",case_,"\t", blk_num)
 	match case_:
-		1: # fixed for the first 2
-			print("=======Case 2: Random hold_reward chance/value//distribution/tr_num =======")
-			Global.inference_type = Global.InferenceFlagType.press_based
-			total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
-			reward_given_timepoint_template = []
-			hold_vlaue_template = []
-			opt_out_value_template = []
-			mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
-			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
-			h_value_listRND = [0, 5, 10, 15, 20] # seeds for "hold_vlaue_template" for case "RANDOM"
-			o_value_listRND = [-15, -10, -5, 0, 5]
-
-			for i in range(1, blk_num + 1):
-				if i == 1:
-					blk_(0.5, "full", DistributionType.NORM_1ST, 1, "fixed", 20, 60)
-				elif i == 2:
-					blk_(0.5, "2nd", DistributionType.NORM_AFTER_1ST, 2, "fixed", 20, 60)
-				else:
-					var dice_ = MathUtils.generate_random(0, 1, "int")
-					if dice_ == 0:
-						blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 60)
-					else:
-						blk_(0.5, "random_chance", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 60)
-			
-			Global.write_sessionDesign_to_file(Global.filename_config)
-
-		2: # no fixed 1 and 2
-			Global.inference_type = Global.InferenceFlagType.press_based
-			total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
-			reward_given_timepoint_template = []
-			hold_vlaue_template = []
-			opt_out_value_template = []
-			mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
-			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
-			h_value_listRND = [0, 5, 10, 15, 20]
-			o_value_listRND = [-15, -10, -5, 0, 5]
-			for i in range(1, blk_num + 1):
-				var dice_ = MathUtils.generate_random(0, 1, "int")
-				if dice_ == 0:
-					print("\ndistribution is goint to change")
-					if i == 1:
-						blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 30, 0.9, 20, 10.0)
-					else:
-						blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 30)
-				else:
-					print("\nchance is going to change")
-					if i == 1:
-						blk_(0.5, "random_chance", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 30, 0.9, 20, 10.0)
-					else:
-						blk_(0.5, "random_chance", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 20, 30)
-			
-			Global.write_sessionDesign_to_file(Global.filename_config)
-	
-		3: #  run this mode to package each blk. 
-		  # In this mode, blk_num does not represent the number of blks, but the type of blk
-			Global.inference_type = Global.InferenceFlagType.press_based
-			total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
-			reward_given_timepoint_template = []
-			hold_vlaue_template = []
-			opt_out_value_template = []
-			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
-			mu_rwd_timepoint_change_list = [0, 0.25, -0.25, 0.5, -0.5]
-			h_value_listRND = [0, 5, 10, 15, 20]
-			o_value_listRND = [-15, -10, -5, 0, 5]
-		  # blk(_reward_chance_mode, _distribution_type, 
-		  # 	save_loc, _value_type ,
-		  # 	tr_num1, tr_num2,
-		  #		 _previous_total_reward_chance = 0, _previous_mu=0, _previous_std=0):
-			if blk_num == 1:
-				# total_reward_chance = 1, random norm,  ~ N(20,10)
-				blk_(0.5, "full", DistributionType.NORM_1ST, 1, "fixed", 20, 60)
-			elif blk_num == 2:
-				#  fixed norm,  ~ N(20,10)
-				# total_reward_chance = 0.9, no matter what " _previous_total_reward_chance" is
-				blk_(0.5, "2nd", DistributionType.NORM_AFTER_1ST, 2, "fixed", 20, 60, 0, 20, 10)
-			elif blk_num == 3:
-				# total_reward_chance = 0.9, random norm, EXCEPT for ~ N(20,10)
-				blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, 3, "RANDOM", 20, 60, 0.9, 20, 10)
-			elif blk_num == 4:
-				# total_reward_chance_structure = [1, 0.95, 0.9, 0.85, 0.8, 0.75]
-				#  fixed norm,  ~ N(20,10)
-				blk_(0.5, "random_chance", DistributionType.NORM_AFTER_1ST, 4, "RANDOM", 20, 60, 0.9, 20, 10)
-			elif blk_num == 5:
-				# total_reward_chance = 0.8, random norm, EXCEPT for ~ N(20,10)
-				blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, 3, "RANDOM", 20, 60, 0.8, 20, 10)
-			elif blk_num == 6:
-				# total_reward_chance = 0.75, random norm, EXCEPT for ~ N(20,10)
-				blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, 3, "RANDOM", 20, 60, 0.75, 20, 10)
-			Global.write_sessionDesign_to_file(Global.filename_config)
-
 		4: # from config
 			var user_path = ProjectSettings.globalize_path("user://")
 			var path = user_path + "task_config.cfg"
