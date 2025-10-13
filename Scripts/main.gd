@@ -113,10 +113,11 @@ func init_task(): # Initialize task, BLK design
 		# Connect button signa
 		hold_button.pressed.connect(_on_hold_button_pressed)
 		opt_out_button.pressed.connect(_on_opt_out_button_pressed)
-		
-	init_trial()
+	
 	save_data("head")
 	_label_refresh(Global.wealth, "init")
+		
+	init_trial()
 	
 
 func generate_all_trials(case_, blk_num = 1):
@@ -303,9 +304,9 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 				if mu_rwd_timepoint <= 0:# responded to blk_distribution when ERROR reported
 					get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 				else:
-					while true: # Avoid generating negative numbers
+					while true:  #MARK:  Floor&Ceiling of timepoint
 						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
-						if timepoint > 0:
+						if timepoint >= 0.5:
 							break
 					if Global.inference_type == Global.InferenceFlagType.press_based:
 						timepoint = roundi(timepoint)
@@ -388,7 +389,7 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 			var new_std_rwd_timepoint
 			while true: # Avoid same as previous
 				var dicelen = mu_rwd_timepoint_change_list.size()
-				while true: # Avoid generating negative numbers
+				while true:
 					var dice_mu_rwd_timepoint = MathUtils.generate_random(0, mu_rwd_timepoint_change_list.size() - 1, "int")
 					var mu_rwd_timepoint_change = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
 					new_mu_rwd_timepoint = mu_rwd_timepoint * (1 + mu_rwd_timepoint_change)
@@ -399,7 +400,6 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 							break
 					elif Global.inference_type == Global.InferenceFlagType.time_based:
 						if new_mu_rwd_timepoint >= 2 and new_mu_rwd_timepoint <= 12:
-						#MARK:  Floor&Ceiling of mu
 							break
 				
 					mu_rwd_timepoint_change_list.erase(mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint])
@@ -489,6 +489,7 @@ func init_trial():
 		trial_count += 1
 		return
 	if initialized_flag == false:
+		blk_flag = 1
 		reset_scene_to_start_button()
 		initialized_flag = true
 		return
@@ -627,11 +628,10 @@ func save_data(_case):
 		"green":
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 			var green_time = Time.get_ticks_msec()
-			var green_info = "%s,%s ,%d,%s,%s" % [
-				"/",
-				"/",
+			var green_info = "%s,%s,%d,%s" % [
+				blk_flag,
+				trial_count+1,
 				green_time,
-				"/",
 				green_flag]
 			file.seek_end()
 			file.store_line(green_info)
