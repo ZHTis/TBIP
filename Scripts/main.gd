@@ -22,7 +22,7 @@ extends Control
 var time_left: int = 900
 var countdownTimer
 var _reusable_timer: Timer = null
-enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM}
+enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3}
 ##### Global variables used in main.gd######
 var total_reward_chance
 var unit_interval: float
@@ -51,6 +51,7 @@ var exclude_nodes_for_srart_menu
 enum GreenFlagType {SHOW, PRESS}
 var green_flag
 var opt_left_flag
+var blk_flag
 # NORM
 # refresh for each trial
 var reward_given_timepoint
@@ -99,7 +100,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(5,12)
+	generate_all_trials(5,10)
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -139,7 +140,7 @@ func generate_all_trials(case_, blk_num = 1):
 				print("\nconfiguration.get_value(%s, \"blkPara_chance\")"%blk, configuration.get_value(blk, "blkPara_chance"))
 	
 				print("blk\t", blk, "\tglobal.text_i =\t", i)
-
+				blk_flag ="blk%s"%i
 				var a = load_from_config(blk,
 					configuration.get_value(blk, "blkPara_change_distr_or_chance"),
 					configuration.get_value(blk, "blkPara_distr_type"),
@@ -186,37 +187,23 @@ func generate_all_trials(case_, blk_num = 1):
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
 			opt_out_value_template = []
-			mu_rwd_timepoint_change_list = mu_change("linear", [0.25, 0.5,-0.25,0.5])
-			variance_rwd_timepoint_2mu_list = [0.5, 0.25]
-			h_value_listRND = [10]
-			o_value_listRND = [0]
-			mu1st = MathUtils.generate_random(3,4, "int") # see in blk_distribution
-			std1st = 0.5*mu1st
+
 			for i in range(1, blk_num + 1):
-				if i == 1:
-					total_reward_chance_structure = [1]
-					blk_(0.5, "full", DistributionType.NORM_1ST, 1, "RANDOM", 80, 120)
+				blk_flag ="blk%s"%i
+				if i == 1:	
+					blk_(0.5, "full", DistributionType.SET1, 1, "A", 10,10)
 				elif i == 2:
-					total_reward_chance_structure = [0.9, 0.8]
-					blk_(0.5, "random_chance", DistributionType.NORM_AFTER_1ST, 2, "RANDOM", 80, 120)
-				elif i > 2:
-					total_reward_chance_structure = [1, 0.9, 0.8, 0.7]
-					blk_(0.5, "random_distribution", DistributionType.NORM_AFTER_1ST, i, "RANDOM", 80, 120)
+					blk_(0.5, "full", DistributionType.SET1, 2, "B", 10,10)
+				if i > 2 and i<=6:
+					total_reward_chance_structure = [0.8]
+					blk_(0.5, "pointed", DistributionType.SET1, i, "B", 40,40)
+					print("blk%s"%i)
+				if i > 6 and i<=blk_num:
+					total_reward_chance_structure = [0.6]
+					blk_(0.5, "pointed", DistributionType.SET1, i, "B", 40,40)
+					print("blk%s"%i)
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
-#unfinish
-func mu_change(_type, _value) -> Array:
-	# notice that new_mu_rwd_timepoint = mu_rwd_timepoint * (1 + mu_rwd_timepoint_change)
-	var _mu_rwd_timepoint_change_list
-	match _type:
-		"linear":
-			_mu_rwd_timepoint_change_list = _value
-		"logarithmic linear":
-			var step = log(_value)
-			step = roundf(step*100)/10
-			step = step/10
-			_mu_rwd_timepoint_change_list = []
-	return _mu_rwd_timepoint_change_list
 
 # MARK: BLK
 func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
@@ -259,8 +246,9 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 					break
 			total_reward_chance = total_reward_chance_structure[_dice] # set total hold_reward chance
 			print("total_reward_chance: ", total_reward_chance)
-		"2nd":
-			total_reward_chance = 0.9
+		"pointed":
+			total_reward_chance = total_reward_chance_structure[0]
+			print("total_reward_chance: ", total_reward_chance)
 			
 	# from Block N to Block N+1, we either change
 	# ONLY the distribution, 
@@ -283,6 +271,16 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 		if mu_rwd_timepoint == null:
 			mu_rwd_timepoint = _previous_mu
 			std_rwd_timepoint = _previous_std
+	elif _distribution_type == DistributionType.SET1:
+		mu_rwd_timepoint = 3
+		if Global.inference_type == Global.InferenceFlagType.press_based:
+			mu_rwd_timepoint = roundi(mu_rwd_timepoint)
+		elif Global.inference_type == Global.InferenceFlagType.time_based:
+			mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
+			mu_rwd_timepoint = mu_rwd_timepoint / 10
+		std_rwd_timepoint = 0.75*mu_rwd_timepoint
+		std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
+		std_rwd_timepoint = std_rwd_timepoint / 10
 	else:
 		print("error: the case is not defined")
 
@@ -322,16 +320,17 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 			reward_given_timepoint_template.append(null)
 			reward_given_timepoint_template_this_blk.append(null)
 
-		# how much to give as reward
-		match _value_type:
-			"RANDOM":
-				# h_value_list,o_value_list should be predefined 
-				h_value_list = h_value_listRND
-				o_value_list = o_value_listRND
-				var dice_h = MathUtils.generate_random(0, h_value_list.size() - 1, "int")
-				var random_h = h_value_list[dice_h]
-				var dice_o
-				var random_o
+	# how much to give as reward
+	match _value_type:
+		"RANDOM":
+			# h_value_list,o_value_list should be predefined 
+			h_value_list = h_value_listRND
+			o_value_list = o_value_listRND
+			var dice_h = MathUtils.generate_random(0, h_value_list.size() - 1, "int")
+			var random_h = h_value_list[dice_h]
+			var dice_o
+			var random_o
+			for i in range(number_of_trials_this_blk):
 				while true: # Avoid generating negative numbers
 					dice_o = MathUtils.generate_random(0, o_value_list.size() - 1, "int")
 					random_o = o_value_list[dice_o]
@@ -341,19 +340,20 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
 				opt_out_value_template.append(random_o) # Opt-out hold_reward
 				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
-			"fixed":
-				h_value_list = [10]
-				o_value_list = [0]
-				var dice_h = MathUtils.generate_random(0, h_value_list.size() - 1, "int")
-				var random_h = h_value_list[dice_h]
-				hold_vlaue_template.append(random_h)
-				hold_reward_template_this_blk.append(random_h) # Hold hold_reward
-				var dice_o = MathUtils.generate_random(0, o_value_list.size() - 1, "int")
-				var random_o = o_value_list[dice_o]
-				opt_out_value_template.append(random_o) # Opt-out hold_reward
-				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
+		"A":
+			var a = setValues(number_of_trials_this_blk,5,-1,"none")
+			hold_reward_template_this_blk = a[0]
+			opt_out_reward_template_this_blk = a[1]
+			hold_vlaue_template.append_array(hold_reward_template_this_blk)
+			opt_out_value_template.append_array(opt_out_reward_template_this_blk)
+		"B":
+			var a = setValues(number_of_trials_this_blk,5,-1,"h5o5")
+			hold_reward_template_this_blk = a[0]
+			opt_out_reward_template_this_blk = a[1]
+			hold_vlaue_template.append_array(hold_reward_template_this_blk)
+			opt_out_value_template.append_array(opt_out_reward_template_this_blk)
 			
-			
+	
 # save the configuration with data	
 	var text1 = "reward_given_timepoint_template_this_blk : \n%s" % str(reward_given_timepoint_template_this_blk)
 	var text2 = "hold_reward_template_this_blk : \n%s" % str(hold_reward_template_this_blk)
@@ -439,7 +439,38 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 			std_rwd_timepoint = _1st_std_rwd_timepoint
 			std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
 			std_rwd_timepoint = std_rwd_timepoint / 10
-	
+
+
+func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case):
+	var opt_out_value_this_blk = []
+	var hold_vlaue_this_blk = []
+	hold_vlaue_this_blk.resize(_number_of_trials_this_blk)
+	hold_vlaue_this_blk.fill(_h_value)
+	opt_out_value_this_blk.resize(_number_of_trials_this_blk)
+	opt_out_value_this_blk.fill(_o_value)
+	match _case:
+		"none":
+			pass
+		"h5o5":
+			var num_exception = 0.25*0.5*_number_of_trials_this_blk
+			num_exception = roundi(num_exception)
+			if num_exception == 0:
+				num_exception = 1
+			var exception_idx = []
+			for i in range(_number_of_trials_this_blk):
+				exception_idx.append(i)
+				
+			exception_idx.shuffle()
+			exception_idx = exception_idx.slice(0, 2*num_exception)	
+			print(exception_idx)
+			for i_h in range(num_exception):
+				var idx = exception_idx[i_h]
+				hold_vlaue_this_blk[idx] = _h_value * 5
+			for i_o in range(num_exception, len(exception_idx)):
+				var idx = exception_idx[i_o]
+				opt_out_value_this_blk[idx] = _o_value * 5
+	return [hold_vlaue_this_blk, opt_out_value_this_blk]
+
 func init_trial():
 	if Global.inference_type == Global.InferenceFlagType.time_based:
 			has_been_pressed = false
@@ -605,7 +636,8 @@ func save_data(_case):
 			var csv_line = ""
 	
 			for press in Global.press_history:
-				csv_line = "%d,%d ,%d,%s,%s,%s,%s,%s" % [
+				csv_line = "%s,%d,%d ,%d,%s,%s,%s,%s,%s" % [
+						press.blk_flag,
 						press.trial_count,
 						press.press_count, # 序号
 						press.timestamp, # 时间戳
@@ -679,7 +711,7 @@ func _input(event):
 				pass
 			else:
 				warning()
-				record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.INVALID, num_of_press)
+				record_press_data(blk_flag, current_time, trial_count, reward_given_flag, PressData.BtnType.INVALID, num_of_press)
 			# change color of background:
 
 
@@ -699,7 +731,7 @@ func _on_start_to_wait_button_pressed():
 	start_time = Time.get_ticks_msec() / 1000.0 # Always reset start_time on press
 	if not has_been_pressed:
 		has_been_pressed = true
-		record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.WAIT, num_of_press)
+		record_press_data(blk_flag, current_time, trial_count, reward_given_flag, PressData.BtnType.WAIT, num_of_press)
 		infer_base_timer.one_shot = true # 单次触发模式
 		if reward_given_timepoint != null:
 			infer_base_timer.start(reward_given_timepoint)	
@@ -723,19 +755,19 @@ func _on_hold_button_pressed():
 	if reward_given_timepoint == null:
 		num_of_press += 1
 		_label_refresh(Global.wealth, "pressing...")
-		record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD, num_of_press)
+		record_press_data(blk_flag, current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD, num_of_press)
 		
 	elif reward_given_flag == false:
 		num_of_press += 1
 		_label_refresh(Global.wealth, "pressing...")
 		if num_of_press < reward_given_timepoint:
-			record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD, num_of_press)
+			record_press_data(blk_flag, current_time, trial_count, reward_given_flag, PressData.BtnType.HOLD, num_of_press)
 		if num_of_press == reward_given_timepoint:
 			Global.wealth += hold_reward
 			reward_given_flag = true
 			print("hold-reward_given_flag  ", reward_given_flag)
 			_label_refresh(Global.wealth, "reward_given")
-			record_press_data(current_time, trial_count, true, PressData.BtnType.HOLD, num_of_press)
+			record_press_data(blk_flag, current_time, trial_count, true, PressData.BtnType.HOLD, num_of_press)
 			reset_scene_to_start_button()
 
 
@@ -747,7 +779,7 @@ func _on_opt_out_button_pressed():
 	Global.wealth += opt_out_reward
 	reward_given_flag = true
 	_label_refresh(Global.wealth, "opt_out")
-	record_press_data(current_time, trial_count, reward_given_flag, PressData.BtnType.OPT_OUT, num_of_press)
+	record_press_data(blk_flag, current_time, trial_count, reward_given_flag, PressData.BtnType.OPT_OUT, num_of_press)
 	reset_scene_to_start_button()
 
 
@@ -762,9 +794,9 @@ func _on_start_button_pressed():
 
 
 # 封装记录按键数据的函数
-func record_press_data(current_time, _tr_count, _reward_given_flag, btn_type: PressData.BtnType, _press_count) -> void:
+func record_press_data(_blkflag,current_time, _tr_count, _reward_given_flag, btn_type: PressData.BtnType, _press_count) -> void:
 	# 创建PressData实例
-	var new_press = PressData.new(current_time, _tr_count, _reward_given_flag, btn_type, _press_count)
+	var new_press = PressData.new(_blkflag, current_time, _tr_count, _reward_given_flag, btn_type, _press_count)
 	Global.press_history.append(new_press)
 	
 
