@@ -52,6 +52,7 @@ enum GreenFlagType {SHOW, PRESS}
 var green_flag
 var opt_left_flag
 var blk_flag
+var tr_num_in_blk_list = []
 # NORM
 # refresh for each trial
 var reward_given_timepoint
@@ -220,6 +221,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 	var opt_out_reward_template_this_blk = []
 	# rnd tr_num
 	var number_of_trials_this_blk = MathUtils.generate_random(tr_num1, tr_num2, "int")
+	tr_num_in_blk_list.append(number_of_trials_this_blk)
 	number_of_trials += number_of_trials_this_blk
 
 	print("number_of_trials: ", number_of_trials)
@@ -502,6 +504,11 @@ func init_trial():
 	reward_given_timepoint = reward_given_timepoint_template[trial_count - 1]
 	print("trial", trial_count, "\nreward: ", hold_reward, "\t", opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
 	if_opt_left = MathUtils.generate_random(0, 1, "float")
+	for i in range(len(tr_num_in_blk_list)):
+		if trial_count <= tr_num_in_blk_list[0]:
+			blk_flag = 1
+		elif trial_count > tr_num_in_blk_list[i-1] and trial_count <= tr_num_in_blk_list[i]:
+			blk_flag = i
 	init_trial_ui()
 
 
@@ -614,7 +621,7 @@ func save_data(_case):
 			file.store_line("# Button type: 0:hold; 1:opt-out; 2:INVALID,3:sart to wait") # CSV列标题
 			file.store_line("# Green flag type: 0:show green btn; 1:press green")
 			file.store_line("# The following is CSV format data, one press record per line")
-			file.store_line("\nhead: trial num, valid_press_num, timestamp_ms, reward_flag, button_type, reward_given_timepoint, where_is_opt, green_flag\n")
+			file.store_line("\nhead: blk num, trial num, valid_press_num, timestamp_ms, reward_flag, button_type, reward_given_timepoint, where_is_opt, green_flag\n")
 			file.close()
 		
 		"green":
