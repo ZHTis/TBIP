@@ -23,6 +23,7 @@ var time_left: int = 900
 var countdownTimer
 var _reusable_timer: Timer = null
 enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3}
+enum SampleType{POOL, SLICED}
 ##### Global variables used in main.gd######
 var total_reward_chance
 var unit_interval: float
@@ -193,7 +194,7 @@ func generate_all_trials(case_, blk_num = 1):
 			for i in range(1, blk_num + 1):
 				blk_flag ="blk%s"%i
 				if i == 1:	
-					blk_(0.5, "full", DistributionType.SET1, 1, "A", 10,10)
+					blk_(0.5, "full", DistributionType.SET1, 1, "A", 10,10, SampleType.SLICED, 2)
 				elif i == 2:
 					blk_(0.5, "full", DistributionType.SET1, 2, "B", 10,10)
 				if i > 2 and i<=6:
@@ -213,7 +214,8 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 		_value_type,
 		# tr_num range:
 		tr_num1, tr_num2,
-		 _previous_total_reward_chance = 0.0, _previous_mu = 0, _previous_std = 0.0):
+		_sample_type = SampleType.POOL,_slice_size = 0,
+		_previous_total_reward_chance = 0.0, _previous_mu = 0, _previous_std = 0.0):
 	unit_interval = _interval
 	var dice_if_rwd_given
 	var timepoint
@@ -240,7 +242,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 		"random_distribution":
 			total_reward_chance = previous_total_reward_chance
 			print("total_reward_chance: ", total_reward_chance)
-		"random_chance":
+		"random_chance": #cannot be the same as previous
 			var _dice
 			var _dicelen = total_reward_chance_structure.size()
 			while true:
@@ -249,8 +251,14 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 					break
 			total_reward_chance = total_reward_chance_structure[_dice] # set total hold_reward chance
 			print("total_reward_chance: ", total_reward_chance)
-		"pointed":
-			total_reward_chance = total_reward_chance_structure[0]
+		"pointed": #can be the same as previous
+			var _dice
+			var _dicelen = total_reward_chance_structure.size()
+			if _dicelen == 1:
+				total_reward_chance = total_reward_chance_structure[0]
+			else:
+				_dice = MathUtils.generate_random(0, _dicelen - 1, "int")
+				total_reward_chance = total_reward_chance_structure[_dice] # set total hold_reward chance
 			print("total_reward_chance: ", total_reward_chance)
 			
 	# from Block N to Block N+1, we either change
@@ -291,37 +299,66 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 	# based on the given distribution parameters,
 	# generate reward_given_timepoint template, which serves as the the "right" answer for trials
 	# all about tokens
-	# MARK: Timepoint
-	for i in range(number_of_trials_this_blk):
-		# if reward is given
-		dice_if_rwd_given = MathUtils.generate_random(0, 1, "float") # set total hold_reward chance
-		if dice_if_rwd_given <= total_reward_chance:
-			# if given, when?
-			if _distribution_type == DistributionType.FLAT:
-				if Global.inference_type == Global.InferenceFlagType.press_based:
-					timepoint = MathUtils.generate_random(flat_min, flat_max, "int")
-			else:
-				if mu_rwd_timepoint <= 0:# responded to blk_distribution when ERROR reported
-					get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
+	# MARK: Timepoint_sample_type
+	
+	match _sample_type:
+		SampleType.POOL:
+			for i in range(number_of_trials_this_blk):
+				# if reward is given
+				dice_if_rwd_given = MathUtils.generate_random(0, 1, "float") # set total hold_reward chance
+				if dice_if_rwd_given <= total_reward_chance:
+					# if given, when?
+					if _distribution_type == DistributionType.FLAT:
+						if Global.inference_type == Global.InferenceFlagType.press_based:
+							timepoint = MathUtils.generate_random(flat_min, flat_max, "int")
+					else:
+						if mu_rwd_timepoint <= 0:# responded to blk_distribution when ERROR reported
+							get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
+						else:
+							while true:  #MARK:  Floor&Ceiling of timepoint
+								timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
+								if timepoint >= 0.5: 
+									break
+							if Global.inference_type == Global.InferenceFlagType.press_based:
+								timepoint = roundi(timepoint)
+							elif Global.inference_type == Global.InferenceFlagType.time_based:
+								timepoint = roundf(timepoint *100) /10
+								timepoint = timepoint / 10
+								timepoint = timepoint * 4
+								timepoint = roundf(timepoint)/4
+
+
+					reward_given_timepoint_template.append(timepoint)
+					reward_given_timepoint_template_this_blk.append(timepoint)
 				else:
-					while true:  #MARK:  Floor&Ceiling of timepoint
-						timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
-						if timepoint >= 0.5:
-							break
-					if Global.inference_type == Global.InferenceFlagType.press_based:
-						timepoint = roundi(timepoint)
-					elif Global.inference_type == Global.InferenceFlagType.time_based:
-						timepoint = roundf(timepoint *100) /10
-						timepoint = timepoint / 10
-						timepoint = timepoint * 4
-						timepoint = roundf(timepoint)/4
+					reward_given_timepoint_template.append(null)
+					reward_given_timepoint_template_this_blk.append(null)
 
-
-			reward_given_timepoint_template.append(timepoint)
-			reward_given_timepoint_template_this_blk.append(timepoint)
-		else:
-			reward_given_timepoint_template.append(null)
-			reward_given_timepoint_template_this_blk.append(null)
+		SampleType.SLICED:
+			var create_pool = []
+			for i in range(1, 10000):
+				while true:  
+					timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
+					if timepoint >= 0.5:
+						break
+				if Global.inference_type == Global.InferenceFlagType.press_based:
+					timepoint = roundi(timepoint)
+				elif Global.inference_type == Global.InferenceFlagType.time_based:
+					timepoint = roundf(timepoint *100) /10
+					timepoint = timepoint / 10
+				create_pool.append(timepoint)
+			create_pool.sort()
+			var pool_from_pool=[]
+			pool_from_pool.resize(_slice_size)
+			pool_from_pool.fill([])
+			for i in range(_slice_size):
+				pool_from_pool[i].append(create_pool.slice(i * 10000 / _slice_size, (i + 1) * 10000 / _slice_size)) 
+				pool_from_pool[i].shuffle()
+				var n = roundi(number_of_trials_this_blk / _slice_size)
+				print(pool_from_pool[i].slice(0, 5),"n: ", n)
+				reward_given_timepoint_template_this_blk.append_array(pool_from_pool[i].slice(0, n))
+				reward_given_timepoint_template.append_array(reward_given_timepoint_template_this_blk)
+			
 
 	# how much to give as reward
 	match _value_type:
