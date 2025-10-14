@@ -194,16 +194,16 @@ func generate_all_trials(case_, blk_num = 1):
 			for i in range(1, blk_num + 1):
 				blk_flag ="blk%s"%i
 				if i == 1:	
-					blk_(0.5, "full", DistributionType.SET1, 1, "A", 10,10, SampleType.SLICED, 2)
+					blk_(0.5, "full", DistributionType.SET1, 1, "A", 10,10, SampleType.SLICED, 5)
 				elif i == 2:
-					blk_(0.5, "full", DistributionType.SET1, 2, "B", 10,10)
+					blk_(0.5, "full", DistributionType.SET1, 2, "B", 10,10, SampleType.SLICED, 2)
 				if i > 2 and i<=6:
 					total_reward_chance_structure = [0.8]
-					blk_(0.5, "pointed", DistributionType.SET1, i, "B", 40,40)
+					blk_(0.5, "pointed", DistributionType.SET1, i, "B", 40,40, SampleType.SLICED, 2)
 					print("blk%s"%i)
 				if i > 6 and i<=blk_num:
 					total_reward_chance_structure = [0.6]
-					blk_(0.5, "pointed", DistributionType.SET1, i, "B", 40,40)
+					blk_(0.5, "pointed", DistributionType.SET1, i, "B", 40,40, SampleType.SLICED, 2)
 					print("blk%s"%i)
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
@@ -214,7 +214,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 		_value_type,
 		# tr_num range:
 		tr_num1, tr_num2,
-		_sample_type = SampleType.POOL,_slice_size = 0,
+		_sample_type = SampleType.POOL,_slice_size = 2,
 		_previous_total_reward_chance = 0.0, _previous_mu = 0, _previous_std = 0.0):
 	unit_interval = _interval
 	var dice_if_rwd_given
@@ -227,7 +227,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 	tr_num_in_blk_list.append(number_of_trials_this_blk)
 	number_of_trials += number_of_trials_this_blk
 
-	print("number_of_trials: ", number_of_trials)
+	print("######number_of_trials: ", number_of_trials)
 	Global.num_of_trials = number_of_trials
 	var previous_total_reward_chance
 	if _previous_total_reward_chance == 0:
@@ -336,7 +336,8 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 
 		SampleType.SLICED:
 			var create_pool = []
-			for i in range(1, 10000):
+			var seed = 100
+			for i in range(1, seed):
 				while true:  
 					timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
 					if timepoint >= 0.5:
@@ -348,17 +349,26 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 					timepoint = timepoint / 10
 				create_pool.append(timepoint)
 			create_pool.sort()
+
 			var pool_from_pool=[]
 			pool_from_pool.resize(_slice_size)
 			pool_from_pool.fill([])
+			var n = roundi(number_of_trials_this_blk / _slice_size)
 			for i in range(_slice_size):
-				pool_from_pool[i].append(create_pool.slice(i * 10000 / _slice_size, (i + 1) * 10000 / _slice_size)) 
-				pool_from_pool[i].shuffle()
-				var n = roundi(number_of_trials_this_blk / _slice_size)
-				print(pool_from_pool[i].slice(0, 5),"n: ", n)
+				var temp = []
+				temp.append_array(create_pool.slice(i * seed / _slice_size, (i + 1) * seed / _slice_size)) 
+				temp.shuffle()
+				pool_from_pool[i] = temp
+				print(pool_from_pool[i].slice(0, n),"n: ", n)
 				reward_given_timepoint_template_this_blk.append_array(pool_from_pool[i].slice(0, n))
-				reward_given_timepoint_template.append_array(reward_given_timepoint_template_this_blk)
-			
+			var n_null = roundi(number_of_trials_this_blk * (1 - total_reward_chance))
+			print("n_null: ", n_null)
+			reward_given_timepoint_template_this_blk.shuffle()
+			for j in range(n_null):
+				reward_given_timepoint_template_this_blk[j] = null
+			reward_given_timepoint_template_this_blk.shuffle()
+			reward_given_timepoint_template.append_array(reward_given_timepoint_template_this_blk)
+		
 
 	# how much to give as reward
 	match _value_type:
