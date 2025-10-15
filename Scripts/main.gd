@@ -102,7 +102,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(5,10)
+	generate_all_trials(5,20)
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -336,7 +336,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 
 		SampleType.SLICED:
 			var create_pool = []
-			var seed_for_slice = 100
+			var seed_for_slice = 100000
 			for i in range(1, seed_for_slice):
 				while true:  
 					timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
@@ -361,6 +361,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 				pool_from_pool[i] = temp
 				print("pool_from_pool for vincentization bin%s: "%i,pool_from_pool[i].slice(0, n),"n: ", n)
 				reward_given_timepoint_template_this_blk.append_array(pool_from_pool[i].slice(0, n))
+
 			var n_null = roundi(number_of_trials_this_blk * (1 - total_reward_chance))
 			print("n_null: ", n_null)
 			reward_given_timepoint_template_this_blk.shuffle()
@@ -368,6 +369,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 				reward_given_timepoint_template_this_blk[j] = null
 			reward_given_timepoint_template_this_blk.shuffle()
 			reward_given_timepoint_template.append_array(reward_given_timepoint_template_this_blk)
+			print("reward_given_timepoint_template_this_blk: ", reward_given_timepoint_template_this_blk)
 		
 
 	# how much to give as reward
@@ -490,7 +492,7 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 			std_rwd_timepoint = std_rwd_timepoint / 10
 
 
-func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case,_reward_timepoint_template_this_blk=[]):
+func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given_timepoint_template_this_blk=[]):
 	var opt_out_value_this_blk = []
 	var hold_vlaue_this_blk = []
 	hold_vlaue_this_blk.resize(_number_of_trials_this_blk)
@@ -503,8 +505,8 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case,_reward_timepo
 		"h5o5_ur":
 			var urwd_idx = []
 			var rwd_idx=[]
-			for idx in range(_number_of_trials_this_blk): 
-				if  _reward_timepoint_template_this_blk[idx] == null:
+			for idx in range(len(_reward_given_timepoint_template_this_blk)): 
+				if  _reward_given_timepoint_template_this_blk[idx] == null:
 					urwd_idx.append(idx)
 				else:
 					rwd_idx.append(idx)
