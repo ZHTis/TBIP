@@ -193,6 +193,7 @@ func generate_all_trials(case_, blk_num = 1):
 
 			for i in range(1, blk_num + 1):
 				blk_flag ="blk%s"%i
+				print("###### blk%s"%i)
 				if i == 1:	
 					blk_(0.5, "full", DistributionType.SET1, 1, "A", 10,10, SampleType.SLICED, 5)
 				elif i == 2:
@@ -200,11 +201,10 @@ func generate_all_trials(case_, blk_num = 1):
 				if i > 2 and i<=6:
 					total_reward_chance_structure = [0.8]
 					blk_(0.5, "pointed", DistributionType.SET1, i, "B", 40,40, SampleType.SLICED, 2)
-					print("blk%s"%i)
 				if i > 6 and i<=blk_num:
 					total_reward_chance_structure = [0.6]
 					blk_(0.5, "pointed", DistributionType.SET1, i, "B", 40,40, SampleType.SLICED, 2)
-					print("blk%s"%i)
+					
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
 
@@ -227,7 +227,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 	tr_num_in_blk_list.append(number_of_trials_this_blk)
 	number_of_trials += number_of_trials_this_blk
 
-	print("######number_of_trials: ", number_of_trials)
+	print("cumulated number_of_trials: ", number_of_trials)
 	Global.num_of_trials = number_of_trials
 	var previous_total_reward_chance
 	if _previous_total_reward_chance == 0:
@@ -336,8 +336,8 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 
 		SampleType.SLICED:
 			var create_pool = []
-			var seed = 100
-			for i in range(1, seed):
+			var seed_for_slice = 100
+			for i in range(1, seed_for_slice):
 				while true:  
 					timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
 					if timepoint >= 0.5:
@@ -356,10 +356,10 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 			var n = roundi(number_of_trials_this_blk / _slice_size)
 			for i in range(_slice_size):
 				var temp = []
-				temp.append_array(create_pool.slice(i * seed / _slice_size, (i + 1) * seed / _slice_size)) 
+				temp.append_array(create_pool.slice(i * float(seed_for_slice) / _slice_size, float((i + 1) * seed_for_slice) / _slice_size)) 
 				temp.shuffle()
 				pool_from_pool[i] = temp
-				print(pool_from_pool[i].slice(0, n),"n: ", n)
+				print("pool_from_pool for vincentization bin%s: "%i,pool_from_pool[i].slice(0, n),"n: ", n)
 				reward_given_timepoint_template_this_blk.append_array(pool_from_pool[i].slice(0, n))
 			var n_null = roundi(number_of_trials_this_blk * (1 - total_reward_chance))
 			print("n_null: ", n_null)
@@ -397,7 +397,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type, save_loc,
 			hold_vlaue_template.append_array(hold_reward_template_this_blk)
 			opt_out_value_template.append_array(opt_out_reward_template_this_blk)
 		"B":
-			var a = setValues(number_of_trials_this_blk,5,-1,"h5o5")
+			var a = setValues(number_of_trials_this_blk,5,-1,"h5o5_ur",reward_given_timepoint_template_this_blk)
 			hold_reward_template_this_blk = a[0]
 			opt_out_reward_template_this_blk = a[1]
 			hold_vlaue_template.append_array(hold_reward_template_this_blk)
@@ -490,7 +490,7 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 			std_rwd_timepoint = std_rwd_timepoint / 10
 
 
-func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case):
+func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case,_reward_timepoint_template_this_blk=[]):
 	var opt_out_value_this_blk = []
 	var hold_vlaue_this_blk = []
 	hold_vlaue_this_blk.resize(_number_of_trials_this_blk)
@@ -500,18 +500,47 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case):
 	match _case:
 		"none":
 			pass
+		"h5o5_ur":
+			var urwd_idx = []
+			var rwd_idx=[]
+			for idx in range(_number_of_trials_this_blk): 
+				if  _reward_timepoint_template_this_blk[idx] == null:
+					urwd_idx.append(idx)
+				else:
+					rwd_idx.append(idx)
+			print("urwd_idx: ", urwd_idx)
+			urwd_idx.shuffle()
+			rwd_idx.shuffle()
+			var num_exception = 0.25*0.5*_number_of_trials_this_blk
+			var each_exception_urwd = num_exception-roundi(num_exception*total_reward_chance)
+			var each_exception_rwd = roundi(num_exception*total_reward_chance)
+			urwd_idx = urwd_idx.slice(0, 2*each_exception_urwd)
+			rwd_idx = rwd_idx.slice(0, 2*each_exception_rwd)
+			for i in range(each_exception_urwd):
+				var idx = urwd_idx[i]
+				opt_out_value_this_blk[idx] = _o_value * 5
+			for i in range(each_exception_urwd, len(urwd_idx)):
+				var idx = urwd_idx[i]
+				hold_vlaue_this_blk[idx] = _h_value * 5
+			for i in range(each_exception_rwd):
+				var idx = rwd_idx[i]
+				hold_vlaue_this_blk[idx] = _h_value * 5
+			for i in range(each_exception_rwd, len(rwd_idx)):
+				var idx = rwd_idx[i]
+				opt_out_value_this_blk[idx] = _o_value * 5
+			
 		"h5o5":
 			var num_exception = 0.25*0.5*_number_of_trials_this_blk
 			num_exception = roundi(num_exception)
 			if num_exception == 0:
-				num_exception = 1
+				num_exception = 1 # at least 1 exception
 			var exception_idx = []
 			for i in range(_number_of_trials_this_blk):
 				exception_idx.append(i)
 				
 			exception_idx.shuffle()
 			exception_idx = exception_idx.slice(0, 2*num_exception)	
-			print(exception_idx)
+			print("exception_idx: ",exception_idx)
 			for i_h in range(num_exception):
 				var idx = exception_idx[i_h]
 				hold_vlaue_this_blk[idx] = _h_value * 5
