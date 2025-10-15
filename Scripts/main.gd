@@ -49,8 +49,6 @@ var original_states = {}
 var original_states_2 = {}
 var exclude_label_1
 var exclude_nodes_for_srart_menu
-enum GreenFlagType {SHOW, PRESS}
-var green_flag
 var opt_left_flag
 var blk_flag
 var tr_num_in_blk_list = []
@@ -59,6 +57,8 @@ var tr_num_in_blk_list = []
 var reward_given_timepoint
 var hold_reward
 var opt_out_reward
+var trial_start_time
+var task_show_time
 # refresh fro each block
 var reward_given_timepoint_template
 var hold_vlaue_template
@@ -102,7 +102,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(5,20)
+	generate_all_trials(5,10)
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -692,6 +692,34 @@ func load_from_config(_blk,
 
 func save_data(_case):
 	match _case:
+		"json":
+			#blk
+			#trial_count
+			#trial_count_in_blk
+			#reward_given_timepoint
+			#reward_given__flagged_timepoint
+			#trial_start_time
+			#task_show_time
+		 	#hold_reward
+			#opt_out_reward
+			#press_history[type,timestamp,reward_flag,press_num]
+			var data = {
+				"blk": blk_flag,
+				"trial_count": trial_count,
+				"reward_given_timepoint": reward_given_timepoint,
+				#"reward_given__flagged_timepoint": reward_given_timepoint_flagged,
+				"trial_start_time": trial_start_time,
+				"task_show_time": task_show_time,	
+				"hold_reward": hold_reward,	
+				"opt_out_reward": opt_out_reward,	
+				"press_history": Global.press_history,
+			}
+			var json_string = JSON.stringify(data)
+			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
+			file.seek_end()
+			file.store_string(json_string)
+			file.close()
+
 		"head":
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 			file.store_line("Tokens: %d\n" % Global.wealth)
@@ -709,8 +737,7 @@ func save_data(_case):
 			var green_info = "%s,%s,%d,%s" % [
 				blk_flag,
 				trial_count+1,
-				green_time,
-				green_flag]
+				green_time]
 			file.seek_end()
 			file.store_line(green_info)
 			file.close()
@@ -744,7 +771,10 @@ func save_data(_case):
 
 
 func reset_scene_to_start_button():
-	save_data("body")
+	if trial_count <1:
+		pass
+	else:
+		save_data("json")
 	# Reset the scene
 	if trial_count >= 1:
 		original_states = hide_nodes(exclude_label_1, original_states)
@@ -760,10 +790,10 @@ func reset_scene_to_start_button():
 	vboxstart.visible = true
 	vboxbottom.visible = true
 	vboxtop.visible = true
-	green_flag = GreenFlagType.SHOW
-	save_data("green")
+	# label status
+	trial_start_time = Time.get_ticks_msec()
 
-	
+
 func reset_to_start_next_trial():
 	if trial_count <= number_of_trials:
 		init_trial()
@@ -873,8 +903,7 @@ func _on_quit_button_pressed():
 
 
 func _on_start_button_pressed():
-	green_flag = GreenFlagType.PRESS
-	save_data("green")
+	task_show_time = Time.get_ticks_msec() / 1000.0
 	reset_to_start_next_trial()
 
 
