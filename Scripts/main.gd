@@ -868,7 +868,6 @@ func _on_hold_button_pressed():
 			record_press_data(current_time, BtnType.HOLD, num_of_press)
 			reset_scene_to_start_button()
 
-
 func _on_opt_out_button_pressed():
 	# 获取当前时间戳（秒）
 	var current_time = Time.get_ticks_msec()
