@@ -4,9 +4,10 @@
 [ext_resource type="Script" uid="uid://dx3jmnjvdaaa6" path="res://Scripts/blk_config.gd" id="1_u5vwc"]
 [ext_resource type="Script" uid="uid://7dgnqukr0xy2" path="res://Scripts/hbox_blk_para.gd" id="2_fc0h3"]
 [ext_resource type="LabelSettings" uid="uid://c4gn2t32fjvcx" path="res://config_label_settings.tres" id="3_u5vwc"]
-[ext_resource type="LabelSettings" uid="uid://dbx5jiyx4mikm" path="res://white_label.tres" id="5_sakkr"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_sakkr"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_u5vwc"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -61,7 +62,7 @@ size_flags_horizontal = 4
 [node name="Label" type="Label" parent="VBox/HBoxContainer"]
 layout_mode = 2
 text = "Time Based"
-label_settings = ExtResource("5_sakkr")
+label_settings = SubResource("LabelSettings_u5vwc")
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -83,7 +84,7 @@ flat = true
 [node name="Label2" type="Label" parent="VBox/HBoxContainer"]
 layout_mode = 2
 text = "Press Based"
-label_settings = ExtResource("5_sakkr")
+label_settings = SubResource("LabelSettings_u5vwc")
 horizontal_alignment = 1
 vertical_alignment = 1
 

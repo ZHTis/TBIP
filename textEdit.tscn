@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" uid="uid://b4l0fls52eauh" path="res://Scripts/text_edit.gd" id="1_ic7ti"]
 [ext_resource type="Texture2D" uid="uid://kals2uscydo8" path="res://图片1.svg" id="3_gm3lf"]
-[ext_resource type="LabelSettings" uid="uid://dbx5jiyx4mikm" path="res://white_label.tres" id="3_tj14f"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_u5vwc"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -34,18 +35,41 @@ scale = Vector2(1.07035, 1.16163)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "What should I call you?"
-label_settings = ExtResource("3_tj14f")
+label_settings = SubResource("LabelSettings_u5vwc")
 
 [node name="LineEdit" type="LineEdit" parent="VBox"]
 layout_mode = 2
 
-[node name="Label3" type="Label" parent="VBox"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBox"]
 layout_mode = 2
-text = "
-"
-label_settings = ExtResource("3_tj14f")
+alignment = 1
+
+[node name="Label4" type="Label" parent="VBox/HBoxContainer2"]
+layout_mode = 2
+text = "Auto Run"
+label_settings = SubResource("LabelSettings_u5vwc")
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="CheckButton2" type="CheckButton" parent="VBox/HBoxContainer2"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 4
+alignment = 1
+
+[node name="Label3" type="Label" parent="VBox/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Speed Up"
+label_settings = SubResource("LabelSettings_u5vwc")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CheckButton" type="CheckButton" parent="VBox/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
 
 [node name="btnBox" type="VBoxContainer" parent="."]
 layout_mode = 0
@@ -57,8 +81,10 @@ offset_bottom = 490.0
 [node name="Label" type="Label" parent="btnBox"]
 layout_mode = 2
 text = "
-Click here to continue"
-label_settings = ExtResource("3_tj14f")
+Click here to continue
+It may takes a while to generate all trials
+"
+label_settings = SubResource("LabelSettings_u5vwc")
 horizontal_alignment = 1
 
 [node name="Button" type="Button" parent="btnBox/Label"]

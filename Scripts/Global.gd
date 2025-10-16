@@ -12,6 +12,8 @@ var saved_flag: bool = false
 var filename_config
 var filename_data
 var config_text: Array[Dictionary] = [] # Configuration file content
+var speed_up_mode = false
+var auto_mode = false
 
 # Get the CSV file path based on the subject's name
 func gen_file_name() -> Array:

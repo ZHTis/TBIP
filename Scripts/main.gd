@@ -2,6 +2,7 @@ extends Control
 # Node reference
 @onready var label_1 = $VBox/Label
 @onready var label_2 = get_node("/root/Node2D/VBoxTop/Label2")
+@onready var label_3 = get_node("/root/Node2D/VBoxTop/Label3")
 @onready var hold_button = $MenuButton/HoldButton
 @onready var menuButton = $MenuButton
 @onready var opt_out_button = $MenuButton2/OptOutButton
@@ -24,7 +25,7 @@ var countdownTimer
 var _reusable_timer: Timer = null
 enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3}
 enum SampleType{POOL, SLICED}
-enum BtnType {HOLD, OPT_OUT, INVALID, WAIT, START}
+enum BtnType { START, OPT_OUT, INVALID, WAIT, HOLD}
 ##### Global variables used in main.gd######
 var total_reward_chance
 var unit_interval: float
@@ -77,12 +78,11 @@ var o_value_listRND
 # flat
 var flat_min
 var flat_max
-var speed_up_mode = false
-var auto_mode = false
+var speed_up_mode = Global.speed_up_mode
+var auto_mode = Global.auto_mode
 ##################
 
 func _ready():
-	speed_up_mode = true
 	get_tree().auto_accept_quit = false
 	# the countdown timer can be disabled by "set_countdownTimer(false)"
 	set_countdownTimer(false)
@@ -598,7 +598,7 @@ func prepare_init_trial():
 	reward_given_flag = false
 	start_time = 0.0
 	num_of_press = 0
-	Global.press_history.clear()
+	
 	# Initialization rewards
 	hold_reward = hold_vlaue_template[trial_count - 1]
 	opt_out_reward = opt_out_value_template[trial_count - 1]
@@ -719,15 +719,14 @@ func load_from_config(_blk,
 func save_data(_case):
 	match _case:
 		"json":
-			var press_=Global.press_history
 			var data = {
 				"blk": blk_flag,
 				#trial_count_in_blk
 				"trial_count": trial_count,
-				"reward_signal_given_timepoint": reward_given_timepoint,
-				"actual_reward_given_timepoint": actual_reward_given_timepoint,
-				"trial_start_time": trial_start_time,
-				"task_show_time": task_show_time,	
+				"reward_signal_given_timepoint(s)": reward_given_timepoint,
+				"actual_reward_given_timestamp": actual_reward_given_timepoint,
+				"trial_start_timestamp": trial_start_time,
+				"task_show_timestamp": task_show_time,	
 				"hold_reward": hold_reward,	
 				"opt_out_reward": opt_out_reward,	
 				"actual_reward_value": actual_reward_value,
@@ -744,7 +743,7 @@ func save_data(_case):
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 			file.store_line("Inference Type: %s" % Global.inference_type) 
 			file.store_line("# Inference Type: 0:time-based; 1:press-based\n") 
-			file.store_line("# Button type: 0:hold; 1:opt-out; 2:INVALID,3:sart to wait") # CSV列标题
+			file.store_line("# Button type: 0:press the green to start trial; 1:opt-out; 2:INVALID,3:WAIT(time-based),4:HOLD(press-based)") # CSV列标题
 			file.close()
 
 		"summary":
@@ -759,6 +758,7 @@ func reset_scene_to_start_button():
 		pass
 	else:
 		save_data("json")
+		Global.press_history.clear()
 	# Reset the scene
 	if trial_count >= 1:
 		original_states = hide_nodes(exclude_label_1, original_states)
@@ -769,13 +769,15 @@ func reset_scene_to_start_button():
 	_reusable_timer.wait_time = unit_interval
 	_reusable_timer.start()
 	await _reusable_timer.timeout
+	# Reset status
+	_label_refresh(Global.wealth, "init")
 	quitButton.disabled = false
 	startButton.disabled = false
 	vboxstart.visible = true
 	vboxbottom.visible = true
 	vboxtop.visible = true
 	# label status
-	trial_start_time = Time.get_ticks_msec()
+	trial_start_time = Time.get_ticks_msec()/1000.0
 
 
 func reset_to_start_next_trial():
@@ -783,9 +785,7 @@ func reset_to_start_next_trial():
 		prepare_init_trial()
 		restore_nodes(original_states_2)
 		restore_nodes(original_states)
-		task_show_time = Time.get_ticks_msec()
-		# Reset status
-		_label_refresh(Global.wealth, "init")
+		task_show_time = Time.get_ticks_msec()/1000.0
 
 	if trial_count > number_of_trials:
 		_label_refresh(Global.wealth, "finish")
@@ -805,13 +805,13 @@ func _input(event):
 			var btn_area = hold_button.get_global_rect()
 			var btn_area_2 = opt_out_button.get_global_rect()
 			var click_pos = event.position
-			var current_time = Time.get_ticks_msec()
+			var current_time = Time.get_ticks_msec()/1000.0
 		
 			if btn_area.has_point(click_pos) or btn_area_2.has_point(click_pos):
 				pass
 			else:
 				warning()
-				record_press_data(current_time, BtnType.INVALID, num_of_press)
+				record_press_data(current_time, BtnType.INVALID)
 			# change color of background:
 
 
@@ -827,11 +827,10 @@ func warning():
 	colorRect.visible = false
 	
 func _on_start_to_wait_button_pressed():
-	var current_time = Time.get_ticks_msec()
-	start_time = Time.get_ticks_msec() / 1000.0 # Always reset start_time on press
+	var start_wait_action_time = Time.get_ticks_msec()/ 1000.0 # Always reset start_time on press
+	record_press_data(start_wait_action_time,BtnType.WAIT)
 	if not has_been_pressed:
 		has_been_pressed = true
-		record_press_data(current_time,BtnType.WAIT, num_of_press)
 		infer_base_timer.one_shot = true # 单次触发模式
 		if reward_given_timepoint != null:
 			infer_base_timer.start(reward_given_timepoint)	
@@ -849,33 +848,33 @@ func _on_infer_baser_timer_timeout():
 # for press-based inference
 func _on_hold_button_pressed():
 	# Get the current timestamp (seconds)
-	var current_time = Time.get_ticks_msec()
+	var current_time = Time.get_ticks_msec()/1000.0
 	# Handle invalid behavior
 	if reward_given_timepoint == null:
 		num_of_press += 1
 		_label_refresh(Global.wealth, "pressing...")
-		record_press_data(current_time, BtnType.HOLD, num_of_press)
+		record_press_data(current_time, BtnType.HOLD)
 		
 	elif reward_given_flag == false:
 		num_of_press += 1
 		_label_refresh(Global.wealth, "pressing...")
 		if num_of_press < reward_given_timepoint:
-			record_press_data(current_time, BtnType.HOLD, num_of_press)
+			record_press_data(current_time, BtnType.HOLD)
 		if num_of_press == reward_given_timepoint:
 			_reward_given_actions(hold_reward)
 			print("hold-reward_given_flag  ", reward_given_flag)
 			_label_refresh(Global.wealth, "reward_given")
-			record_press_data(current_time, BtnType.HOLD, num_of_press)
+			record_press_data(current_time, BtnType.HOLD)
 			reset_scene_to_start_button()
 
 func _on_opt_out_button_pressed():
 	# 获取当前时间戳（秒）
-	var current_time = Time.get_ticks_msec()
+	var opt_out_action_time = Time.get_ticks_msec()/1000.0
 	if not infer_base_timer.is_stopped():
 		infer_base_timer.stop()
 	_reward_given_actions(opt_out_reward)
 	_label_refresh(Global.wealth, "opt_out")
-	record_press_data(current_time,BtnType.OPT_OUT, num_of_press)
+	record_press_data(opt_out_action_time,BtnType.OPT_OUT)
 	reset_scene_to_start_button()
 
 
@@ -884,19 +883,20 @@ func _on_quit_button_pressed():
 
 
 func _on_start_button_pressed():
-	record_press_data(Time.get_ticks_msec(), BtnType.START, num_of_press)
+	var start_trial_action_time = Time.get_ticks_msec()/1000.0
+	record_press_data(start_trial_action_time, BtnType.START)
 	reset_to_start_next_trial()
 
 func _reward_given_actions(reward_value):
 	Global.wealth += reward_value
-	actual_reward_given_timepoint = Time.get_ticks_msec()
+	actual_reward_given_timepoint = Time.get_ticks_msec()/1000.0
 	actual_reward_value = reward_value
 	reward_given_flag = true
 
 # 封装记录按键数据的函数
-func record_press_data(current_time, btn_type, _press_count) -> void:
+func record_press_data(current_time, btn_type) -> void:
 	# 创建PressData实例
-	var new_press = PressData.new(current_time, btn_type, _press_count)
+	var new_press = PressData.new(current_time, btn_type)
 	Global.press_history.append(new_press.to_array())
 	
 
@@ -948,8 +948,9 @@ func _label_refresh(wealth, case_text):
 		else:
 			opt_out_button_label.text = "+" + str(opt_out_reward)
 	
-	label_2.text = " Your Tokens:\n " + str(wealth)
-	var neutralcolor = label_startbtn.label_settings.font_color
+	label_2.text = " Your Tokens: " 
+	label_3.text = str(wealth)
+	var neutralcolor = Color("WHITE")
 	var positivecolor = Color("GREEN")
 	var negativecolor = Color("PLUM")
 	match case_text:
@@ -980,7 +981,7 @@ func _label_refresh(wealth, case_text):
 			#label_1.text = str(num_of_press)# need t add num_of_press to the func parameter
 			#label_1.label_settings.font_color = neutralcolor
 		"init":
-			label_1.label_settings.font_size = 36
+			label_1.label_settings.font_size = 27
 			label_1.label_settings.font_color = neutralcolor
 			if trial_count <= 3:
 				label_startbtn.text = "Press the Disk \n to Start"
