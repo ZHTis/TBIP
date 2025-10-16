@@ -116,7 +116,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(5,8) # case 5: from config file
+	generate_all_trials(5,1) # case 5: from config file
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -193,9 +193,9 @@ func generate_all_trials(case_, blk_num = 1):
 					)
 
 				if str(blk) == "blk1":
-					blk_(0.5, "random_chance", DistributionType.NORM_1ST_CUSTOM,"RANDOM", a[6], a[7])
+					blk_(0.5, "random_chance", DistributionType.NORM_1ST_CUSTOM,"A", a[6], a[7],SampleType.SLICED, -1)
 				else:
-					blk_(0.5, reward_chance_mode, DistributionType.NORM_AFTER_1ST,"RANDOM", a[6], a[7])
+					blk_(0.5, reward_chance_mode, DistributionType.NORM_AFTER_1ST,"B", a[6], a[7],SampleType.SLICED, 2)
 				i += 1
 			Global.write_sessionDesign_to_file(Global.filename_config)
 		5:
@@ -1015,11 +1015,6 @@ func _label_refresh(wealth, case_text):
 			vboxtop.visible = false
 		"finish":
 			label_1.text = "Finished!\n Close the window to exit"
-		"finish_warning":
-			label_1.text = "INVALID task design\n Close the window to exit\nRestart to setup a new task"
-		_:
-			pass
-			
 
 # Hide all child nodes and deactivate interactive elements
 func hide_nodes(_list, _original_states):
