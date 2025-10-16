@@ -80,6 +80,11 @@ var flat_min
 var flat_max
 var speed_up_mode = Global.speed_up_mode
 var auto_mode = Global.auto_mode
+#for agent
+var agent_action_timer = Timer.new()
+var agent_pos=Vector2.ZERO
+var agent_event
+var agent_potential_positions = [Vector2(300, 400), Vector2(700, 400), Vector2(1100, 400)]
 ##################
 
 func _ready():
@@ -87,9 +92,13 @@ func _ready():
 	# the countdown timer can be disabled by "set_countdownTimer(false)"
 	set_countdownTimer(false)
 	Global.init_write() # Initialize storage directory
+	print("auto_mode ", auto_mode)
+	if Global.auto_mode:
+		_agent() # Start the agent if auto_mode is enabled
 	exclude_label_1 = [vbox.name]
 	exclude_nodes_for_srart_menu = [vboxstart.name, vboxbottom.name, vboxtop.name]
 	init_task() # Initialize the task
+	
 
 # MARK: TASK
 func init_task(): # Initialize task, BLK design
@@ -107,7 +116,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(5,40) # case 5: from config file
+	generate_all_trials(5,8) # case 5: from config file
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -122,7 +131,6 @@ func init_task(): # Initialize task, BLK design
 	
 	save_data("head")
 	_label_refresh(Global.wealth, "init")
-		
 	prepare_init_trial()
 	
 
@@ -297,7 +305,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 		elif Global.inference_type == Global.InferenceFlagType.time_based:
 			mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
 			mu_rwd_timepoint = mu_rwd_timepoint / 10
-		std_rwd_timepoint = 0.75*mu_rwd_timepoint
+		std_rwd_timepoint = 0.25*mu_rwd_timepoint
 		std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
 		std_rwd_timepoint = std_rwd_timepoint / 10
 	else:
@@ -588,7 +596,7 @@ func prepare_init_trial():
 		hide_nodes(exclude_label_1, original_states)
 		trial_count += 1
 		return
-	if initialized_flag == false:
+	if initialized_flag == false:# the 1st trial
 		blk_flag = 1
 		reset_scene_to_start_button()
 		initialized_flag = true
@@ -743,6 +751,7 @@ func save_data(_case):
 
 		"head":
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
+			file.store_line("auto_mode: %s\nspeed_up_mode: %s" % [Global.auto_mode,Global.speed_up_mode])
 			file.store_line("Inference Type: %s" % Global.inference_type) 
 			file.store_line("# Inference Type: 0:time-based; 1:press-based\n") 
 			file.store_line("# Button type: 0:press the green to start trial; 1:opt-out; 2:INVALID,3:WAIT(time-based),4:HOLD(press-based)") # CSV列标题
@@ -1080,3 +1089,25 @@ func cleanup():
 	for child in get_children():
 		if child is CanvasItem:
 			child.queue_free() # 标记节点在下一帧释放
+
+func _agent():
+	add_child(agent_action_timer)
+	agent_action_timer.wait_time = 0.2  # 间隔 0.2 秒
+	agent_action_timer.autostart = true  # 自动启动
+	agent_action_timer.one_shot = false  # 循环触发
+	agent_action_timer.timeout.connect(_on_agent_action_timer_timeout)
+	agent_action_timer.start()
+
+func _on_agent_action_timer_timeout():
+	if vboxstart.visible == true:
+		startButton.emit_signal("pressed")
+	else:
+		var dice = MathUtils.generate_random(0, 1, "int")
+		if dice == 0:
+			hold_button.emit_signal("pressed")
+		else:
+			opt_out_button.emit_signal("pressed")
+	if trial_count > number_of_trials:
+		agent_action_timer.one_shot = true
+		agent_action_timer.stop()
+		agent_action_timer.queue_free()
