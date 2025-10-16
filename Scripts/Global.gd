@@ -5,68 +5,28 @@ var subject_name: String = "" # Name of subject
 var inference_type
 enum InferenceFlagType {time_based, press_based}
 var num_of_trials: int = 0 # Number of tests
-var press_history: Array[PressData] = [] # Key History
-
-
-
-var text1: String = ""  # 文本1
-var text2: String = ""  # 文本2
-var text3: String = ""  # 文本3
-var text4: String = ""  # 文本4
-var text5: String = ""  # 文本5
-var text6: String = ""  # 文本6
-var text7: String = ""  # 文本7
-var text8: String = ""  # 文本8
-var text9: String = ""  # 文本9
-var text10: String = ""  # 文本10
-var text11: String = ""  # 文本11
-var text12: String = ""  # 文本12
-var text13: String = ""  # 文本13
-var text14: String = ""  # 文本14
-var text15: String = ""  # 文本15
-var text16: String = ""  # 文本16
-var text17: String = ""  # 文本17
-var text18: String = ""  # 文本18
-var text19: String = ""  # 文本19
-var text20: String = ""  # 文本20
-var text21: String = ""  # 文本21
-var text22: String = ""  # 文本22
-var text23: String = ""  # 文本23
-var text24: String = ""  # 文本24
-var text25: String = ""  # 文本25
-var text26: String = ""  # 文本26
-var text27: String = ""  # 文本27
-var text28: String = ""  # 文本28
-var text29: String = ""  # 文本29
-var text30: String = ""  # 文本30
-var text31: String = ""  # 文本31
-var text32: String = ""  # 文本32
-var text33: String = ""  # 文本33
-var text34: String = ""  # 文本34
-var text35: String = ""  # 文本35
-var text36: String = ""  # 文本36
-
+var press_history: Array[Array] = [] # Key History
 var iftextEditHasAppear: bool = false
 var wealth: int = 0
 var saved_flag: bool = false
 var filename_config
 var filename_data
+var config_text: Array[Dictionary] = [] # Configuration file content
 
 # Get the CSV file path based on the subject's name
 func gen_file_name() -> Array:
 	var base_dir = "user://save_data"
-	
-	# 处理被试者名称（过滤特殊字符）
+	# Process subject names (filter special characters)
 	var safe_subject_name = subject_name.strip_edges()
 	if safe_subject_name=="":
 		safe_subject_name = "unknown_subject"
 	
-	# 移除文件名中不允许的特殊字符
+	# Remove special characters not allowed in file names
 	var invalid_chars = ["/", "\\", ":", "*", "?", "\"", "<", ">", "|"]
 	for any_char in invalid_chars:
 		safe_subject_name = safe_subject_name.replace(any_char, "_")
 	
-	# 生成带时间戳的文件名（CSV格式）
+	# Generate timestamped filenames (CSV format)
 	var timestamp = Time.get_datetime_string_from_system()
 	timestamp = timestamp.replace(":", "_")
 	var data_filename = "%s/%s_%s.txt" % [base_dir, safe_subject_name, timestamp]
@@ -75,7 +35,7 @@ func gen_file_name() -> Array:
 	return [data_filename, config_filename]
 
 
-# 初始化存储目录
+#Initialize storage directory
 func init_write() -> void:
 	var base_dir = "user://save_data"
 	var dir = DirAccess.open(base_dir.get_base_dir())
@@ -85,7 +45,7 @@ func init_write() -> void:
 		print("mistake: ", DirAccess.get_open_error())
 		return
 	
-	# 创建目录（包括任何必要的父目录）
+	# Create the directory (including any necessary parent directories)
 	var result = dir.make_dir_recursive(base_dir)
 	if result == OK:
 		print("Storage directory is ready: ", base_dir)
@@ -94,7 +54,7 @@ func init_write() -> void:
 		filename_config = files[1]
 		filename_data = files[0]
 		for filename in files:
-		# 尝试打开文件以确认路径有效，但立即关闭
+		# Tried opening the file to confirm the path was valid, but it closed immediately
 			var file = FileAccess.open(filename, FileAccess.WRITE_READ)
 			if file:
 				file.close()  # 确保关闭文件句柄
@@ -106,7 +66,7 @@ func init_write() -> void:
 		print("Error code: ", result)
 
 
-# 将数据写入文件（头部说明 + CSV格式数据）
+# Write data to file (header description + CSV format data)
 func write_sessionDesign_to_file(data_filename) -> void:
 	var user_path = ProjectSettings.globalize_path("user://")
 	print("File path: ", user_path,"\t",data_filename)
@@ -118,10 +78,14 @@ func write_sessionDesign_to_file(data_filename) -> void:
 		return
 	file.store_line("Subject name: %s" % subject_name)
 	file.store_line("Number of tests: %d" % num_of_trials)
-	file.store_line("Key History: %d" % press_history.size())
-	file.store_line("tokens: %d" % wealth)
-	for i in range(1,37):
-		var text_value = get("text" + str(i))
-		file.store_line("blk%s: %s" % [str(i), text_value])
-	file.store_line("# ------------------------")
+	file.store_line("\n")
+	for i in range(config_text.size()):
+		var json_string
+		for key in config_text[i].keys():
+			if key !="template_t_h_o" and key!="reward_signal_timepoint":
+				json_string = JSON.stringify(config_text[i].get(key)," ", false, false)
+			else:
+				json_string = JSON.stringify(config_text[i].get(key),"", false, false)
+			file.store_line(key + ": " + json_string)
+		file.store_line("# ------------------------")
 	file.close()
