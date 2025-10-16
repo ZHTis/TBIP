@@ -605,6 +605,8 @@ func prepare_init_trial():
 	if speed_up_mode == true:
 		if reward_given_timepoint_template[trial_count - 1] != null:
 			reward_given_timepoint = reward_given_timepoint_template[trial_count - 1] /10
+		else:
+			reward_given_timepoint = reward_given_timepoint_template[trial_count - 1]
 	else:
 		reward_given_timepoint = reward_given_timepoint_template[trial_count - 1]
 	print("trial", trial_count, "\nreward: ", hold_reward, "\t", opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
