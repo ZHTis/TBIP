@@ -85,6 +85,7 @@ var agent_action_timer = Timer.new()
 var agent_pos=Vector2.ZERO
 var agent_event
 var agent_potential_positions = [Vector2(300, 400), Vector2(700, 400), Vector2(1100, 400)]
+var task_on
 ##################
 
 func _ready():
@@ -116,7 +117,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(5,1) # case 5: from config file
+	generate_all_trials(5,20) # case 5: from config file
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -208,15 +209,15 @@ func generate_all_trials(case_, blk_num = 1):
 				blk_flag ="blk%s"%i
 				print("###### blk%s"%i)
 				if i == 1:	
-					blk_(0.5, "full", DistributionType.SET1, "A", 10,10, SampleType.SLICED, -1)
+					blk_(0.5, "full", DistributionType.SET1, "A", 100,100, SampleType.SLICED, -1)
 				elif i == 2:
-					blk_(0.5, "full", DistributionType.SET1,"B", 10,10, SampleType.SLICED, 2)
+					blk_(0.5, "full", DistributionType.SET1,"B", 1000,1000,SampleType.SLICED, 2)
 				if i > 2 and i<=6:
 					total_reward_chance_structure = [0.8]
-					blk_(0.5, "pointed", DistributionType.SET1, "B", 40,40, SampleType.SLICED, 2)
+					blk_(0.5, "pointed", DistributionType.SET1, "B", 400,400, SampleType.SLICED, 2)
 				if i > 6 and i<=blk_num:
 					total_reward_chance_structure = [0.6]
-					blk_(0.5, "pointed", DistributionType.SET1,"B", 40,40, SampleType.SLICED, 2)
+					blk_(0.5, "pointed", DistributionType.SET1,"B", 400,400, SampleType.SLICED, 2)
 					
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
@@ -385,7 +386,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 				temp.append_array(create_pool.slice(i * float(seed_for_slice) / _slice_size, float((i + 1) * seed_for_slice) / _slice_size)) 
 				temp.shuffle()
 				pool_from_pool[i] = temp
-				print("pool_from_pool for vincentization bin%s: "%i,pool_from_pool[i].slice(0, n),"n: ", n)
+				#print("pool_from_pool for vincentization bin%s: "%i,pool_from_pool[i].slice(0, n),"n: ", n)
 				reward_signal_given_timepoint_template_this_blk.append_array(pool_from_pool[i].slice(0, n))
 
 			var n_null = roundi(number_of_trials_this_blk * (1 - total_reward_chance))
@@ -395,7 +396,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 				reward_signal_given_timepoint_template_this_blk[j] = null
 			reward_signal_given_timepoint_template_this_blk.shuffle()
 			reward_given_timepoint_template.append_array(reward_signal_given_timepoint_template_this_blk)
-			print("reward_signal_given_timepoint_template_this_blk: ", reward_signal_given_timepoint_template_this_blk)
+			#print("reward_signal_given_timepoint_template_this_blk: ", reward_signal_given_timepoint_template_this_blk)
 		
 
 	# how much to give as reward
@@ -572,7 +573,7 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 				
 			exception_idx.shuffle()
 			exception_idx = exception_idx.slice(0, 2*num_exception)	
-			print("exception_idx: ",exception_idx)
+			#print("exception_idx: ",exception_idx)
 			for i_h in range(num_exception):
 				var idx = exception_idx[i_h]
 				hold_vlaue_this_blk[idx] = _h_value * 5
@@ -765,6 +766,7 @@ func save_data(_case):
 
 
 func reset_scene_to_start_button():
+	task_on = false
 	if trial_count <1:
 		pass
 	else:
@@ -797,7 +799,7 @@ func reset_to_start_next_trial():
 		restore_nodes(original_states_2)
 		restore_nodes(original_states)
 		task_show_time = Time.get_ticks_msec()/1000.0
-
+		task_on = true
 	if trial_count > number_of_trials:
 		_label_refresh(Global.wealth, "finish")
 
@@ -1087,7 +1089,7 @@ func cleanup():
 
 func _agent():
 	add_child(agent_action_timer)
-	agent_action_timer.wait_time = 0.2  # 间隔 0.2 秒
+	agent_action_timer.wait_time = 0.2  # 间隔 0.05 秒
 	agent_action_timer.autostart = true  # 自动启动
 	agent_action_timer.one_shot = false  # 循环触发
 	agent_action_timer.timeout.connect(_on_agent_action_timer_timeout)
@@ -1096,13 +1098,12 @@ func _agent():
 func _on_agent_action_timer_timeout():
 	if vboxstart.visible == true:
 		startButton.emit_signal("pressed")
-	else:
+	if task_on == true:
 		var dice = MathUtils.generate_random(0, 1, "int")
 		if dice == 0:
 			hold_button.emit_signal("pressed")
 		else:
 			opt_out_button.emit_signal("pressed")
 	if trial_count > number_of_trials:
-		agent_action_timer.one_shot = true
-		agent_action_timer.stop()
 		agent_action_timer.queue_free()
+		
