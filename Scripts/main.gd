@@ -355,7 +355,10 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 			var create_pool = []
 			var seed_for_slice 
 			if speed_up_mode:
-				seed_for_slice = 100
+				if number_of_trials_this_blk < 100:
+					seed_for_slice = 100
+				else:
+					seed_for_slice = number_of_trials_this_blk+10
 			else:
 				seed_for_slice = 100000
 			for i in range(1, seed_for_slice):
