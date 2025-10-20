@@ -81,7 +81,7 @@ func _save():
 
 func _save_and_start():
 	_save()
-	get_tree().change_scene_to_file("res://main.tscn")
+	get_tree().change_scene_to_file("res://textEdit.tscn")
 
 
 func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
@@ -95,6 +95,8 @@ func input_cell_to_config(input_cell_name,_input_cell,_blk_para):
 				_blk_para.change = "distr"
 			elif _input_cell.selected == 2:
 				_blk_para.change = "random"
+			elif _input_cell.selected == 3:
+				_blk_para.change = "chance(allow repeat)"
 		"blkPara_distr_type":
 			if  _input_cell.selected == 0:
 				_blk_para.distr_type = "NROM"

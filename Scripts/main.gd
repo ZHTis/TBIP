@@ -28,6 +28,7 @@ enum SampleType{POOL, SLICED}
 enum BtnType { START, OPT_OUT, INVALID, WAIT, HOLD}
 ##### Global variables used in main.gd######
 var total_reward_chance
+var previous_total_reward_chance
 var unit_interval: float
 var mu_rwd_timepoint # mu, std results are generated from random fuctions
 var std_rwd_timepoint
@@ -71,8 +72,6 @@ var opt_out_value_template
 var total_reward_chance_structure
 var mu_rwd_timepoint_change_list
 var variance_rwd_timepoint_2mu_list
-var mu1st
-var std1st
 var h_value_listRND # case "RANDOM" options
 var o_value_listRND
 # flat
@@ -117,7 +116,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(5,20) # case 5: from config file
+	generate_all_trials(4,20) # case 5: from config file
 
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
@@ -146,20 +145,19 @@ func generate_all_trials(case_, blk_num = 1):
 			if configuration.load(path) != 0:
 				return
 			blk_num = configuration.get_sections().size()
-	
+		
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
 			opt_out_value_template = []
 			var reward_chance_mode
 
 			var i = 1
+			var a 
 			for blk in configuration.get_sections():
-				print("\nconfiguration.get_value(%s, \"blkPara_chance\")"%blk, configuration.get_value(blk, "blkPara_chance"))
-	
-				print("blk\t", blk, "\tglobal.text_i =\t", i)
 				blk_flag ="blk%s"%i
-				var a = load_from_config(blk,
-					configuration.get_value(blk, "blkPara_change_distr_or_chance"),
+				print("section: ",blk)
+				a = load_from_config(blk,
+					configuration.get_value(blk, "blkPara_change_distr_or_chance","none"),
 					configuration.get_value(blk, "blkPara_distr_type"),
 					configuration.get_value(blk, "blkPara_distr_para_1"),
 					configuration.get_value(blk, "blkPara_distr_para_2"),
@@ -168,7 +166,6 @@ func generate_all_trials(case_, blk_num = 1):
 					configuration.get_value(blk, "blkPara_value_list2"),
 					configuration.get_value(blk, "blkPara_tr_num_num_range")
 				)
-
 				# the structure of  result is: 
 					#0 [ _reward_chance_mode, 
 					#1 _total_reward_chance_structure,
@@ -196,7 +193,7 @@ func generate_all_trials(case_, blk_num = 1):
 				if str(blk) == "blk1":
 					blk_(0.5, "random_chance", DistributionType.NORM_1ST_CUSTOM,"A", a[6], a[7],SampleType.SLICED, -1)
 				else:
-					blk_(0.5, reward_chance_mode, DistributionType.NORM_AFTER_1ST,"B", a[6], a[7],SampleType.SLICED, 2)
+					blk_(0.5, reward_chance_mode, DistributionType.SET2,"B", a[6], a[7],SampleType.SLICED, 2)
 				i += 1
 			Global.write_sessionDesign_to_file(Global.filename_config)
 		5:
@@ -204,20 +201,24 @@ func generate_all_trials(case_, blk_num = 1):
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
 			opt_out_value_template = []
-
+			
 			for i in range(1, blk_num + 1):
 				blk_flag ="blk%s"%i
+				
 				print("###### blk%s"%i)
-				if i == 1:	
-					blk_(0.5, "full", DistributionType.SET1, "A", 100,100, SampleType.SLICED, -1)
-				elif i == 2:
-					blk_(0.5, "full", DistributionType.SET1,"B", 1000,1000,SampleType.SLICED, 2)
-				if i > 2 and i<=6:
+				if i <= 2:	
+					blk_(0.5, "full", DistributionType.SET2, "A", 5,5, SampleType.SLICED, 5)
+		
+				if i > 2 and i<=3:
+					total_reward_chance_structure = [1]
+					blk_(0.5, "chance_allow_repeat", DistributionType.SET2, "B", 10,10, SampleType.SLICED, 2)
+				var blk_switch = 3 +3
+				if i > 3 and i<=blk_switch:
 					total_reward_chance_structure = [0.8]
-					blk_(0.5, "pointed", DistributionType.SET1, "B", 400,400, SampleType.SLICED, 2)
-				if i > 6 and i<=blk_num:
+					blk_(0.5, "chance_allow_repeat", DistributionType.SET2, "B", 40,40, SampleType.SLICED, 2)
+				if i > blk_switch and i<=blk_num:
 					total_reward_chance_structure = [0.6]
-					blk_(0.5, "pointed", DistributionType.SET1,"B", 400,400, SampleType.SLICED, 2)
+					blk_(0.5, "chance_allow_repeat", DistributionType.SET2,"B", 40,40, SampleType.SLICED, 2)
 					
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
@@ -246,7 +247,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 
 	print("cumulated number_of_trials: ", number_of_trials)
 	Global.num_of_trials = number_of_trials
-	var previous_total_reward_chance
+	
 	if _previous_total_reward_chance == 0:
 		previous_total_reward_chance = total_reward_chance
 	else:
@@ -268,7 +269,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 					break
 			total_reward_chance = total_reward_chance_structure[_dice] # set total hold_reward chance
 			print("total_reward_chance: ", total_reward_chance)
-		"pointed": #can be the same as previous
+		"chance_allow_repeat": #can be the same as previous
 			var _dice
 			var _dicelen = total_reward_chance_structure.size()
 			if _dicelen == 1:
@@ -281,37 +282,17 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 	# from Block N to Block N+1, we either change
 	# ONLY the distribution, 
 	# or ONLY the hold_reward reliability (%)
-	if _distribution_type == DistributionType.NORM_1ST or _distribution_type == DistributionType.NORM_1ST_CUSTOM:
-		if Global.inference_type == Global.InferenceFlagType.press_based:
-			blk_distribution(_distribution_type)
-		elif Global.inference_type == Global.InferenceFlagType.time_based:
-			#MARK: 1st full
-			blk_distribution(_distribution_type,0,0,0,mu1st,std1st)
-		print("mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
-	elif _distribution_type == DistributionType.NORM_AFTER_1ST and previous_total_reward_chance == total_reward_chance:
-		if mu_rwd_timepoint == null:
-			blk_distribution(_distribution_type, 0, 0, _previous_mu)
-		else:
-			blk_distribution(_distribution_type)
-		print("change distribution. mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
-	elif _distribution_type == DistributionType.NORM_AFTER_1ST and previous_total_reward_chance != total_reward_chance:
-		print("change total_reward_chance: ", total_reward_chance)
-		if mu_rwd_timepoint == null:
+	
+	if _distribution_type == DistributionType.NORM_AFTER_1ST and mu_rwd_timepoint == null:
+		if previous_total_reward_chance == total_reward_chance:
+			blk_distribution(_distribution_type,0,0,_previous_mu)
+			print("change distribution. mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
+		elif previous_total_reward_chance != total_reward_chance:
+			print("change total_reward_chance: ", total_reward_chance)
 			mu_rwd_timepoint = _previous_mu
 			std_rwd_timepoint = _previous_std
-	elif _distribution_type == DistributionType.SET1:
-		mu_rwd_timepoint = 3
-		if Global.inference_type == Global.InferenceFlagType.press_based:
-			mu_rwd_timepoint = roundi(mu_rwd_timepoint)
-		elif Global.inference_type == Global.InferenceFlagType.time_based:
-			mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
-			mu_rwd_timepoint = mu_rwd_timepoint / 10
-		std_rwd_timepoint = 0.25*mu_rwd_timepoint
-		std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
-		std_rwd_timepoint = std_rwd_timepoint / 10
 	else:
-		print("error: the case is not defined")
-
+		blk_distribution(_distribution_type)
 
 	# based on the given distribution parameters,
 	# generate reward_given_timepoint template, which serves as the the "right" answer for trials
@@ -329,7 +310,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 						if Global.inference_type == Global.InferenceFlagType.press_based:
 							timepoint = MathUtils.generate_random(flat_min, flat_max, "int")
 					else:
-						if mu_rwd_timepoint <= 0:# responded to blk_distribution when ERROR reported
+						if mu_rwd_timepoint <= 0:# responded to blk_distribution when Err reported
 							get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 						else:
 							while true:  #MARK:  Floor&Ceiling of timepoint
@@ -423,20 +404,20 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 				opt_out_value_template.append(random_o) # Opt-out hold_reward
 				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
 		"A":
-			var a = setValues(number_of_trials_this_blk,5,-1,"none")
-			hold_reward_template_this_blk = a[0]
-			opt_out_reward_template_this_blk = a[1]
+			var ao = setValues(number_of_trials_this_blk,5,-1,"none")
+			hold_reward_template_this_blk = ao[0]
+			opt_out_reward_template_this_blk = ao[1]
 			hold_vlaue_template.append_array(hold_reward_template_this_blk)
 			opt_out_value_template.append_array(opt_out_reward_template_this_blk)
 		"B":
-			var a = setValues(number_of_trials_this_blk,5,-1,"h5o5_ur",reward_signal_given_timepoint_template_this_blk)
-			hold_reward_template_this_blk = a[0]
-			opt_out_reward_template_this_blk = a[1]
+			var ao = setValues(number_of_trials_this_blk,5,-1,"h5o5_ur",reward_signal_given_timepoint_template_this_blk)
+			hold_reward_template_this_blk = ao[0]
+			opt_out_reward_template_this_blk = ao[1]
 			hold_vlaue_template.append_array(hold_reward_template_this_blk)
 			opt_out_value_template.append_array(opt_out_reward_template_this_blk)
 			
-	
 # save the configuration with data	
+	print("%s generated.\n"%blk_flag)
 	var template=[]
 	var trial_setting=[]
 	for i in range(number_of_trials_this_blk):
@@ -456,20 +437,37 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 		"template_t_h_o": template
 	}
 	Global.config_text.append(text)
-	
 
+
+func set123(_mu, _std_mu):
+	mu_rwd_timepoint = _mu
+	if Global.inference_type == Global.InferenceFlagType.press_based:
+		mu_rwd_timepoint = roundi(mu_rwd_timepoint)
+	elif Global.inference_type == Global.InferenceFlagType.time_based:
+		mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
+		mu_rwd_timepoint = mu_rwd_timepoint / 10
+	std_rwd_timepoint = _std_mu * mu_rwd_timepoint
+	std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
+	std_rwd_timepoint = std_rwd_timepoint / 10
+	
 func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0, 
 	_1st_mu_rwd_timepoint =20, _1st_std_rwd_timepoint=10):
-	if _previous_mu == 0:
-		pass
-	else:
+
+	if _previous_mu != 0:
 		# Specify a previous distribution parameter
 		mu_rwd_timepoint = _previous_mu
 	
 	match _distribution_type:
+		DistributionType.SET1:
+			set123(3, 0.25)
+		DistributionType.SET2:
+			set123(4, 0.25)
+		DistributionType.SET3:
+			set123(5, 0.2)
 		DistributionType.NORM_AFTER_1ST: # Normal distribution
 			var new_mu_rwd_timepoint
 			var new_std_rwd_timepoint
+		
 			while true: # Avoid same as previous
 				var dicelen = mu_rwd_timepoint_change_list.size()
 				while true:
@@ -489,7 +487,7 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 					dicelen = mu_rwd_timepoint_change_list.size()
 					print("REMOVED a dice face",mu_rwd_timepoint_change_list)
 					if dicelen == 0:	
-						print("ERROR!!!!: invalid distribution parameters")
+						print("Err!!!!: invalid distribution parameters")
 						mu_rwd_timepoint=0
 						std_rwd_timepoint=0
 						return
@@ -645,7 +643,7 @@ func load_from_config(_blk,
 	var _h_value_list_ = []
 	var _tr_num_n_range
 	if _blkPara_value_list == "":
-		print('ERROR: %s "blkPara_value_list" not defined'%_blk)
+		print('Err: %s "blkPara_value_list" not defined'%_blk)
 		return
 	else:
 		var f_h_value_list_ = Utils.parse_numeric_array(_blkPara_value_list)
@@ -654,7 +652,7 @@ func load_from_config(_blk,
 			_h_value_list_.append(intitem)
 
 	if _blkPara_value_list_2 == "":
-		print('ERROR: %s "blkPara_value_list_2" not defined'%_blk)
+		print('Err: %s "blkPara_value_list_2" not defined'%_blk)
 		return
 	else:
 		var f_o_value_list_ = Utils.parse_numeric_array(_blkPara_value_list_2)
@@ -663,18 +661,18 @@ func load_from_config(_blk,
 			_o_value_list_.append(intitem)
 
 	if _blkPara_tr_num_num_range == "":
-		print('ERROR: %s "blkPara_tr_num_num_range" not defined'%_blk)
+		print('Err: %s "blkPara_tr_num_num_range" not defined'%_blk)
 		return
 	else:
 		_tr_num_n_range = Utils.parse_numeric_array(_blkPara_tr_num_num_range)
 		if _tr_num_n_range.size() != 2:
-			print('ERROR: %s "blkPara_tr_num_num_range" format error'%_blk)
+			print('Err: %s "blkPara_tr_num_num_range" format error'%_blk)
 			return
 
 
 	var _total_reward_chance_structure
 	if _blkPara_chance == "":
-		print('ERROR: %s "blkPara_chance" not defined'%_blk)
+		print('Err: %s "blkPara_chance" not defined'%_blk)
 		return
 	else:
 		_total_reward_chance_structure = Utils.parse_numeric_array(_blkPara_chance)
@@ -683,16 +681,16 @@ func load_from_config(_blk,
 	var _variance_rwd_timepoint_2mu_list
 	match _blkPara_distr_type:
 		-1:
-			print("ERROR: %s 'distr_type' not defined"%_blk)
+			print("Err: %s 'distr_type' not defined"%_blk)
 			return
 		1:
 			pass
 		0:
 			if _blkPara_distr_para_1 == "":
-				print("ERROR: %s 'distr_para_1' not defined"%_blk)
+				print("Err: %s 'distr_para_1' not defined"%_blk)
 				return
 			if _blkPara_distr_para_2 == "":
-				print("ERROR: %s 'distr_para_2' not defined"%_blk)
+				print("Err: %s 'distr_para_2' not defined"%_blk)
 				return
 			else:
 				_mu_rwd_timepoint_change_list = Utils.parse_numeric_array(_blkPara_distr_para_1)
@@ -700,10 +698,8 @@ func load_from_config(_blk,
 
 	var _reward_chance_mode
 	match _blkPara_change_distr_or_chance:
-		"":
-			if _blk != "blk1":
-				print('ERROR: %s "blkPara_change_distr_or_chance" not defined'%_blk)
-				return
+		3:
+			_reward_chance_mode = "chance_allow_repeat"
 		2:
 			var dice_ = MathUtils.generate_random(0, 1, "int")
 			if dice_ == 0:
@@ -714,19 +710,17 @@ func load_from_config(_blk,
 			_reward_chance_mode = "random_distribution"
 		0:
 			_reward_chance_mode = "random_chance"
-		-1:
-			print("ERROR: %s 'change' not defined"%_blk)
-			return
+	
 
 	var result = [_reward_chance_mode,
-	_total_reward_chance_structure,
-	_mu_rwd_timepoint_change_list,
-	_variance_rwd_timepoint_2mu_list,
-	_h_value_list_,
-	_o_value_list_,
-	_tr_num_n_range[0],
-	_tr_num_n_range[1]
-		]
+				_total_reward_chance_structure,
+				_mu_rwd_timepoint_change_list,
+				_variance_rwd_timepoint_2mu_list,
+				_h_value_list_,
+				_o_value_list_,
+				_tr_num_n_range[0],
+				_tr_num_n_range[1]
+				]
 	return result
 
 #MARK: Save data

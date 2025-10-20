@@ -257,13 +257,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK2/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK2"]
 layout_mode = 2
@@ -374,13 +376,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK3/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK3"]
 layout_mode = 2
@@ -491,13 +495,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK4/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK4"]
 layout_mode = 2
@@ -608,13 +614,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK5/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK5"]
 layout_mode = 2
@@ -725,13 +733,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK6/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK6"]
 layout_mode = 2
@@ -842,13 +852,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK7/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK7"]
 layout_mode = 2
@@ -959,13 +971,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK8/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK8"]
 layout_mode = 2
@@ -1076,13 +1090,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK9/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK9"]
 layout_mode = 2
@@ -1193,13 +1209,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK10/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK10"]
 layout_mode = 2
@@ -1310,13 +1328,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK11/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK11"]
 layout_mode = 2
@@ -1427,13 +1447,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK12/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK12"]
 layout_mode = 2
@@ -1544,13 +1566,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK13/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK13"]
 layout_mode = 2
@@ -1661,13 +1685,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK14/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK14"]
 layout_mode = 2
@@ -1778,13 +1804,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK15/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK15"]
 layout_mode = 2
@@ -1895,13 +1923,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK16/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK16"]
 layout_mode = 2
@@ -2012,13 +2042,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK17/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK17"]
 layout_mode = 2
@@ -2129,13 +2161,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK18/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK18"]
 layout_mode = 2
@@ -2246,13 +2280,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK19/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK19"]
 layout_mode = 2
@@ -2363,13 +2399,15 @@ horizontal_alignment = 1
 
 [node name="OptionButton" type="OptionButton" parent="HBox/paraContainer/HBox_BLK20/blkPara_change_distr_or_chance"]
 layout_mode = 2
-item_count = 3
+item_count = 4
 popup/item_0/text = "chance"
 popup/item_0/id = 0
 popup/item_1/text = "distribution"
 popup/item_1/id = 1
 popup/item_2/text = "random"
 popup/item_2/id = 2
+popup/item_3/text = "chance(allow repeat)"
+popup/item_3/id = 3
 
 [node name="blkPara_chance" type="VBoxContainer" parent="HBox/paraContainer/HBox_BLK20"]
 layout_mode = 2

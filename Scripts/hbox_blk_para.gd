@@ -51,3 +51,7 @@ func  label_change_refresh(_index):
 			for i in exclude_list:
 				i.visible = true
 			vbox4.visible = true
+		3:#chance(allow repeat)
+			vbox4.visible = true
+			for i in exclude_list:
+				i.visible = false
