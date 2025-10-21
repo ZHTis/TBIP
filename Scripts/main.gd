@@ -32,9 +32,9 @@ var previous_total_reward_chance
 var unit_interval: float
 var mu_rwd_timepoint # mu, std results are generated from random fuctions
 var std_rwd_timepoint
-var number_of_trials
+var number_of_trials = 0
 var if_opt_left
-var trial_count
+var trial_count = 0
 # var only used in time based
 var is_holding : bool = false
 var has_been_pressed : bool = false
@@ -97,17 +97,19 @@ func _ready():
 		_agent() # Start the agent if auto_mode is enabled
 	exclude_label_1 = [vbox.name]
 	exclude_nodes_for_srart_menu = [vboxstart.name, vboxbottom.name, vboxtop.name]
-	init_task() # Initialize the task
-	
-
-# MARK: TASK
-func init_task(): # Initialize task, BLK design
 	if_opt_left = MathUtils.generate_random(0, 1, "float")
 	Global.press_history = [] # Clear new_press history
 	Global.wealth = 0 # Initialize Global.wealth
 	trial_count = 0
 	number_of_trials = 0
 	initialized_flag = false
+	generate_all_trials(5,20) # case 5: from config file
+	init_task() # Initialize the task
+	
+
+# MARK: TASK
+func init_task(): # Initialize task, BLK design
+	
 	# Start 1st Trial
 	_reusable_timer = Timer.new()
 	_reusable_timer.one_shot = true # 单次触发模式
@@ -116,8 +118,7 @@ func init_task(): # Initialize task, BLK design
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
 	# MARK: Generate a block of trials
-	generate_all_trials(4,20) # case 5: from config file
-
+	
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
 		opt_out_button.pressed.connect(_on_opt_out_button_pressed)
@@ -383,7 +384,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 			#print("reward_signal_given_timepoint_template_this_blk: ", reward_signal_given_timepoint_template_this_blk)
 		
 
-	# how much to give as reward
+	# MARK: Reward Value
 	match _value_type:
 		"RANDOM":
 			# h_value_list,o_value_list should be predefined 
@@ -553,7 +554,7 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 			rwd_idx = rwd_idx.slice(0, 2*each_exception_rwd)
 			for i in range(each_exception_urwd):
 				var idx = urwd_idx[i]
-				opt_out_value_this_blk[idx] = _o_value * 5
+				opt_out_value_this_blk[idx] = _o_value * 25
 			for i in range(each_exception_urwd, len(urwd_idx)):
 				var idx = urwd_idx[i]
 				hold_vlaue_this_blk[idx] = _h_value * 5
@@ -562,7 +563,7 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 				hold_vlaue_this_blk[idx] = _h_value * 5
 			for i in range(each_exception_rwd, len(rwd_idx)):
 				var idx = rwd_idx[i]
-				opt_out_value_this_blk[idx] = _o_value * 5
+				opt_out_value_this_blk[idx] = _o_value * 25
 			
 		"h5o5":
 			var num_exception = 0.25*0.5*_number_of_trials_this_blk
@@ -592,8 +593,8 @@ func prepare_init_trial():
 			duration = 0.0
 			reward_given_flag = false
 			# Initialization rewards
-			hold_reward = 10
-			opt_out_reward = 2
+			hold_reward = hold_vlaue_template[trial_count]
+			opt_out_reward = opt_out_value_template[trial_count]
 
 	if trial_count >= number_of_trials:
 		hide_nodes(exclude_label_1, original_states)
@@ -604,22 +605,20 @@ func prepare_init_trial():
 		reset_scene_to_start_button()
 		initialized_flag = true
 		return
+	_label_refresh(Global.wealth, "pressing...")
 	trial_count += 1
 	# Initialize the test status
 	reward_given_flag = false
 	start_time = 0.0
 	num_of_press = 0
-	
-	# Initialization rewards
-	hold_reward = hold_vlaue_template[trial_count - 1]
-	opt_out_reward = opt_out_value_template[trial_count - 1]
+
 	if speed_up_mode == true:
-		if reward_given_timepoint_template[trial_count - 1] != null:
-			reward_given_timepoint = reward_given_timepoint_template[trial_count - 1] /10
+		if reward_given_timepoint_template[trial_count-1] != null:
+			reward_given_timepoint = reward_given_timepoint_template[trial_count-1] /10
 		else:
-			reward_given_timepoint = reward_given_timepoint_template[trial_count - 1]
+			reward_given_timepoint = reward_given_timepoint_template[trial_count-1]
 	else:
-		reward_given_timepoint = reward_given_timepoint_template[trial_count - 1]
+		reward_given_timepoint = reward_given_timepoint_template[trial_count-1]
 	print("trial", trial_count, "\nreward: ", hold_reward, "\t", opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
 	if_opt_left = MathUtils.generate_random(0, 1, "float")
 	for i in range(len(tr_num_in_blk_list)):
