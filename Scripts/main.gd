@@ -567,7 +567,7 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 		"h5o5":
 			var num_exception = 0.25*0.5*_number_of_trials_this_blk
 			num_exception = roundi(num_exception)
-			if num_exception == 0:
+			if num_exception == 0: 
 				num_exception = 1 # at least 1 exception
 			var exception_idx = []
 			for i in range(_number_of_trials_this_blk):
