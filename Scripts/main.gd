@@ -191,9 +191,9 @@ func generate_all_trials(case_, blk_num = 1):
 					)
 
 				if str(blk) == "blk1":
-					blk_(0.5, "random_chance", DistributionType.NORM_1ST_CUSTOM,"A", a[6], a[7],SampleType.SLICED, -1)
+					blk_(0.5, "random_chance", DistributionType.NORM_1ST_CUSTOM,"A", a[6], a[7],SampleType.SLICED, 5)
 				else:
-					blk_(0.5, reward_chance_mode, DistributionType.SET2,"B", a[6], a[7],SampleType.SLICED, 2)
+					blk_(0.5, reward_chance_mode, DistributionType.NORM_1ST_CUSTOM,"B", a[6], a[7],SampleType.SLICED, 2)
 				i += 1
 			Global.write_sessionDesign_to_file(Global.filename_config)
 		5:
@@ -436,6 +436,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 		"std_rwd_timepoint": std_rwd_timepoint,
 		"template_t_h_o": template
 	}
+	 
 	Global.config_text.append(text)
 
 
