@@ -106,9 +106,9 @@ func _ready():
 	trial_count = 0
 	initialized_flag = false
 	number_of_trials = 0
-	blk_switch1 = MathUtils.generate_random(4, 6, "int")
-	blk_switch2 = MathUtils.generate_random(4, 6, "int")
-	blk_nums = blk_switch2 + blk_switch2 + 3
+	blk_switch1 = MathUtils.generate_random(4, 7, "int")
+	blk_switch2 = MathUtils.generate_random(4, 7, "int")
+	blk_nums = blk_switch2 + blk_switch2 + 2
 	generate_all_trials(5,blk_nums) # case 5: from config file
 	init_task() # Initialize the task
 	
@@ -210,7 +210,7 @@ func generate_all_trials(case_, blk_num = 1):
 			
 			for i in range(1, blk_num + 1):
 				blk_flag ="blk%s"%i
-				print("blk_switch1, blk_switch2 ",blk_switch1, "  ",blk_switch2)
+				print("blk_switch1, blk_switch2 ",blk_switch1, blk_switch2)
 				print("###### blk%s"%i)
 				if i <= 2:	
 					blk_(0.5, "full", DistributionType.SET2, "A", 5,5, SampleType.SLICED, 5)
@@ -221,8 +221,8 @@ func generate_all_trials(case_, blk_num = 1):
 					total_reward_chance_structure = [0.8]
 					blk_(0.5, "chance_allow_repeat", DistributionType.SET2, "B", 40,40, SampleType.SLICED, 2)
 				if i > (blk_switch1 +3) and i<=blk_num:
-					total_reward_chance_structure = [0.8]
-					blk_(0.5, "chance_allow_repeat", DistributionType.SET1,"B", 40,40, SampleType.SLICED, 2)
+					total_reward_chance_structure = [0.6]
+					blk_(0.5, "chance_allow_repeat", DistributionType.SET2,"B", 40,40, SampleType.SLICED, 2)
 					
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
@@ -589,10 +589,6 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 	return [hold_vlaue_this_blk, opt_out_value_this_blk]
 
 func prepare_init_trial():
-	if trial_count >= number_of_trials:
-		hide_nodes(exclude_label_1, original_states)
-		trial_count += 1
-		return
 	if Global.inference_type == Global.InferenceFlagType.time_based:
 			has_been_pressed = false
 			is_holding = false
@@ -602,6 +598,11 @@ func prepare_init_trial():
 			# Initialization rewards
 			hold_reward = hold_vlaue_template[trial_count]
 			opt_out_reward = opt_out_value_template[trial_count]
+
+	if trial_count >= number_of_trials:
+		hide_nodes(exclude_label_1, original_states)
+		trial_count += 1
+		return
 	if initialized_flag == false:# the 1st trial
 		blk_flag = 1
 		reset_scene_to_start_button()
