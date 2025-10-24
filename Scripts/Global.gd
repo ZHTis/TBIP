@@ -3,8 +3,9 @@ extends Node
 # Share variables across scenarios
 var subject_name: String = "" # Name of subject
 var inference_type
-enum InferenceFlagType {time_based, press_based}
+enum InferenceFlagType {time_based, press_based,}
 var num_of_trials: int = 0 # Number of tests
+var blk_nums: Array[Array] = [] # [blk_flag,start_trial_num(included),end_trial_num(included)]
 var press_history: Array[Array] = [] # Key History
 var iftextEditHasAppear: bool = false
 var wealth: int = 0
@@ -12,7 +13,7 @@ var saved_flag: bool = false
 var filename_config
 var filename_data
 var config_text: Array[Dictionary] = [] # Configuration file content
-var speed_up_mode = false
+var speed_up_mode = 1
 var auto_mode = false
 
 # Get the CSV file path based on the subject's name

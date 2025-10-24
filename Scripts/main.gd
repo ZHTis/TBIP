@@ -23,41 +23,42 @@ extends Control
 var time_left: int = 900
 var countdownTimer
 var _reusable_timer: Timer = null
-enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3}
-enum SampleType{POOL, SLICED}
-enum BtnType { START, OPT_OUT, INVALID, WAIT, HOLD}
+enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3,}
+enum SampleType{POOL, SLICED,}
+enum BtnType { START, OPT_OUT, INVALID, WAIT, HOLD,}
 ##### Global variables used in main.gd######
-var total_reward_chance
-var previous_total_reward_chance
-var unit_interval: float
-var mu_rwd_timepoint # mu, std results are generated from random fuctions
-var std_rwd_timepoint
-var number_of_trials = 0
-var if_opt_left
+var TOTAL_REWARD_CHANCE
+var PREVIOUS_TOTAL_REWARD_CHANCE
+var UNIT_INTERVAL: float
+var MU_RWD_TIMEPOINT # mu, std results are generated from random fuctions
+var STD_RWD_TIMEPOINT
+var NUMBER_OF_TRIALS = 0
+var IF_OPT_LEFT = MathUtils.generate_random(0, 1, "float")
 var trial_count = 0
 # var only used in time based
-var is_holding : bool = false
-var has_been_pressed : bool = false
-var duration 
+var IS_HOLDING : bool = false
+var HAS_BEEN_PRESSED : bool = false
+var DURATION 
 # infer_base_timer variable 
-var start_time: float = 0.0
+var START_TIME: float = 0.0
 # trial variables
-var initialized_flag: bool = false
-var num_of_press: int = 0
-var reward_given_flag: bool = false
+var INITIALIZED_FLAG: bool = false
+var NUM_OF_PRESS: int = 0
+var REWARD_GIVEN_FLAG: bool = false
 var h_value_list # seeds for "hold_vlaue_template"
 var o_value_list # seeds for "opt_out_value_template"
 # Store the original state for recovery (processing possible initial hidden elements)
 var original_states = {}
 var original_states_2 = {}
-var exclude_label_1
-var exclude_nodes_for_srart_menu
-var opt_left_flag
+var EXCLUDE_LABEL_1 
+var EXCLUDE_NODES_FOR_SRART_MENU 
+var OPT_LEFT_FLAG
 var blk_flag
-var blk_switch1
-var blk_switch2
-var blk_nums
-var tr_num_in_blk_list = []
+var BLK_SWITCH1
+var BLK_SWITCH2
+var TOTAL_BLK_NUM
+var blks_paras = []
+var blk_labels = []
 # NORM
 # refresh for each trial
 var reward_given_timepoint
@@ -78,8 +79,8 @@ var variance_rwd_timepoint_2mu_list
 var h_value_listRND # case "RANDOM" options
 var o_value_listRND
 # flat
-var flat_min
-var flat_max
+var FLAT_MIN
+var FLAT_MAX
 var speed_up_mode = Global.speed_up_mode
 var auto_mode = Global.auto_mode
 #for agent
@@ -98,18 +99,17 @@ func _ready():
 	print("auto_mode ", auto_mode)
 	if Global.auto_mode:
 		_agent() # Start the agent if auto_mode is enabled
-	exclude_label_1 = [vbox.name]
-	exclude_nodes_for_srart_menu = [vboxstart.name, vboxbottom.name, vboxtop.name]
-	if_opt_left = MathUtils.generate_random(0, 1, "float")
 	Global.press_history = [] # Clear new_press history
 	Global.wealth = 0 # Initialize Global.wealth
 	trial_count = 0
-	initialized_flag = false
-	number_of_trials = 0
-	blk_switch1 = MathUtils.generate_random(4, 6, "int")
-	blk_switch2 = MathUtils.generate_random(4, 6, "int")
-	blk_nums = blk_switch2 + blk_switch2 + 3
-	generate_all_trials(5,blk_nums) # case 5: from config file
+	INITIALIZED_FLAG = false
+	NUMBER_OF_TRIALS = 0
+	EXCLUDE_LABEL_1 = [vbox.name]
+	EXCLUDE_NODES_FOR_SRART_MENU = [vboxstart.name, vboxbottom.name, vboxtop.name]
+	BLK_SWITCH1 = MathUtils.generate_random(4, 6, "int")
+	BLK_SWITCH2 = MathUtils.generate_random(4, 6, "int")
+	TOTAL_BLK_NUM = BLK_SWITCH2 + BLK_SWITCH2 + 3
+	generate_all_trials(5,TOTAL_BLK_NUM) # case 5: from config file
 	init_task() # Initialize the task
 	
 
@@ -138,7 +138,43 @@ func init_task(): # Initialize task, BLK design
 	save_data("head")
 	_label_refresh(Global.wealth, "init")
 	prepare_init_trial()
+
+
+func prepare_init_trial():
+	if trial_count >= NUMBER_OF_TRIALS:
+		hide_nodes(EXCLUDE_LABEL_1, original_states)
+		trial_count += 1
+		return
+	if INITIALIZED_FLAG == false:# the 1st trial
+		blk_flag = 1
+		reset_scene_to_start_button()
+		INITIALIZED_FLAG = true
+		return
+	if Global.inference_type == Global.InferenceFlagType.time_based:
+		HAS_BEEN_PRESSED = false
+		IS_HOLDING = false
+		DURATION = 0.0
+		START_TIME = 0.0
+	if Global.inference_type == Global.InferenceFlagType.press_based:
+		NUM_OF_PRESS = 0 
+	# Initialization rewards
+	hold_reward = hold_vlaue_template[trial_count]
+	opt_out_reward = opt_out_value_template[trial_count]
+	_label_refresh(Global.wealth, "pressing...")
+
+	trial_count += 1 # trial count from 1 while list index from 0
+	REWARD_GIVEN_FLAG = false
 	
+	if reward_given_timepoint_template[trial_count-1] != null:
+		reward_given_timepoint = reward_given_timepoint_template[trial_count-1] /speed_up_mode
+	else:
+		reward_given_timepoint = reward_given_timepoint_template[trial_count-1]
+
+	print("blk:",blk_labels[trial_count-1],"\ttrial", trial_count, "\nreward: ", hold_reward, "\t", opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
+	# place_options_left_or_right() refresh with window size and excute each frame 
+	# but we don't want to change left or right each frame only each trial so chose numbe is seperate from the function
+	IF_OPT_LEFT = MathUtils.generate_random(0, 1, "float")
+	place_options_left_or_right() 
 
 func generate_all_trials(case_, blk_num = 1):
 	# Generate a block of trials, generate reward_given_timepoint and hold_reward given tremplate here
@@ -210,18 +246,18 @@ func generate_all_trials(case_, blk_num = 1):
 			
 			for i in range(1, blk_num + 1):
 				blk_flag ="blk%s"%i
-				print("blk_switch1, blk_switch2 ",blk_switch1, "  ",blk_switch2)
+				print("BLK_SWITCH1, BLK_SWITCH2 ",BLK_SWITCH1, "  ",BLK_SWITCH2)
 				print("###### blk%s"%i)
 				if i <= 2:	
 					blk_(0.5, "full", DistributionType.SET2, "A", 5,5, SampleType.SLICED, 5)
 				if i > 2 and i<=3:
 					total_reward_chance_structure = [1]
 					blk_(0.5, "chance_allow_repeat", DistributionType.SET2, "B", 10,10, SampleType.SLICED, 2)
-				if i > 3 and i<=(blk_switch1 +3):
+				if i > 3 and i<=(BLK_SWITCH1 +3):
 					total_reward_chance_structure = [0.8]
 					blk_(0.5, "chance_allow_repeat", DistributionType.SET2, "B", 40,40, SampleType.SLICED, 2)
-				if i > (blk_switch1 +3) and i<=blk_num:
-					total_reward_chance_structure = [0.8]
+				if i > (BLK_SWITCH1 +3) and i<=blk_num:
+					total_reward_chance_structure = [0.6]
 					blk_(0.5, "chance_allow_repeat", DistributionType.SET1,"B", 40,40, SampleType.SLICED, 2)
 					
 			Global.write_sessionDesign_to_file(Global.filename_config)
@@ -235,66 +271,70 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 		tr_num1, tr_num2,
 		_sample_type = SampleType.POOL,_slice_size = 2,
 		_previous_total_reward_chance = 0.0, _previous_mu = 0, _previous_std = 0.0):
-	if speed_up_mode:
-		unit_interval = _interval /10
-	else:
-		unit_interval = _interval
+
+	UNIT_INTERVAL = _interval /speed_up_mode
 	var dice_if_rwd_given
 	var timepoint
+	var blk_para = BLKPara.new()
+	
 	var reward_signal_given_timepoint_template_this_blk = []
 	var hold_reward_template_this_blk = []
 	var opt_out_reward_template_this_blk = []
+
+	
 	# rnd tr_num
 	var number_of_trials_this_blk = MathUtils.generate_random(tr_num1, tr_num2, "int")
-	tr_num_in_blk_list.append(number_of_trials_this_blk)
-	number_of_trials += number_of_trials_this_blk
+	NUMBER_OF_TRIALS += number_of_trials_this_blk
+	print("cumulated NUMBER_OF_TRIALS: ", NUMBER_OF_TRIALS)
+	Global.num_of_trials = NUMBER_OF_TRIALS
+	var blk_label = []
+	blk_label.resize(number_of_trials_this_blk)
+	blk_label.fill(blk_flag)
+	blk_labels.append_array(blk_label)
 
-	print("cumulated number_of_trials: ", number_of_trials)
-	Global.num_of_trials = number_of_trials
-	
 	if _previous_total_reward_chance == 0:
-		previous_total_reward_chance = total_reward_chance
+		PREVIOUS_TOTAL_REWARD_CHANCE = TOTAL_REWARD_CHANCE
 	else:
-		previous_total_reward_chance = _previous_total_reward_chance
+		PREVIOUS_TOTAL_REWARD_CHANCE = _previous_total_reward_chance
 
 	match _reward_chance_mode:
 		"full":
-			total_reward_chance = 1
-			print("total_reward_chance: ", total_reward_chance)
+			TOTAL_REWARD_CHANCE = 1
+			print("TOTAL_REWARD_CHANCE: ", TOTAL_REWARD_CHANCE)
 		"random_distribution":
-			total_reward_chance = previous_total_reward_chance
-			print("total_reward_chance: ", total_reward_chance)
+			TOTAL_REWARD_CHANCE = PREVIOUS_TOTAL_REWARD_CHANCE
+			print("TOTAL_REWARD_CHANCE: ", TOTAL_REWARD_CHANCE)
 		"random_chance": #cannot be the same as previous
 			var _dice
 			var _dicelen = total_reward_chance_structure.size()
 			while true:
 				_dice = MathUtils.generate_random(0, _dicelen - 1, "int")
-				if total_reward_chance_structure[_dice] != previous_total_reward_chance:
+				if total_reward_chance_structure[_dice] != PREVIOUS_TOTAL_REWARD_CHANCE:
 					break
-			total_reward_chance = total_reward_chance_structure[_dice] # set total hold_reward chance
-			print("total_reward_chance: ", total_reward_chance)
+			TOTAL_REWARD_CHANCE = total_reward_chance_structure[_dice] # set total hold_reward chance
+			print("TOTAL_REWARD_CHANCE: ", TOTAL_REWARD_CHANCE)
 		"chance_allow_repeat": #can be the same as previous
 			var _dice
 			var _dicelen = total_reward_chance_structure.size()
 			if _dicelen == 1:
-				total_reward_chance = total_reward_chance_structure[0]
+				TOTAL_REWARD_CHANCE = total_reward_chance_structure[0]
 			else:
 				_dice = MathUtils.generate_random(0, _dicelen - 1, "int")
-				total_reward_chance = total_reward_chance_structure[_dice] # set total hold_reward chance
-			print("total_reward_chance: ", total_reward_chance)
+				TOTAL_REWARD_CHANCE = total_reward_chance_structure[_dice] # set total hold_reward chance
+			print("TOTAL_REWARD_CHANCE: ", TOTAL_REWARD_CHANCE)
 			
 	# from Block N to Block N+1, we either change
 	# ONLY the distribution, 
 	# or ONLY the hold_reward reliability (%)
 	
-	if _distribution_type == DistributionType.NORM_AFTER_1ST and mu_rwd_timepoint == null:
-		if previous_total_reward_chance == total_reward_chance:
+	if _distribution_type == DistributionType.NORM_AFTER_1ST and MU_RWD_TIMEPOINT == null:
+		if PREVIOUS_TOTAL_REWARD_CHANCE == TOTAL_REWARD_CHANCE:
 			blk_distribution(_distribution_type,0,0,_previous_mu)
-			print("change distribution. mu_rwd_timepoint, std_rwd_timepoint: ", mu_rwd_timepoint, ", ", std_rwd_timepoint)
-		elif previous_total_reward_chance != total_reward_chance:
-			print("change total_reward_chance: ", total_reward_chance)
-			mu_rwd_timepoint = _previous_mu
-			std_rwd_timepoint = _previous_std
+			print("change distribution. MU_RWD_TIMEPOINT, STD_RWD_TIMEPOINT: ", MU_RWD_TIMEPOINT, ", ", STD_RWD_TIMEPOINT)
+		elif PREVIOUS_TOTAL_REWARD_CHANCE != TOTAL_REWARD_CHANCE:
+			print("change TOTAL_REWARD_CHANCE: ", TOTAL_REWARD_CHANCE)
+			MU_RWD_TIMEPOINT = _previous_mu
+			STD_RWD_TIMEPOINT = _previous_std
 	else:
 		blk_distribution(_distribution_type)
 
@@ -308,17 +348,17 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 			for i in range(number_of_trials_this_blk):
 				# if reward is given
 				dice_if_rwd_given = MathUtils.generate_random(0, 1, "float") # set total hold_reward chance
-				if dice_if_rwd_given <= total_reward_chance:
+				if dice_if_rwd_given <= TOTAL_REWARD_CHANCE:
 					# if given, when?
 					if _distribution_type == DistributionType.FLAT:
 						if Global.inference_type == Global.InferenceFlagType.press_based:
-							timepoint = MathUtils.generate_random(flat_min, flat_max, "int")
+							timepoint = MathUtils.generate_random(FLAT_MIN, FLAT_MAX, "int")
 					else:
-						if mu_rwd_timepoint <= 0:# responded to blk_distribution when Err reported
+						if MU_RWD_TIMEPOINT <= 0:# responded to blk_distribution when Err reported
 							get_tree().root.propagate_notification(NOTIFICATION_WM_CLOSE_REQUEST)
 						else:
 							while true:  #MARK:  Floor&Ceiling of timepoint
-								timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
+								timepoint = MathUtils.normrnd(MU_RWD_TIMEPOINT, STD_RWD_TIMEPOINT)
 								if timepoint >= 0.5: 
 									break
 							if Global.inference_type == Global.InferenceFlagType.press_based:
@@ -339,7 +379,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 		SampleType.SLICED:
 			var create_pool = []
 			var seed_for_slice 
-			if speed_up_mode:
+			if speed_up_mode > 1:
 				if number_of_trials_this_blk < 100:
 					seed_for_slice = 100
 				else:
@@ -348,7 +388,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 				seed_for_slice = 100000
 			for i in range(1, seed_for_slice):
 				while true:  
-					timepoint = MathUtils.normrnd(mu_rwd_timepoint, std_rwd_timepoint)
+					timepoint = MathUtils.normrnd(MU_RWD_TIMEPOINT, STD_RWD_TIMEPOINT)
 					if timepoint >= 0.5:
 						break
 				if Global.inference_type == Global.InferenceFlagType.press_based:
@@ -377,7 +417,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 				#print("pool_from_pool for vincentization bin%s: "%i,pool_from_pool[i].slice(0, n),"n: ", n)
 				reward_signal_given_timepoint_template_this_blk.append_array(pool_from_pool[i].slice(0, n))
 
-			var n_null = roundi(number_of_trials_this_blk * (1 - total_reward_chance))
+			var n_null = roundi(number_of_trials_this_blk * (1 - TOTAL_REWARD_CHANCE))
 			print("n_null: ", n_null)
 			reward_signal_given_timepoint_template_this_blk.shuffle()
 			for j in range(n_null):
@@ -419,7 +459,25 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 			opt_out_reward_template_this_blk = ao[1]
 			hold_vlaue_template.append_array(hold_reward_template_this_blk)
 			opt_out_value_template.append_array(opt_out_reward_template_this_blk)
-			
+
+	blk_para._init(
+		blk_flag,# blk_flag
+		TOTAL_REWARD_CHANCE,# chance
+		str(DistributionType.values()),# distribution_type
+		[],# distr_para_1
+		[],# distr_para_2
+		[],# reward_signal_given_timepoint_template_this_blk_
+		[],# h_value_list
+		[],# o_value_list	
+		[] # tr_num_range
+	)
+	blk_para.rwd_given_signal_timepoint = reward_signal_given_timepoint_template_this_blk		
+	blk_para.h_value_list = hold_reward_template_this_blk
+	blk_para.o_value_list = opt_out_reward_template_this_blk
+	blk_para.tr_num_range = [tr_num1, tr_num2]
+	blk_para.distr_para_1 = [MU_RWD_TIMEPOINT]
+	blk_para.distr_para_2 = [STD_RWD_TIMEPOINT]
+	blks_paras.append(blk_para)
 # save the configuration with data	
 	print("%s generated.\n"%blk_flag)
 	var template=[]
@@ -432,35 +490,35 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 	var text={
 		"blk": blk_flag,
 		"reward_signal_timepoint": reward_signal_given_timepoint_template_this_blk,
-		"total_reward_chance": total_reward_chance,
-		"number_of_trials_accumu_rwd_timepointlated": number_of_trials,
+		"TOTAL_REWARD_CHANCE": TOTAL_REWARD_CHANCE,
+		"number_of_trials_accumu_rwd_timepointlated": NUMBER_OF_TRIALS,
 		"number_of_trials_this_blk": number_of_trials_this_blk,
 		"distribution_type": _distribution_type,
-		"mu_rwd_timepoint": mu_rwd_timepoint,
-		"std_rwd_timepoint": std_rwd_timepoint,
+		"MU_RWD_TIMEPOINT": MU_RWD_TIMEPOINT,
+		"STD_RWD_TIMEPOINT": STD_RWD_TIMEPOINT,
 		"template_t_h_o": template
 	}
-	 
+	
 	Global.config_text.append(text)
 
 
 func set123(_mu, _std_mu):
-	mu_rwd_timepoint = _mu
+	MU_RWD_TIMEPOINT = _mu
 	if Global.inference_type == Global.InferenceFlagType.press_based:
-		mu_rwd_timepoint = roundi(mu_rwd_timepoint)
+		MU_RWD_TIMEPOINT = roundi(MU_RWD_TIMEPOINT)
 	elif Global.inference_type == Global.InferenceFlagType.time_based:
-		mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
-		mu_rwd_timepoint = mu_rwd_timepoint / 10
-	std_rwd_timepoint = _std_mu * mu_rwd_timepoint
-	std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
-	std_rwd_timepoint = std_rwd_timepoint / 10
+		MU_RWD_TIMEPOINT = roundf(MU_RWD_TIMEPOINT * 100) / 10
+		MU_RWD_TIMEPOINT = MU_RWD_TIMEPOINT / 10
+	STD_RWD_TIMEPOINT = _std_mu * MU_RWD_TIMEPOINT
+	STD_RWD_TIMEPOINT = roundf(STD_RWD_TIMEPOINT * 1000) / 100
+	STD_RWD_TIMEPOINT = STD_RWD_TIMEPOINT / 10
 	
 func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0, 
 	_1st_mu_rwd_timepoint =20, _1st_std_rwd_timepoint=10):
 
 	if _previous_mu != 0:
 		# Specify a previous distribution parameter
-		mu_rwd_timepoint = _previous_mu
+		MU_RWD_TIMEPOINT = _previous_mu
 	
 	match _distribution_type:
 		DistributionType.SET1:
@@ -478,7 +536,7 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 				while true:
 					var dice_mu_rwd_timepoint = MathUtils.generate_random(0, mu_rwd_timepoint_change_list.size() - 1, "int")
 					var mu_rwd_timepoint_change = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
-					new_mu_rwd_timepoint = mu_rwd_timepoint * (1 + mu_rwd_timepoint_change)
+					new_mu_rwd_timepoint = MU_RWD_TIMEPOINT * (1 + mu_rwd_timepoint_change)
 					new_mu_rwd_timepoint = roundi(new_mu_rwd_timepoint)
 					
 					if Global.inference_type == Global.InferenceFlagType.press_based:
@@ -493,40 +551,40 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 					print("REMOVED a dice face",mu_rwd_timepoint_change_list)
 					if dicelen == 0:	
 						print("Err!!!!: invalid distribution parameters")
-						mu_rwd_timepoint=0
-						std_rwd_timepoint=0
+						MU_RWD_TIMEPOINT=0
+						STD_RWD_TIMEPOINT=0
 						return
 		
 				var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0, variance_rwd_timepoint_2mu_list.size() - 1, "int")
 				new_std_rwd_timepoint = new_mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
 				new_std_rwd_timepoint = roundf(new_std_rwd_timepoint * 1000) / 100
 				new_std_rwd_timepoint = new_std_rwd_timepoint / 10
-				if new_std_rwd_timepoint != mu_rwd_timepoint:
+				if new_std_rwd_timepoint != MU_RWD_TIMEPOINT:
 					break
 
-			mu_rwd_timepoint = new_mu_rwd_timepoint
-			std_rwd_timepoint = new_std_rwd_timepoint
+			MU_RWD_TIMEPOINT = new_mu_rwd_timepoint
+			STD_RWD_TIMEPOINT = new_std_rwd_timepoint
 
 		DistributionType.FLAT: # flat distribution
-			flat_min = _min
-			flat_max = _max
+			FLAT_MIN = _min
+			FLAT_MAX = _max
 
 		DistributionType.NORM_1ST_CUSTOM: # Normal distribution
 			var dice_mu_rwd_timepoint = MathUtils.generate_random(0, mu_rwd_timepoint_change_list.size() - 1, "int")
-			mu_rwd_timepoint = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
+			MU_RWD_TIMEPOINT = mu_rwd_timepoint_change_list[dice_mu_rwd_timepoint]
 			var dice_variance_rwd_timepoint_2mu = MathUtils.generate_random(0, variance_rwd_timepoint_2mu_list.size() - 1, "int")
-			std_rwd_timepoint = mu_rwd_timepoint * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
+			STD_RWD_TIMEPOINT = MU_RWD_TIMEPOINT * variance_rwd_timepoint_2mu_list[dice_variance_rwd_timepoint_2mu]
 
 		DistributionType.NORM_1ST:
-			mu_rwd_timepoint = _1st_mu_rwd_timepoint
+			MU_RWD_TIMEPOINT = _1st_mu_rwd_timepoint
 			if Global.inference_type == Global.InferenceFlagType.press_based:
-				mu_rwd_timepoint = roundi(mu_rwd_timepoint)
+				MU_RWD_TIMEPOINT = roundi(MU_RWD_TIMEPOINT)
 			elif Global.inference_type == Global.InferenceFlagType.time_based:
-				mu_rwd_timepoint = roundf(mu_rwd_timepoint * 100) / 10
-				mu_rwd_timepoint = mu_rwd_timepoint / 10
-			std_rwd_timepoint = _1st_std_rwd_timepoint
-			std_rwd_timepoint = roundf(std_rwd_timepoint * 1000) / 100
-			std_rwd_timepoint = std_rwd_timepoint / 10
+				MU_RWD_TIMEPOINT = roundf(MU_RWD_TIMEPOINT * 100) / 10
+				MU_RWD_TIMEPOINT = MU_RWD_TIMEPOINT / 10
+			STD_RWD_TIMEPOINT = _1st_std_rwd_timepoint
+			STD_RWD_TIMEPOINT = roundf(STD_RWD_TIMEPOINT * 1000) / 100
+			STD_RWD_TIMEPOINT = STD_RWD_TIMEPOINT / 10
 
 
 func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given_timepoint_template_this_blk=[]):
@@ -539,7 +597,7 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 	match _case:
 		"none":
 			pass
-		"h5o5_ur":
+		"h5o5_ur":# asign values sets proportionally equal according to reward given timepoint template
 			var urwd_idx = []
 			var rwd_idx=[]
 			for idx in range(len(_reward_given_timepoint_template_this_blk)): 
@@ -550,9 +608,18 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 			print("urwd_idx: ", urwd_idx)
 			urwd_idx.shuffle()
 			rwd_idx.shuffle()
-			var num_exception = 0.25*0.5*_number_of_trials_this_blk
-			var each_exception_urwd = num_exception-roundi(num_exception*total_reward_chance)
-			var each_exception_rwd = roundi(num_exception*total_reward_chance)
+
+			var num_each_exception = 0.25*0.5*_number_of_trials_this_blk
+			var each_exception_urwd = roundi(num_each_exception*(1-TOTAL_REWARD_CHANCE))
+			if TOTAL_REWARD_CHANCE < 1.0:
+				if each_exception_urwd == 0: 
+					each_exception_urwd = 1 # at least 1 exception
+			var each_exception_rwd = num_each_exception - each_exception_urwd
+			each_exception_rwd = roundi(each_exception_rwd)
+			if each_exception_rwd == 0:
+				each_exception_rwd = 1 # at least 1 exception
+				
+
 			urwd_idx = urwd_idx.slice(0, 2*each_exception_urwd)
 			rwd_idx = rwd_idx.slice(0, 2*each_exception_rwd)
 			for i in range(each_exception_urwd):
@@ -569,66 +636,25 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 				opt_out_value_this_blk[idx] = _o_value * 25
 			
 		"h5o5":
-			var num_exception = 0.25*0.5*_number_of_trials_this_blk
-			num_exception = roundi(num_exception)
-			if num_exception == 0: 
-				num_exception = 1 # at least 1 exception
+			var num_each_exception = 0.25*0.5*_number_of_trials_this_blk
+			num_each_exception = roundi(num_each_exception)
+			if num_each_exception == 0: 
+				num_each_exception = 1 # at least 1 exception
 			var exception_idx = []
 			for i in range(_number_of_trials_this_blk):
 				exception_idx.append(i)
 				
 			exception_idx.shuffle()
-			exception_idx = exception_idx.slice(0, 2*num_exception)	
+			exception_idx = exception_idx.slice(0, 2*num_each_exception)	
 			#print("exception_idx: ",exception_idx)
-			for i_h in range(num_exception):
+			for i_h in range(num_each_exception):
 				var idx = exception_idx[i_h]
 				hold_vlaue_this_blk[idx] = _h_value * 5
-			for i_o in range(num_exception, len(exception_idx)):
+			for i_o in range(num_each_exception, len(exception_idx)):
 				var idx = exception_idx[i_o]
 				opt_out_value_this_blk[idx] = _o_value * 5
 	return [hold_vlaue_this_blk, opt_out_value_this_blk]
 
-func prepare_init_trial():
-	if trial_count >= number_of_trials:
-		hide_nodes(exclude_label_1, original_states)
-		trial_count += 1
-		return
-	if Global.inference_type == Global.InferenceFlagType.time_based:
-			has_been_pressed = false
-			is_holding = false
-			start_time = 0.0
-			duration = 0.0
-			reward_given_flag = false
-			# Initialization rewards
-			hold_reward = hold_vlaue_template[trial_count]
-			opt_out_reward = opt_out_value_template[trial_count]
-	if initialized_flag == false:# the 1st trial
-		blk_flag = 1
-		reset_scene_to_start_button()
-		initialized_flag = true
-		return
-	_label_refresh(Global.wealth, "pressing...")
-	trial_count += 1
-	# Initialize the test status
-	reward_given_flag = false
-	start_time = 0.0
-	num_of_press = 0
-
-	if speed_up_mode == true:
-		if reward_given_timepoint_template[trial_count-1] != null:
-			reward_given_timepoint = reward_given_timepoint_template[trial_count-1] /10
-		else:
-			reward_given_timepoint = reward_given_timepoint_template[trial_count-1]
-	else:
-		reward_given_timepoint = reward_given_timepoint_template[trial_count-1]
-	print("trial", trial_count, "\nreward: ", hold_reward, "\t", opt_out_reward, "\treward_given_timepoint: ", reward_given_timepoint)
-	if_opt_left = MathUtils.generate_random(0, 1, "float")
-	for i in range(len(tr_num_in_blk_list)):
-		if trial_count <= tr_num_in_blk_list[0]:
-			blk_flag = 1
-		elif trial_count > tr_num_in_blk_list[i-1] and trial_count <= tr_num_in_blk_list[i]:
-			blk_flag = i
-	place_options_left_or_right()
 
 
 func load_from_config(_blk,
@@ -730,28 +756,28 @@ func save_data(_case):
 	match _case:
 		"json":
 			var data = {
-				"blk": blk_flag,
-				#trial_count_in_blk
-				"trial_count": trial_count,
-				"reward_signal_given_timepoint(s)": reward_given_timepoint,
+				"blk": blk_labels[trial_count -1], # trial_count from 1 while list index from 0
+				"cumulative_trial_count": trial_count,
+				"reward_signal_given_timepoint(s)": reward_given_timepoint_template[trial_count -1],
 				"actual_reward_given_timestamp": actual_reward_given_timepoint,
 				"trial_start_timestamp": trial_start_time,
 				"task_show_timestamp": task_show_time,	
 				"hold_reward": hold_reward,	
 				"opt_out_reward": opt_out_reward,	
 				"actual_reward_value": actual_reward_value,
-				"if_optionis on_left": opt_left_flag,
+				"if_optionis on_left": OPT_LEFT_FLAG,
 				"press_history": JSON.stringify(Global.press_history,"", false, false),
 			}
 			var json_string = JSON.stringify(data,"  ", false, false)
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
 			file.seek_end()
 			file.store_string(json_string)
+			file.store_string("\n") # need this to separate different json entries
 			file.close()
 
 		"head":
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE)
-			file.store_line("auto_mode: %s\nspeed_up_mode: %s" % [Global.auto_mode,Global.speed_up_mode])
+			file.store_line("auto_mode: %s\nspeed_up_value: %s" % [Global.auto_mode,Global.speed_up_mode])
 			file.store_line("Inference Type: %s" % Global.inference_type) 
 			file.store_line("# Inference Type: 0:time-based; 1:press-based\n") 
 			file.store_line("# Button type: 0:press the green to start trial; 1:opt-out; 2:INVALID,3:WAIT(time-based),4:HOLD(press-based)") # CSV列标题
@@ -773,12 +799,12 @@ func reset_scene_to_start_button():
 		Global.press_history.clear()
 	# Reset the scene
 	if trial_count >= 1:
-		original_states = hide_nodes(exclude_label_1, original_states)
-		_reusable_timer.wait_time = unit_interval * 2
+		original_states = hide_nodes(EXCLUDE_LABEL_1, original_states)
+		_reusable_timer.wait_time = UNIT_INTERVAL * 2
 		_reusable_timer.start()
 		await _reusable_timer.timeout
 	original_states_2 = hide_nodes([], original_states_2)
-	_reusable_timer.wait_time = unit_interval
+	_reusable_timer.wait_time = UNIT_INTERVAL
 	_reusable_timer.start()
 	await _reusable_timer.timeout
 	# Reset status
@@ -793,13 +819,13 @@ func reset_scene_to_start_button():
 
 
 func reset_to_start_next_trial():
-	if trial_count <= number_of_trials:
+	if trial_count <= NUMBER_OF_TRIALS:
 		prepare_init_trial()
 		restore_nodes(original_states_2)
 		restore_nodes(original_states)
 		task_show_time = Time.get_ticks_msec()/1000.0
 		task_on = true
-	if trial_count > number_of_trials:
+	if trial_count > NUMBER_OF_TRIALS:
 		_label_refresh(Global.wealth, "finish")
 
 
@@ -833,16 +859,16 @@ func warning():
 	colorRect.size = window_size
 	colorRect.color = Color.YELLOW_GREEN
 	colorRect.visible = true
-	_reusable_timer.wait_time = unit_interval / 2
+	_reusable_timer.wait_time = UNIT_INTERVAL / 2
 	_reusable_timer.start()
 	await _reusable_timer.timeout
 	colorRect.visible = false
-	
+ #for time-based inference
 func _on_start_to_wait_button_pressed():
-	var start_wait_action_time = Time.get_ticks_msec()/ 1000.0 # Always reset start_time on press
+	var start_wait_action_time = Time.get_ticks_msec()/ 1000.0 # Always reset START_TIME on press
 	record_press_data(start_wait_action_time,BtnType.WAIT)
-	if not has_been_pressed:
-		has_been_pressed = true
+	if not HAS_BEEN_PRESSED:
+		HAS_BEEN_PRESSED = true
 		infer_base_timer.one_shot = true # 单次触发模式
 		if reward_given_timepoint != null:
 			infer_base_timer.start(reward_given_timepoint)	
@@ -851,7 +877,7 @@ func _on_start_to_wait_button_pressed():
 func _on_infer_baser_timer_timeout():
 	infer_base_timer.stop()
 	print("Wait Time out")
-	duration = Time.get_ticks_msec() / 1000.0 - start_time # 计算按住时长（秒）
+	DURATION = Time.get_ticks_msec() / 1000.0 - START_TIME # 计算按住时长（秒）
 	_reward_given_actions(hold_reward)
 	_label_refresh(Global.wealth,"reward_given")
 	reset_scene_to_start_button()
@@ -863,18 +889,18 @@ func _on_hold_button_pressed():
 	var current_time = Time.get_ticks_msec()/1000.0
 	# Handle invalid behavior
 	if reward_given_timepoint == null:
-		num_of_press += 1
+		NUM_OF_PRESS += 1
 		_label_refresh(Global.wealth, "pressing...")
 		record_press_data(current_time, BtnType.HOLD)
 		
-	elif reward_given_flag == false:
-		num_of_press += 1
+	elif REWARD_GIVEN_FLAG == false:
+		NUM_OF_PRESS += 1
 		_label_refresh(Global.wealth, "pressing...")
-		if num_of_press < reward_given_timepoint:
+		if NUM_OF_PRESS < reward_given_timepoint:
 			record_press_data(current_time, BtnType.HOLD)
-		if num_of_press == reward_given_timepoint:
+		if NUM_OF_PRESS == reward_given_timepoint:
 			_reward_given_actions(hold_reward)
-			print("hold-reward_given_flag  ", reward_given_flag)
+			print("hold-REWARD_GIVEN_FLAG  ", REWARD_GIVEN_FLAG)
 			_label_refresh(Global.wealth, "reward_given")
 			record_press_data(current_time, BtnType.HOLD)
 			reset_scene_to_start_button()
@@ -903,7 +929,7 @@ func _reward_given_actions(reward_value):
 	Global.wealth += reward_value
 	actual_reward_given_timepoint = Time.get_ticks_msec()/1000.0
 	actual_reward_value = reward_value
-	reward_given_flag = true
+	REWARD_GIVEN_FLAG = true
 
 # 封装记录按键数据的函数
 func record_press_data(current_time, btn_type) -> void:
@@ -935,11 +961,11 @@ func place_button(_if_opt_left):
 	
 
 func place_options_left_or_right():
-	if if_opt_left >= 0.5:
-		opt_left_flag = "left"
+	if IF_OPT_LEFT >= 0.5:
+		OPT_LEFT_FLAG = "left"
 		place_button("left") # Initialize UI
 	else:
-		opt_left_flag = "right"
+		OPT_LEFT_FLAG = "right"
 		place_button("right") # Initialize UI with optout on the right
 
 
@@ -985,12 +1011,12 @@ func _label_refresh(wealth, case_text):
 			else:
 				label_1.text = "+ " + str(hold_reward)
 				label_1.label_settings.font_color = positivecolor
-			reward_given_flag = false
+			REWARD_GIVEN_FLAG = false
 
 		"pressing...":
 			label_1.text = ""
 			#label_1.label_settings.font_size = 36
-			#label_1.text = str(num_of_press)# need t add num_of_press to the func parameter
+			#label_1.text = str(NUM_OF_PRESS)# need t add NUM_OF_PRESS to the func parameter
 			#label_1.label_settings.font_color = neutralcolor
 		"init":
 			label_1.label_settings.font_size = 27
@@ -1103,6 +1129,6 @@ func _on_agent_action_timer_timeout():
 			hold_button.emit_signal("pressed")
 		else:
 			opt_out_button.emit_signal("pressed")
-	if trial_count > number_of_trials:
+	if trial_count > NUMBER_OF_TRIALS:
 		agent_action_timer.queue_free()
 		

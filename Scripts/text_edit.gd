@@ -5,7 +5,8 @@ extends Control
 @onready var save_btn =  get_node("/root/Control/btnBox/Label/Button")
 @onready var vbox = $VBox
 @onready var btnBox = get_node("/root/Control/btnBox")
-@onready var speed_up_mode_checkbox = get_node("/root/Control/VBox/HBoxContainer/CheckButton")
+@onready var speed_up_value_label = get_node("/root/Control/VBox/HBoxContainer/Label4")
+@onready var speed_up_mode_slider = get_node("/root/Control/VBox/HBoxContainer/CheckButton")
 @onready var auto_mode_checkbox = get_node("/root/Control/VBox/HBoxContainer2/CheckButton2")
 var subject_name
 
@@ -13,7 +14,7 @@ func _ready():
 	Global.iftextEditHasAppear = true	
 	init_ui()
 	save_btn.pressed.connect(_save_text)
-	speed_up_mode_checkbox.toggled.connect(_on_speed_up_mode_toggled)
+	speed_up_mode_slider.value_changed.connect(_on_speed_up_mode_changed)
 	auto_mode_checkbox.toggled.connect(_on_auto_mode_toggled)
 
 func _save_text():
@@ -27,8 +28,9 @@ func _save_text():
 	Global.subject_name = subject_name
 	get_tree().change_scene_to_file("res://main.tscn")
 
-func _on_speed_up_mode_toggled(state):
-	Global.speed_up_mode = state
+func _on_speed_up_mode_changed(value):
+	speed_up_value_label.text = "\t\t\t" + str(value)
+	Global.speed_up_mode = value
 
 func _on_auto_mode_toggled(state):	
 	Global.auto_mode = 	state
