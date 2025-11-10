@@ -23,7 +23,8 @@ extends Control
 var time_left: int = 900
 var countdownTimer
 var _reusable_timer: Timer = null
-enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3,}
+enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3,SET4}
+var ValueSets
 enum SampleType{POOL, SLICED,}
 enum BtnType { START, OPT_OUT, INVALID, WAIT, HOLD,}
 ##### Global variables used in main.gd######
@@ -34,6 +35,7 @@ var MU_RWD_TIMEPOINT # mu, std results are generated from random fuctions
 var STD_RWD_TIMEPOINT
 var NUMBER_OF_TRIALS = 0
 var IF_OPT_LEFT = MathUtils.generate_random(0, 1, "float")
+var default_exception_proportion = float(0.0)
 var trial_count = 0
 # var only used in time based
 var IS_HOLDING : bool = false
@@ -54,9 +56,7 @@ var EXCLUDE_LABEL_1
 var EXCLUDE_NODES_FOR_SRART_MENU 
 var OPT_LEFT_FLAG
 var blk_flag
-var BLK_SWITCH1
-var BLK_SWITCH2
-var TOTAL_BLK_NUM
+var BLK_SWITCH
 var blks_paras = []
 var blk_labels = []
 # NORM
@@ -106,10 +106,7 @@ func _ready():
 	NUMBER_OF_TRIALS = 0
 	EXCLUDE_LABEL_1 = [vbox.name]
 	EXCLUDE_NODES_FOR_SRART_MENU = [vboxstart.name, vboxbottom.name, vboxtop.name]
-	BLK_SWITCH1 = MathUtils.generate_random(4, 6, "int")
-	BLK_SWITCH2 = MathUtils.generate_random(4, 6, "int")
-	TOTAL_BLK_NUM = BLK_SWITCH2 + BLK_SWITCH2 + 3
-	generate_all_trials(5,TOTAL_BLK_NUM) # case 5: from config file
+	generate_all_trials(5) # case 5: from config file
 	init_task() # Initialize the task
 	
 
@@ -239,37 +236,47 @@ func generate_all_trials(case_, blk_num = 1):
 				i += 1
 			Global.write_sessionDesign_to_file(Global.filename_config)
 		5:
+			BLK_SWITCH = [3,7,11]
+			if blk_num == 1:
+				blk_num = BLK_SWITCH[-1] 
 			Global.inference_type = Global.InferenceFlagType.time_based
 			reward_given_timepoint_template = []
 			hold_vlaue_template = []
 			opt_out_value_template = []
-			
+			ValueSets = [5,1,25,1,5,-25]
+			var  blk_vlaue_sets = [DistributionType.SET4, DistributionType.SET3]
+			#[DistributionType.SET1, DistributionType.SET2]
+
 			for i in range(1, blk_num + 1):
 				blk_flag ="blk%s"%i
-				print("BLK_SWITCH1, BLK_SWITCH2 ",BLK_SWITCH1, "  ",BLK_SWITCH2)
+				print("BLK_SWITCH ",BLK_SWITCH)
 				print("###### blk%s"%i)
 				if i <= 2:	
-					blk_(0.5, "full", DistributionType.SET2, "A", 5,5, SampleType.SLICED, 5)
-				if i > 2 and i<=3:
+					blk_(0.5, "full", blk_vlaue_sets[0],5)
+				if i > 2 and i<=(BLK_SWITCH[0]):
 					total_reward_chance_structure = [1]
-					blk_(0.5, "chance_allow_repeat", DistributionType.SET2, "B", 10,10, SampleType.SLICED, 2)
-				if i > 3 and i<=(BLK_SWITCH1 +3):
-					total_reward_chance_structure = [0.8]
-					blk_(0.5, "chance_allow_repeat", DistributionType.SET2, "B", 40,40, SampleType.SLICED, 2)
-				if i > (BLK_SWITCH1 +3) and i<=blk_num:
-					total_reward_chance_structure = [0.6]
-					blk_(0.5, "chance_allow_repeat", DistributionType.SET1,"B", 40,40, SampleType.SLICED, 2)
+					blk_(0.5, "chance_allow_repeat", blk_vlaue_sets[0],10,10, "B",0.2,SampleType.SLICED, 2)
+				if i > (BLK_SWITCH[0]) and i<=(BLK_SWITCH[1]):
+					total_reward_chance_structure = [0.7]
+					blk_(0.5, "chance_allow_repeat", blk_vlaue_sets[0],40,40, "B",0.5, SampleType.SLICED, 2)
+				if i > (BLK_SWITCH[1]) and i<=blk_num:
+					total_reward_chance_structure = [0.7]
+					blk_(0.5, "chance_allow_repeat", blk_vlaue_sets[1],40,40, "B",0.5, SampleType.SLICED, 2)
 					
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
 
 # MARK: BLK
 func blk_(_interval, _reward_chance_mode, _distribution_type,
-		# rwd value:
-		_value_type,
 		# tr_num range:
-		tr_num1, tr_num2,
-		_sample_type = SampleType.POOL,_slice_size = 2,
+		tr_num1, 
+		tr_num2=tr_num1,
+		# rwd value & eception_proportion:
+		_value_type="A",
+		_exception_proportion = default_exception_proportion,
+		# vicent
+		_sample_type = SampleType.SLICED, _slice_size = 5,
+		# fetch from previous blk
 		_previous_total_reward_chance = 0.0, _previous_mu = 0, _previous_std = 0.0):
 
 	UNIT_INTERVAL = _interval /speed_up_mode
@@ -369,7 +376,6 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 								timepoint = timepoint * 4
 								timepoint = roundf(timepoint)/4
 
-
 					reward_given_timepoint_template.append(timepoint)
 					reward_signal_given_timepoint_template_this_blk.append(timepoint)
 				else:
@@ -448,13 +454,13 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 				opt_out_value_template.append(random_o) # Opt-out hold_reward
 				opt_out_reward_template_this_blk.append(random_o) # Opt-out hold_reward
 		"A":
-			var ao = setValues(number_of_trials_this_blk,5,-1,"none")
+			var ao = setValues(number_of_trials_this_blk,ValueSets, "none")
 			hold_reward_template_this_blk = ao[0]
 			opt_out_reward_template_this_blk = ao[1]
 			hold_vlaue_template.append_array(hold_reward_template_this_blk)
 			opt_out_value_template.append_array(opt_out_reward_template_this_blk)
 		"B":
-			var ao = setValues(number_of_trials_this_blk,5,-1,"h5o5_ur",reward_signal_given_timepoint_template_this_blk)
+			var ao = setValues(number_of_trials_this_blk,ValueSets,"h5o5_ur",_exception_proportion, reward_signal_given_timepoint_template_this_blk)
 			hold_reward_template_this_blk = ao[0]
 			opt_out_reward_template_this_blk = ao[1]
 			hold_vlaue_template.append_array(hold_reward_template_this_blk)
@@ -483,9 +489,11 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 	var template=[]
 	var trial_setting=[]
 	for i in range(number_of_trials_this_blk):
-		trial_setting=[reward_signal_given_timepoint_template_this_blk[i],
-			hold_reward_template_this_blk[i],
-			opt_out_reward_template_this_blk[i]]
+		trial_setting=[
+				reward_signal_given_timepoint_template_this_blk[i],
+				hold_reward_template_this_blk[i],
+				opt_out_reward_template_this_blk[i]
+				]
 		template.append(trial_setting)
 	var text={
 		"blk": blk_flag,
@@ -500,7 +508,7 @@ func blk_(_interval, _reward_chance_mode, _distribution_type,
 	}
 	
 	Global.config_text.append(text)
-
+# end of 'blk'!
 
 func set123(_mu, _std_mu):
 	MU_RWD_TIMEPOINT = _mu
@@ -526,7 +534,10 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 		DistributionType.SET2:
 			set123(4, 0.25)
 		DistributionType.SET3:
-			set123(5, 0.2)
+			set123(5, 0.25)
+		DistributionType.SET4:
+			set123(2.5, 0.25)
+
 		DistributionType.NORM_AFTER_1ST: # Normal distribution
 			var new_mu_rwd_timepoint
 			var new_std_rwd_timepoint
@@ -586,14 +597,14 @@ func blk_distribution(_distribution_type, _min = 0, _max = 0, _previous_mu = 0,
 			STD_RWD_TIMEPOINT = roundf(STD_RWD_TIMEPOINT * 1000) / 100
 			STD_RWD_TIMEPOINT = STD_RWD_TIMEPOINT / 10
 
-
-func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given_timepoint_template_this_blk=[]):
+# values = [ h_value,o_value, h2,o2, h3,o3]
+func setValues(_number_of_trials_this_blk,values, _case, exception_proportion=default_exception_proportion, _reward_given_timepoint_template_this_blk=[]):
 	var opt_out_value_this_blk = []
 	var hold_vlaue_this_blk = []
 	hold_vlaue_this_blk.resize(_number_of_trials_this_blk)
-	hold_vlaue_this_blk.fill(_h_value)
+	hold_vlaue_this_blk.fill(values[0])
 	opt_out_value_this_blk.resize(_number_of_trials_this_blk)
-	opt_out_value_this_blk.fill(_o_value)
+	opt_out_value_this_blk.fill(values[1])
 	match _case:
 		"none":
 			pass
@@ -609,50 +620,38 @@ func setValues(_number_of_trials_this_blk,_h_value,_o_value,_case, _reward_given
 			urwd_idx.shuffle()
 			rwd_idx.shuffle()
 
-			var num_each_exception = 0.25*0.5*_number_of_trials_this_blk
-			var each_exception_urwd = roundi(num_each_exception*(1-TOTAL_REWARD_CHANCE))
+			var both_exception_together = exception_proportion*_number_of_trials_this_blk 
+			var each_exception_urwd = roundi(both_exception_together * (1-TOTAL_REWARD_CHANCE)) *0.5
 			if TOTAL_REWARD_CHANCE < 1.0:
 				if each_exception_urwd == 0: 
 					each_exception_urwd = 1 # at least 1 exception
-			var each_exception_rwd = num_each_exception - each_exception_urwd
+			var each_exception_rwd = both_exception_together * TOTAL_REWARD_CHANCE*0.5
 			each_exception_rwd = roundi(each_exception_rwd)
 			if each_exception_rwd == 0:
 				each_exception_rwd = 1 # at least 1 exception
-				
+			print("each_exception_urwd: ", each_exception_urwd, "\teach_exception_rwd: ", each_exception_rwd)
 
 			urwd_idx = urwd_idx.slice(0, 2*each_exception_urwd)
 			rwd_idx = rwd_idx.slice(0, 2*each_exception_rwd)
+			#unrwd
 			for i in range(each_exception_urwd):
 				var idx = urwd_idx[i]
-				opt_out_value_this_blk[idx] = _o_value * 25
+				hold_vlaue_this_blk[idx] = values[5]  #h3
+				opt_out_value_this_blk[idx] = values[4] #o3
 			for i in range(each_exception_urwd, len(urwd_idx)):
 				var idx = urwd_idx[i]
-				hold_vlaue_this_blk[idx] = _h_value * 5
+				hold_vlaue_this_blk[idx] = values[2] #h2
+				opt_out_value_this_blk[idx] = values[3] #o2
+			# rwd
 			for i in range(each_exception_rwd):
 				var idx = rwd_idx[i]
-				hold_vlaue_this_blk[idx] = _h_value * 5
+				hold_vlaue_this_blk[idx] = values[5]  #h3
+				opt_out_value_this_blk[idx] = values[4] #o3
 			for i in range(each_exception_rwd, len(rwd_idx)):
 				var idx = rwd_idx[i]
-				opt_out_value_this_blk[idx] = _o_value * 25
-			
-		"h5o5":
-			var num_each_exception = 0.25*0.5*_number_of_trials_this_blk
-			num_each_exception = roundi(num_each_exception)
-			if num_each_exception == 0: 
-				num_each_exception = 1 # at least 1 exception
-			var exception_idx = []
-			for i in range(_number_of_trials_this_blk):
-				exception_idx.append(i)
-				
-			exception_idx.shuffle()
-			exception_idx = exception_idx.slice(0, 2*num_each_exception)	
-			#print("exception_idx: ",exception_idx)
-			for i_h in range(num_each_exception):
-				var idx = exception_idx[i_h]
-				hold_vlaue_this_blk[idx] = _h_value * 5
-			for i_o in range(num_each_exception, len(exception_idx)):
-				var idx = exception_idx[i_o]
-				opt_out_value_this_blk[idx] = _o_value * 5
+				hold_vlaue_this_blk[idx] = values[2] #h2
+				opt_out_value_this_blk[idx] = values[3] #o2
+
 	return [hold_vlaue_this_blk, opt_out_value_this_blk]
 
 
