@@ -819,16 +819,16 @@ func save_data(_case):
 
 
 func reset_scene_to_start_button():
-	earningTimer[1]= Time.get_ticks_msec()/1000.0
-	colorRect.visible = false
-	earningTimer[2] = earningTimer[1] - earningTimer[0] + earningTimer[2]
-	print("Earning timer paused at ", earningTimer[1], " valid time ", earningTimer[2])
 	task_on = false
+	colorRect.visible = false
 	countdownTimer.stop()
 	save_data("json")
 	Global.press_history.clear()
 	# Reset the scene
 	if trial_count >= 1:
+		earningTimer[1]= Time.get_ticks_msec()/1000.0
+		earningTimer[2] = earningTimer[1] - earningTimer[0] + earningTimer[2]
+		print("Earning timer paused at ", earningTimer[1], " valid time ", earningTimer[2])
 		original_states = hide_nodes(EXCLUDE_LABEL_1, original_states)
 		intervalTimer.wait_time = UNIT_INTERVAL * 2
 		intervalTimer.start()
