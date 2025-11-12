@@ -70,6 +70,8 @@ var blk_flag
 var BLK_SWITCH
 var blks_paras = []
 var blk_labels = []
+var default_color
+var DIMCOLOR = Color("58110b83")
 # NORM
 # refresh for each trial
 var reward_given_timepoint
@@ -115,6 +117,7 @@ func _ready():
 	NUMBER_OF_TRIALS = 0
 	EXCLUDE_LABEL_1 = [vbox.name]
 	EXCLUDE_NODES_FOR_SRART_MENU = [vboxstart.name, vboxbottom.name, vboxtop.name]
+	default_color = hold_button.self_modulate
 	generate_all_trials(5) # case 5: from config file
 	init_task() # Initialize the task
 	
@@ -268,7 +271,8 @@ func generate_all_trials(case_, blk_num = 1):
 			opt_out_value_template = []
 			ValueSets = [5,-1, 25,-1,5,-25]
 			var except_ratio = 0.5
-			var  blk_vlaue_sets = [DistributionType.SET4, DistributionType.SET3]
+			var  blk_vlaue_sets = [DistributionType.SET1, DistributionType.SET2]
+			#[DistributionType.SET4, DistributionType.SET3]
 			#[DistributionType.SET1, DistributionType.SET2]
 			#[DistributionType.SET3, DistributionType.SET4]
 			#[DistributionType.SET2, DistributionType.SET1]
@@ -824,6 +828,7 @@ func reset_scene_to_start_button():
 	countdownTimer.stop()
 	save_data("json")
 	Global.press_history.clear()
+	hold_button.self_modulate = default_color
 	# Reset the scene
 	if trial_count >= 1:
 		earningTimer[1]= Time.get_ticks_msec()/1000.0
@@ -901,6 +906,7 @@ func warning():
  #for time-based inference
 func _on_start_to_wait_button_pressed():
 	var start_wait_action_time = Time.get_ticks_msec()/ 1000.0 # Always reset START_TIME on press
+	hold_button.self_modulate = DIMCOLOR
 	if not HAS_BEEN_PRESSED:
 		HAS_BEEN_PRESSED = true
 		infer_base_timer.one_shot = true # 单次触发模式
