@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dnbd1ds28c1bg"]
+[gd_scene load_steps=13 format=3 uid="uid://dnbd1ds28c1bg"]
 
 [ext_resource type="Script" uid="uid://4yswnbgludcw" path="res://Scripts/main.gd" id="1_h2yge"]
 [ext_resource type="Texture2D" uid="uid://bx87lnkg4dodb" path="res://图片3.svg" id="3_7mycd"]
@@ -21,6 +21,8 @@ font_color = Color(0.913725, 0, 0.0235294, 1)
 shadow_size = 0
 shadow_offset = Vector2(0, 1)
 
+[sub_resource type="LabelSettings" id="LabelSettings_efxa6"]
+
 [node name="Node2D" type="Control"]
 layout_mode = 3
 anchors_preset = 0
@@ -30,6 +32,35 @@ offset_right = -2.14355
 offset_bottom = -10.4308
 script = ExtResource("1_h2yge")
 
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -43.0
+offset_top = 155.0
+offset_right = 85.0
+offset_bottom = 332.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label1" type="Label" parent="VBox"]
+layout_mode = 2
+text = "label_1
+"
+label_settings = ExtResource("3_h2yge")
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="TimerLabel" type="Label" parent="VBox"]
+layout_mode = 2
+text = "label_t
+"
+label_settings = ExtResource("8_4c57u")
+horizontal_alignment = 1
+
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -37,6 +68,106 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="VBoxTop" type="Control" parent="."]
+layout_mode = 2
+anchors_preset = 0
+offset_left = 429.0
+offset_top = -19.0
+offset_right = 822.0
+offset_bottom = 284.0
+
+[node name="HBoxTop" type="PanelContainer" parent="VBoxTop"]
+self_modulate = Color(0.301961, 0.301961, 0.301961, 1)
+z_as_relative = false
+layout_mode = 2
+offset_right = 393.0
+offset_bottom = 158.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.0
+
+[node name="HBoxTop" type="HSplitContainer" parent="VBoxTop/HBoxTop"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+collapsed = true
+drag_area_highlight_in_editor = true
+
+[node name="LabelLeft" type="Label" parent="VBoxTop/HBoxTop/HBoxTop"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "test"
+label_settings = ExtResource("8_4c57u")
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="LabelRight" type="Label" parent="VBoxTop/HBoxTop/HBoxTop"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "test"
+label_settings = ExtResource("4_1bvp3")
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="HBoxMid" type="HSplitContainer" parent="VBoxTop/HBoxTop"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+
+[node name="LabelLeft" type="Label" parent="VBoxTop/HBoxTop/HBoxMid"]
+layout_mode = 2
+size_flags_horizontal = 2
+text = "test"
+label_settings = ExtResource("8_4c57u")
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="LabelRight" type="Label" parent="VBoxTop/HBoxTop/HBoxMid"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 0
+text = "test"
+label_settings = ExtResource("4_1bvp3")
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="HBoxBottom" type="PanelContainer" parent="VBoxTop"]
+offset_top = 169.0
+offset_right = 393.0
+offset_bottom = 311.0
+pivot_offset = Vector2(5.58459, -12.6322)
+size_flags_vertical = 8
+
+[node name="LabelUp" type="Label" parent="VBoxTop/HBoxBottom"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "test"
+label_settings = SubResource("LabelSettings_4c57u")
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="LabelDown" type="Label" parent="VBoxTop/HBoxBottom"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+text = "test"
+label_settings = SubResource("LabelSettings_kek77")
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="LabelDscript" type="Label" parent="."]
+layout_mode = 2
+offset_left = -46.0
+offset_top = 380.0
+offset_right = 82.0
+offset_bottom = 443.0
+text = "test
+"
+label_settings = ExtResource("3_h2yge")
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="MenuButton2" type="Control" parent="."]
 layout_mode = 3
@@ -143,7 +274,7 @@ grow_vertical = 2
 [node name="Label" type="Label" parent="VBoxBottom"]
 layout_mode = 2
 text = "test"
-label_settings = ExtResource("3_h2yge")
+label_settings = SubResource("LabelSettings_efxa6")
 horizontal_alignment = 1
 vertical_alignment = 2
 clip_text = true
@@ -175,114 +306,6 @@ icon = ExtResource("6_5vw27")
 flat = true
 autowrap_mode = 1
 icon_alignment = 1
-
-[node name="VBox" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -46.2169
-offset_top = 198.681
-offset_right = 81.7831
-offset_bottom = 408.681
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Label1" type="Label" parent="VBox"]
-layout_mode = 2
-text = "test
-"
-label_settings = ExtResource("3_h2yge")
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="TimerLabel" type="Label" parent="VBox"]
-layout_mode = 2
-text = "label_t
-"
-label_settings = ExtResource("8_4c57u")
-horizontal_alignment = 1
-
-[node name="VBoxTop" type="PanelContainer" parent="."]
-texture_filter = 2
-use_parent_material = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 541.0
-offset_top = 133.0
-offset_right = 791.0
-offset_bottom = 381.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HBoxTop" type="HBoxContainer" parent="VBoxTop"]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
-
-[node name="LabelLeft" type="Label" parent="VBoxTop/HBoxTop"]
-layout_mode = 2
-size_flags_horizontal = 0
-text = "test"
-label_settings = ExtResource("8_4c57u")
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="LabelRight" type="Label" parent="VBoxTop/HBoxTop"]
-layout_mode = 2
-size_flags_horizontal = 0
-text = "test"
-label_settings = ExtResource("4_1bvp3")
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="HBoxMid" type="HBoxContainer" parent="VBoxTop"]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 4
-
-[node name="LabelLeft" type="Label" parent="VBoxTop/HBoxMid"]
-layout_mode = 2
-size_flags_horizontal = 2
-text = "test"
-label_settings = ExtResource("8_4c57u")
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="LabelRight" type="Label" parent="VBoxTop/HBoxMid"]
-layout_mode = 2
-size_flags_horizontal = 10
-size_flags_vertical = 0
-text = "test"
-label_settings = ExtResource("4_1bvp3")
-horizontal_alignment = 2
-vertical_alignment = 2
-
-[node name="HBoxBottom" type="HBoxContainer" parent="VBoxTop"]
-layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 8
-
-[node name="LabelLeft" type="Label" parent="VBoxTop/HBoxBottom"]
-layout_mode = 2
-size_flags_horizontal = 0
-text = "test"
-label_settings = SubResource("LabelSettings_4c57u")
-horizontal_alignment = 1
-vertical_alignment = 2
-
-[node name="LabelRight" type="Label" parent="VBoxTop/HBoxBottom"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-text = "test"
-label_settings = SubResource("LabelSettings_kek77")
-horizontal_alignment = 2
-vertical_alignment = 1
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("9_kek77")

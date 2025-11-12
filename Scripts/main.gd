@@ -1,35 +1,38 @@
 extends Control
 # Node reference
-@onready var label_discript = $VBox/Label1
+@onready var label_1 = $VBox/Label1
 @onready var label_t = $VBox/TimerLabel # Label used to display countdown
+@onready var label_discript = $LabelDscript
 
-@onready var label_info_top = $VBoxTop/HBoxTop/LabelLeft
-@onready var label_value_info_top = $VBoxTop/HBoxTop/LabelRight
-@onready var label_info_mid = $VBoxTop/HBoxMid/LabelLeft
-@onready var label_value_info_mid = $VBoxTop/HBoxMid/LabelRight
-@onready var label_info_bottom = $VBoxTop/HBoxBottom/LabelLeft
-@onready var label_value_info_bottom = $VBoxTop/HBoxBottom/LabelRight
+@onready var label_info_top = $VBoxTop/HBoxTop/HBoxTop/LabelLeft
+@onready var label_value_info_top = $VBoxTop/HBoxTop/HBoxTop/LabelRight
+@onready var label_info_mid = $VBoxTop/HBoxTop/HBoxMid/LabelLeft
+@onready var label_value_info_mid = $VBoxTop/HBoxTop/HBoxMid/LabelRight
+@onready var label_info_bottom = $VBoxTop/HBoxBottom/LabelUp
+@onready var label_value_info_bottom = $VBoxTop/HBoxBottom/LabelDown
+@onready var vboxtop = $VBoxTop
 
 @onready var hold_button = $MenuButton/HoldButton
 @onready var menuButton = $MenuButton
 @onready var opt_out_button = $MenuButton2/OptOutButton
-@onready var infer_base_timer = $InferBaseTimer
 @onready var hold_button_label = $MenuButton/HoldButton/Text
 @onready var opt_out_button_label = $MenuButton2/OptOutButton/Text
 @onready var vbox = $VBox
+
 @onready var vboxstart = $VBoxSTART
 @onready var vboxbottom = $VBoxBottom
-@onready var vboxtop = $VBoxTop
 @onready var quitButton = $VBoxBottom/QuitButton
 @onready var startButton = $VBoxSTART/StartButton
 @onready var label_startbtn = $VBoxBottom/Label
 
 @onready var sound = $AudioStreamPlayer
 @onready var colorRect = $ColorRect
+@onready var infer_base_timer = $InferBaseTimer
 
 var hascountdownTimertriggered = false
 var countdownTimer : Timer
-var intervalTimer: Timer = null
+var intervalTimer: Timer 
+var earningTimer=[0.0,0.0,0.0]
 enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3,SET4}
 var ValueSets
 enum SampleType{POOL, SLICED,}
@@ -43,7 +46,8 @@ var STD_RWD_TIMEPOINT
 var NUMBER_OF_TRIALS = 0
 var IF_OPT_LEFT = MathUtils.generate_random(0, 1, "float")
 var default_exception_proportion = float(0.0)
-var trial_count = 0
+var trial_count = 0 
+var trial_timeout : bool = false
 # var only used in time based
 var IS_HOLDING : bool = false
 var HAS_BEEN_PRESSED : bool = false
@@ -115,23 +119,20 @@ func _ready():
 	init_task() # Initialize the task
 	
 
+
 # MARK: TASK
 func init_task(): # Initialize task, BLK design
+	# timer for calculate earnings predefined 
+	earningTimer=[0.0,0.0,0.0]
 	# timer for wait too long warning
-	countdownTimer = Timer.new()	
-	countdownTimer.autostart = false
-	countdownTimer.one_shot = true
-	add_child(countdownTimer)
+	countdownTimer = one_time_timer(countdownTimer)
 	countdownTimer.timeout.connect(_on_countdown_timer_timeout)
 	# Start 1st Trial
-	intervalTimer = Timer.new()
-	intervalTimer.one_shot = true # 单次触发模式
-	add_child(intervalTimer) # 确保添加到场景树
+	intervalTimer = one_time_timer(intervalTimer)
+
 	colorRect.visible = false
 	startButton.pressed.connect(_on_start_button_pressed)
 	quitButton.pressed.connect(_on_quit_button_pressed)
-	# MARK: Generate a block of trials
-	
 	if  Global.inference_type== Global.InferenceFlagType.time_based:
 		hold_button.pressed.connect(_on_start_to_wait_button_pressed)
 		opt_out_button.pressed.connect(_on_opt_out_button_pressed)
@@ -150,14 +151,23 @@ func init_task(): # Initialize task, BLK design
 	vboxstart.visible = false
 	vboxbottom.visible = false
 	vboxtop.visible = false
-
+	label_startbtn.visible = false
 	prepare_init_trial()
 
 # MARK: INIT
 func prepare_init_trial():
 	countdownTimer.stop()
+	trial_timeout = false
+	if Global.inference_type == Global.InferenceFlagType.time_based:
+		HAS_BEEN_PRESSED = false
+		IS_HOLDING = false
+		DURATION = 0.0
+		START_TIME = 0.0
+	if Global.inference_type == Global.InferenceFlagType.press_based:
+		NUM_OF_PRESS = 0 
+
 	if trial_count >= NUMBER_OF_TRIALS:
-		hide_nodes(EXCLUDE_LABEL_1, original_states)
+		hide_nodes(EXCLUDE_LABEL_1, original_states) #vbox hide
 		trial_count += 1
 		return
 	if INITIALIZED_FLAG == false:# the 1st trial
@@ -166,14 +176,6 @@ func prepare_init_trial():
 		reset_scene_to_start_button()
 		INITIALIZED_FLAG = true
 		return
-
-	if Global.inference_type == Global.InferenceFlagType.time_based:
-		HAS_BEEN_PRESSED = false
-		IS_HOLDING = false
-		DURATION = 0.0
-		START_TIME = 0.0
-	if Global.inference_type == Global.InferenceFlagType.press_based:
-		NUM_OF_PRESS = 0 
 
 	# Initialization rewards
 	hold_reward = hold_vlaue_template[trial_count]
@@ -790,6 +792,7 @@ func save_data(_case):
 				"hold_reward": hold_reward,	
 				"opt_out_reward": opt_out_reward,	
 				"actual_reward_value": actual_reward_value,
+				"if_trial_timeout": trial_timeout,
 				"if_optionis on_left": OPT_LEFT_FLAG,
 				"press_history": JSON.stringify(Global.press_history,"", false, false),
 			}
@@ -816,17 +819,21 @@ func save_data(_case):
 
 
 func reset_scene_to_start_button():
-	task_on = false
+	earningTimer[1]= Time.get_ticks_msec()/1000.0
 	colorRect.visible = false
+	earningTimer[2] = earningTimer[1] - earningTimer[0] + earningTimer[2]
+	print("Earning timer paused at ", earningTimer[1], " valid time ", earningTimer[2])
+	task_on = false
+	countdownTimer.stop()
 	save_data("json")
 	Global.press_history.clear()
 	# Reset the scene
-	if trial_count > 1:
+	if trial_count >= 1:
 		original_states = hide_nodes(EXCLUDE_LABEL_1, original_states)
 		intervalTimer.wait_time = UNIT_INTERVAL * 2
 		intervalTimer.start()
 		await intervalTimer.timeout
-
+	_label_refresh(Global.wealth, "init")
 	original_states_2 = hide_nodes([], original_states_2)
 	intervalTimer.wait_time = UNIT_INTERVAL
 	intervalTimer.start()
@@ -838,12 +845,12 @@ func reset_scene_to_start_button():
 	vboxstart.visible = true
 	vboxbottom.visible = true
 	vboxtop.visible = true
+	label_startbtn.visible = true
 	# label status
 	trial_start_time = Time.get_ticks_msec()/1000.0
 
 
 func reset_to_start_next_trial():
-
 	if trial_count <= NUMBER_OF_TRIALS:
 		prepare_init_trial()
 		restore_nodes(original_states_2)
@@ -857,12 +864,13 @@ func reset_to_start_next_trial():
 # MARK: Buttons Response
 func _input(event):
 	if vboxstart.visible == false:
-		if event.is_action_released("press_optout_button"):
-			if not opt_out_button.disabled:
-				opt_out_button.emit_signal("pressed")
-		if event.is_action_released("press_hold_button"):
-			if not hold_button.disabled:
-				hold_button.emit_signal("pressed")
+		# Detect key release from key board
+		# if event.is_action_released("press_optout_button"):
+			# if not opt_out_button.disabled:
+				# opt_out_button.emit_signal("pressed")
+		# if event.is_action_released("press_hold_button"):
+			# if not hold_button.disabled:
+				# hold_button.emit_signal("pressed")
 		# 检测鼠标左键点击
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			var btn_area = hold_button.get_global_rect()
@@ -900,8 +908,9 @@ func _on_start_to_wait_button_pressed():
 			infer_base_timer.start(reward_given_timepoint)	
 		print("Wait Time Start%s" % reward_given_timepoint)
 		# wait too long warning
-		set_countdownTimer(true,'Time-out: you lost 2 tokens', 40)
+		set_countdownTimer(true,'Time-out: you lost 2 tokens', 60)
 	record_press_data(start_wait_action_time,BtnType.WAIT)
+
 
 func _on_infer_baser_timer_timeout():
 	infer_base_timer.stop()
@@ -934,6 +943,7 @@ func _on_hold_button_pressed():
 			record_press_data(current_time, BtnType.HOLD)
 			reset_scene_to_start_button()
 
+
 func _on_opt_out_button_pressed():
 	# 获取当前时间戳（秒）
 	var opt_out_action_time = Time.get_ticks_msec()/1000.0
@@ -952,7 +962,10 @@ func _on_quit_button_pressed():
 func _on_start_button_pressed():
 	var start_trial_action_time = Time.get_ticks_msec()/1000.0
 	record_press_data(start_trial_action_time, BtnType.START)
+	earningTimer[0] = Time.get_ticks_msec()/1000.0
+	print("===Earning timer started at ", earningTimer[0])
 	reset_to_start_next_trial()
+
 
 func _reward_given_actions(reward_value):
 	Global.wealth += reward_value
@@ -968,25 +981,28 @@ func record_press_data(current_time, btn_type) -> void:
 	
 
 # MARK: UI
-func place_button(_if_opt_left):
-	# 获取窗口尺寸
-	var window_size = get_viewport_rect().size
-	var root = get_node("/root/Node2D")
-	root.set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE) # this is important!
-	if menuButton.visible == true:
-		Utils.setup_layout(vbox, PRESET_CENTER, 0.5, 0.85, window_size)
-	else:
-		Utils.setup_layout(vbox, PRESET_CENTER, 0.5, 0.5, window_size)
-	Utils.setup_layout(vboxstart, PRESET_CENTER, 0.5, 0.65, window_size)
-	Utils.setup_layout(vboxbottom, PRESET_CENTER, 0.5, 0.85, window_size)
-	Utils.setup_layout(vboxtop, PRESET_CENTER, 0.5, 0.2, window_size)
-	match _if_opt_left:
-		"left":
-			Utils.setup_layout($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
-			Utils.setup_layout($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
-		"right":
-			Utils.setup_layout($MenuButton2, PRESET_CENTER, 0.35, 0.4, window_size)
-			Utils.setup_layout($MenuButton, PRESET_CENTER, 0.65, 0.4, window_size)
+func place_button(_if_opt_left,case="by_windowsize"):
+	match case:
+		"by_fixed_layout":
+			pass
+		"by_windowsize":
+			# 获取窗口尺寸
+			var window_size = get_viewport_rect().size
+			var root = get_node("/root/Node2D")
+			root.set_anchors_and_offsets_preset(PRESET_FULL_RECT, PRESET_MODE_KEEP_SIZE) # this is important!
+			if menuButton != null:
+				Utils.setup_layout(label_discript, PRESET_CENTER, 0.5, 0.8, window_size)
+			Utils.setup_layout(vbox, PRESET_CENTER, 0.5, 0.5, window_size) # feedback
+			Utils.setup_layout(vboxstart, PRESET_CENTER, 0.5, 0.65, window_size)
+			Utils.setup_layout(vboxbottom, PRESET_CENTER, 0.5, 0.85, window_size)
+			Utils.setup_layout(vboxtop, PRESET_CENTER, 0.5, 0.2, window_size)
+			match _if_opt_left:
+				"left":
+					Utils.setup_layout($MenuButton, PRESET_CENTER, 0.35, 0.4, window_size)
+					Utils.setup_layout($MenuButton2, PRESET_CENTER, 0.65, 0.4, window_size)
+				"right":
+					Utils.setup_layout($MenuButton2, PRESET_CENTER, 0.35, 0.4, window_size)
+					Utils.setup_layout($MenuButton, PRESET_CENTER, 0.65, 0.4, window_size)
 	
 
 func place_options_left_or_right():
@@ -1017,10 +1033,10 @@ func _label_refresh(wealth, case_text):
 
 	label_info_top.text = " Your Tokens: " 
 	label_value_info_top.text = str(wealth)
-	label_info_mid.text = " Elapesed Time: "
-	label_value_info_mid.text = str(wealth)
+	label_info_mid.text = " Elapesed Time(s): "
+	label_value_info_mid.text = str(roundi(earningTimer[2]))
 	label_info_bottom.text = " Your Earnings: "
-	label_value_info_bottom.text = str(wealth)
+	label_value_info_bottom.text = str(roundf((100* wealth)/ earningTimer[2]) / 100)
 
 	var neutralcolor = Color("WHITE")
 	var positivecolor = Color("GREEN")
@@ -1032,56 +1048,60 @@ func _label_refresh(wealth, case_text):
 	match case_text:
 
 		"opt_out":
-			label_discript.label_settings.font_size = 72
+			label_1.label_settings.font_size = 72
 			if opt_out_reward > 0:
-				label_discript.text = "+ " + str(opt_out_reward)
-				label_discript.label_settings.font_color = positivecolor
+				label_1.text = "+ " + str(opt_out_reward)
+				label_1.label_settings.font_color = positivecolor
 			elif opt_out_reward == 0:
-				label_discript.text = " + " + str(opt_out_reward)
-				label_discript.label_settings.font_color = positivecolor
+				label_1.text = " + " + str(opt_out_reward)
+				label_1.label_settings.font_color = positivecolor
 			else:
-				label_discript.text = "" + str(opt_out_reward)
-				label_discript.label_settings.font_color = negativecolor
+				label_1.text = "" + str(opt_out_reward)
+				label_1.label_settings.font_color = negativecolor
 
-			label_discript.visible = true
+			label_1.visible = true
 			label_t.visible = false
 
 		"reward_given":
-			label_discript.label_settings.font_size = 72
+			label_1.label_settings.font_size = 72
 			if hold_reward == 0:
-				label_discript.text = "+ " + str(hold_reward)
-				label_discript.label_settings.font_color = positivecolor
+				label_1.text = "+ " + str(hold_reward)
+				label_1.label_settings.font_color = positivecolor
 			else:
-				label_discript.text = "+ " + str(hold_reward)
-				label_discript.label_settings.font_color = positivecolor
+				label_1.text = "+ " + str(hold_reward)
+				label_1.label_settings.font_color = positivecolor
 			REWARD_GIVEN_FLAG = false
 
-			label_discript.visible = true
+			label_1.visible = true
 			label_t.visible = false
 
 		"timeout":
-			label_discript.label_settings.font_size = 72
-			label_discript.text = str(-5)
-			label_discript.label_settings.font_color = negativecolor
+			label_1.label_settings.font_size = 72
+			label_1.text = str(-5)
+			label_1.label_settings.font_color = negativecolor
 			label_t.text = "Timeout! Panelty: -5"
+			label_1.visible = true
 			label_t.visible = true
 
 		"pressing...":
-			label_discript.visible = false
-			#label_discript.text = ""
-			#label_discript.label_settings.font_size = 36
-			#label_discript.text = str(NUM_OF_PRESS)# need t add NUM_OF_PRESS to the func parameter
-			#label_discript.label_settings.font_color = neutralcolor
+			label_1.visible = false
+			#label_1.text = ""
+			#label_1.label_settings.font_size = 36
+			#label_1.text = str(NUM_OF_PRESS)# need t add NUM_OF_PRESS to the func parameter
+			#label_1.label_settings.font_color = neutralcolor
 
-		"init":
+		"init": 
+			label_1.visible = false
+			label_t.visible = false
 			label_discript.visible = true
 			label_discript.label_settings.font_color = neutralcolor
 			label_discript.label_settings.font_size = 25
-			label_t.visible = false
-			if trial_count >= 1 and trial_count < 4:
+
+			if trial_count < 4:
+				label_startbtn.label_settings.font_color = neutralcolor
+				label_startbtn.label_settings.font_size = 25
 				label_startbtn.text = "Press the Disk \n to Start"
-				label_startbtn.visible = true
-				
+
 				if trial_count == 1:
 					match Global.inference_type:
 						Global.InferenceFlagType.time_based:
@@ -1094,11 +1114,12 @@ func _label_refresh(wealth, case_text):
 						label_discript.text = "If you change your mind, \n you can always opt out via the BLUE one."
 			else:
 				label_discript.text = ""
-				label_startbtn.visible = false
+				label_startbtn.text = ""
+	
 
 		"finish":
-			label_discript.text = "Finished!\n Close the window to exit"
-			label_discript.visible = true
+			label_1.text = "Finished!\n Close the window to exit"
+			label_1.visible = true
 
 
 # Hide all child nodes and deactivate interactive elements
@@ -1133,6 +1154,7 @@ func restore_nodes(states):
 	
 	states.clear()
 
+
 # MARK: Timer/End
 func set_countdownTimer(ifset: bool,timeouttext: String, time):
 	if ifset == true:
@@ -1148,8 +1170,10 @@ func _on_countdown_timer_timeout():
 	countdownTimer.stop()
 	print("countdownTimer stopped")
 	_reward_given_actions(-5) # record actuAL reward
+	trial_timeout = true # mark this trial as a timeout trial
 	_label_refresh(Global.wealth, "timeout")
 	reset_scene_to_start_button()
+
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
@@ -1157,11 +1181,13 @@ func _notification(what: int) -> void:
 		#cleanup()
 		get_tree().quit()
 
+
 # 正确释放动态创建的节点
 func cleanup():
 	for child in get_children():
 		if child is CanvasItem:
 			child.queue_free() # 标记节点在下一帧释放
+
 
 func _agent():
 	add_child(agent_action_timer)
@@ -1170,6 +1196,7 @@ func _agent():
 	agent_action_timer.one_shot = false  # 循环触发
 	agent_action_timer.timeout.connect(_on_agent_action_timer_timeout)
 	agent_action_timer.start()
+
 
 func _on_agent_action_timer_timeout():
 	if vboxstart.visible == true:
@@ -1182,4 +1209,11 @@ func _on_agent_action_timer_timeout():
 			opt_out_button.emit_signal("pressed")
 	if trial_count > NUMBER_OF_TRIALS:
 		agent_action_timer.queue_free()
-		
+
+
+func one_time_timer(timername):
+	timername = Timer.new()
+	timername.autostart = false
+	timername.one_shot = true
+	add_child(timername)
+	return timername
