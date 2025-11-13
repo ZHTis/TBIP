@@ -32,7 +32,8 @@ extends Control
 var hascountdownTimertriggered = false
 var countdownTimer : Timer
 var intervalTimer: Timer 
-var earningTimer=[0.0,0.0,0.0]
+var earningTimer=[0.0,0.0,0.0,0.0,0.0] # starttime, endtime, validtime, sit start, sit delta
+var earnings = 0.0
 enum DistributionType{FLAT,NORM_1ST, NORM_AFTER_1ST, NORM_1ST_CUSTOM, SET1,SET2,SET3,SET4}
 var ValueSets
 enum SampleType{POOL, SLICED,}
@@ -126,7 +127,7 @@ func _ready():
 # MARK: TASK
 func init_task(): # Initialize task, BLK design
 	# timer for calculate earnings predefined 
-	earningTimer=[0.0,0.0,0.0]
+	earningTimer[3] = Time.get_ticks_msec()/1000.0 # onlyy once
 	# timer for wait too long warning
 	countdownTimer = one_time_timer(countdownTimer)
 	countdownTimer.timeout.connect(_on_countdown_timer_timeout)
@@ -819,6 +820,8 @@ func save_data(_case):
 			var file = FileAccess.open(Global.filename_data, FileAccess.READ_WRITE) # FileAccess.READ_WRITE will append, while FileAccess.WRITE will overwrite the whole file
 			file.seek_end()
 			file.store_line("\n\nTokens: %d" % Global.wealth)
+			#file.store_line("Earnings: %.2f" % earnings)
+			file.store_line("Elapsed Time (minute): %.2f" % earningTimer[4])
 			file.close()
 
 
@@ -832,8 +835,11 @@ func reset_scene_to_start_button():
 	# Reset the scene
 	if trial_count >= 1:
 		earningTimer[1]= Time.get_ticks_msec()/1000.0
-		earningTimer[2] = earningTimer[1] - earningTimer[0] + earningTimer[2]
-		print("Earning timer paused at ", earningTimer[1], " valid time ", earningTimer[2])
+		earningTimer[2] = earningTimer[1] - earningTimer[0]
+		earnings = earnings + (actual_reward_value / earningTimer[2]) # earnings need to discuss
+		#print("Earning timer paused at ", earningTimer[1], " valid time this trial is ", earningTimer[2])
+		earningTimer[4] = roundf((earningTimer[1] - earningTimer[3]) /6) / 10
+		
 		original_states = hide_nodes(EXCLUDE_LABEL_1, original_states)
 		intervalTimer.wait_time = UNIT_INTERVAL * 2
 		intervalTimer.start()
@@ -1037,12 +1043,13 @@ func _label_refresh(wealth, case_text):
 		else:
 			opt_out_button_label.text = "+" + str(opt_out_reward)
 
-	label_info_top.text = " Your Tokens: " 
-	label_value_info_top.text = str(wealth)
-	label_info_mid.text = " Elapesed Time(s): "
-	label_value_info_mid.text = str(roundi(earningTimer[2]))
-	label_info_bottom.text = " Your Earnings: "
-	label_value_info_bottom.text = str(roundf((100* wealth)/ earningTimer[2]) / 100)
+	label_info_top.text = "" 
+	label_value_info_top.text = ""
+	label_info_mid.text = " Elapsed Time (minute): "
+	label_value_info_mid.text = str(earningTimer[4])
+	label_info_bottom.text = " Your Tokens: " 
+	#" Your Earnings: "
+	label_value_info_bottom.text = str(wealth)
 
 	var neutralcolor = Color("WHITE")
 	var positivecolor = Color("GREEN")
