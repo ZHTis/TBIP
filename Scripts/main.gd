@@ -271,8 +271,9 @@ func generate_all_trials(case_, blk_num = 1):
 			hold_vlaue_template = []
 			opt_out_value_template = []
 			ValueSets = [5,-1, 25,-1,5,-25]
-			var except_ratio = 0.5
-			var  blk_vlaue_sets = [DistributionType.SET1, DistributionType.SET2]
+			var except_ratio = 0.25
+			var blk_vlaue_sets = [DistributionType.SET1]
+			var chance_sets = [[0.6],[0.8]]
 			#[DistributionType.SET4, DistributionType.SET3]
 			#[DistributionType.SET1, DistributionType.SET2]
 			#[DistributionType.SET3, DistributionType.SET4]
@@ -288,11 +289,11 @@ func generate_all_trials(case_, blk_num = 1):
 					total_reward_chance_structure = [1]
 					blk_(0.5, "chance_allow_repeat", blk_vlaue_sets[0],10,10, "B",0.2,SampleType.SLICED, 2)
 				if i > (BLK_SWITCH[0]) and i<=(BLK_SWITCH[1]):
-					total_reward_chance_structure = [0.7]
+					total_reward_chance_structure = chance_sets[0]
 					blk_(0.5, "chance_allow_repeat", blk_vlaue_sets[0],40,40, "B",except_ratio, SampleType.SLICED, 2)
 				if i > (BLK_SWITCH[1]) and i<=blk_num:
-					total_reward_chance_structure = [0.7]
-					blk_(0.5, "chance_allow_repeat", blk_vlaue_sets[1],40,40, "B",except_ratio, SampleType.SLICED, 2)
+					total_reward_chance_structure = chance_sets[1]
+					blk_(0.5, "chance_allow_repeat", blk_vlaue_sets[0],40,40, "B",except_ratio, SampleType.SLICED, 2)
 					
 			Global.write_sessionDesign_to_file(Global.filename_config)
 
@@ -829,11 +830,12 @@ func reset_scene_to_start_button():
 	task_on = false
 	colorRect.visible = false
 	countdownTimer.stop()
-	save_data("json")
-	Global.press_history.clear()
-	hold_button.self_modulate = default_color
+	
+
+
 	# Reset the scene
 	if trial_count >= 1:
+		save_data("json")
 		earningTimer[1]= Time.get_ticks_msec()/1000.0
 		earningTimer[2] = earningTimer[1] - earningTimer[0]
 		earnings = earnings + (actual_reward_value / earningTimer[2]) # earnings need to discuss
@@ -844,6 +846,9 @@ func reset_scene_to_start_button():
 		intervalTimer.wait_time = UNIT_INTERVAL * 2
 		intervalTimer.start()
 		await intervalTimer.timeout
+	
+	Global.press_history.clear()
+	hold_button.self_modulate = default_color
 	_label_refresh(Global.wealth, "init")
 	original_states_2 = hide_nodes([], original_states_2)
 	intervalTimer.wait_time = UNIT_INTERVAL
